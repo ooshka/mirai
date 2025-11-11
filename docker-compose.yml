@@ -1,0 +1,22 @@
+# docker-compose.yml
+version: "3.9"
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+      args: { UID: ${UID}, GID: ${GID} }
+      # Mounts the project at the same absolute path in the container so LSPs don't get confused
+    volumes:
+      - ${PWD}:${PWD}:cached
+      - bundler-cache:/home/dev/.bundle
+      - pip-cache:/home/dev/.cache/pip
+      - npm-cache:/home/dev/.npm
+    working_dir: ${PWD}
+    tty: true
+    stdin_open: true
+
+volumes:
+  bundler-cache:
+  pip-cache:
+  npm-cache:
