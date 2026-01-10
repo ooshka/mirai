@@ -1,20 +1,23 @@
 FROM ubuntu:24.04
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  build-essential curl git unzip ca-certificates pkg-config libssl-dev zlib1g-dev \
-  ruby-full \
-  python3 python3-pip python3-venv \
-  nodejs npm \
-  ripgrep fd-find && rm -rf /var/lib/apt/lists/*
 
-ARG UID=1000 GID=1000
-RUN groupadd -g ${GID} dev && useradd -m -u ${UID} -g ${GID} dev
-USER dev
+ARG UID=1000 
+ARG GID=1000
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  build-essential curl git unzip ca-certificates pkg-config \
+  libssl-dev zlib1g-dev \
+  ruby-full \
+  ripgrep fd-find openssh-client \
+  libgit2-dev \
+  && rm -rf /var/lib/ap/lists/*
+
 WORKDIR /workspace
 
-# Python tooling
-ENV PIPX_BIN_DIR=/home/dev/.local/bin PATH=/home/dev/.local/bin:$PATH
-RUN python3 -m pip install --user pipx && pipx ensurepath && \
-    pipx install ruff-lsp && pipx install black && npm install -g pyright
+RUN mkdir -p /home/dev
 
-# Ruby tooling
-RUN gem install --user-install ruby-lsp standardrb
+# Bundler config: install gems into a persisted volume
+ENV BUNDLE_PATH=/home/dev/.bundle \
+    BUNDLE_JOBS=4 \
+    BUNDLE_RETRY=3
+
+RUN gem install bundler
