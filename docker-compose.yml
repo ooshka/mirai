@@ -10,14 +10,17 @@ services:
     user: "${UID}:${GID}"
     environment:
       HOME: /home/dev
+      NOTES_ROOT: /notes
     volumes:
       - .:/workspace:cached
+      - ../notes_repo/notes:/notes:cached
       - dev-home:/home/dev
       - bundler-cache:/home/dev/.bundle
     working_dir: /workspace
     tty: true
     stdin_open: true
-
+    ports:
+      - "4567:4567"
 volumes:
   dev-home:
   bundler-cache:
