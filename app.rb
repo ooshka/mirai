@@ -5,10 +5,10 @@ require "json"
 
 class App < Sinatra::Base
   set :bind, "0.0.0.0"
-  set :port, (ENV["PORT"] || "4567).to_i
-
+  set :port, (ENV["PORT"] || "4567").to_i
+  
   configure do
-    set :notes_root, ENV.fetch("NOTES_RROT", "./notes")
+    set :notes_root, ENV.fetch("NOTES_ROOT", "/notes")
   end
 
   before do
