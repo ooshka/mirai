@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libssl-dev zlib1g-dev \
   ripgrep fd-find openssh-client \
   libgit2-dev \
-  && rm -rf /var/lib/ap/lists/*
+  && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g ${GID} dev \
   && useradd -m -u ${UID} -g ${GID} -s /bin/bash dev
