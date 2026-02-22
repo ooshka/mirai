@@ -26,6 +26,17 @@ Relevant files:
 - The app expects `NOTES_ROOT` to exist at runtime (defaults to `/notes`).
 - In Docker, `NOTES_ROOT=/notes` is already configured.
 - In local non-Docker runs, ensure Ruby/Bundler dependencies are installed and set required env vars if tests depend on them.
+- In tightly sandboxed agent environments, Docker commands require command escalation/approval.
+
+## Sandbox Escalation Requirements
+
+When running as an agent in a restricted sandbox, assume `docker compose ...` commands will fail unless escalated.
+
+Approve only the narrow prefixes needed for verification:
+- `docker compose run` (required for test and lint commands)
+- `docker compose up` (optional, only for smoke testing)
+
+Avoid broad approvals when possible; prefer the smallest prefix that still allows the required checks.
 
 ## Core Verification Commands
 
