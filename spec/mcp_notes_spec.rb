@@ -100,4 +100,24 @@ RSpec.describe "MCP notes read-only endpoints" do
       }
     )
   end
+
+  it "returns 400 for symlink paths that escape notes root" do
+    Dir.mktmpdir("outside-notes-root") do |outside_root|
+      outside_file = File.join(outside_root, "secret.md")
+      File.write(outside_file, "secret")
+      File.symlink(outside_file, File.join(@notes_root, "escaped.md"))
+
+      get "/mcp/notes/read", path: "escaped.md"
+    end
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_path",
+          "message" => "path escapes notes root"
+        }
+      }
+    )
+  end
 end
