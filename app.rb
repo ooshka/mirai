@@ -11,6 +11,7 @@ require_relative "app/services/mcp/notes_list_action"
 require_relative "app/services/mcp/notes_read_action"
 require_relative "app/services/mcp/patch_propose_action"
 require_relative "app/services/mcp/patch_apply_action"
+require_relative "app/services/mcp/index_rebuild_action"
 
 class App < Sinatra::Base
   set :bind, "0.0.0.0"
@@ -80,6 +81,12 @@ class App < Sinatra::Base
     payload = parsed_patch_payload
     with_mcp_error_handling do
       Mcp::PatchApplyAction.new(notes_root: settings.notes_root).call(patch: payload["patch"]).to_json
+    end
+  end
+
+  post "/mcp/index/rebuild" do
+    with_mcp_error_handling do
+      Mcp::IndexRebuildAction.new(notes_root: settings.notes_root).call.to_json
     end
   end
 end
