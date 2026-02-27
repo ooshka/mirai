@@ -39,7 +39,7 @@ RSpec.describe PatchApplier do
     expect(result[:net_line_delta]).to eq(1)
     expect(File.read(file_path)).to eq("line one\nline two\nline three\n")
     expect(git!("log", "--format=%s", "-n", "1", "--", "notes/today.md").strip)
-      .to eq("Apply patch to notes/today.md")
+      .to eq("mcp.patch_apply: notes/today.md")
   end
 
   it "raises not found when target note does not exist" do

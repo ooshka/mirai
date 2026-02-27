@@ -152,7 +152,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     )
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
     expect(git!("log", "--format=%s", "-n", "1", "--", "notes/today.md").strip)
-      .to eq("Apply patch to notes/today.md")
+      .to eq("mcp.patch_apply: notes/today.md")
   end
 
   it "returns not_found when apply target is missing" do
