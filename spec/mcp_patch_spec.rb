@@ -51,6 +51,34 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     )
   end
 
+  it "returns invalid_patch when propose payload is a JSON array" do
+    post "/mcp/patch/propose", "[]", "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_patch",
+          "message" => "patch is required"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_patch when propose payload is a JSON scalar" do
+    post "/mcp/patch/propose", "\"text\"", "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_patch",
+          "message" => "patch is required"
+        }
+      }
+    )
+  end
+
   it "returns invalid_path for traversal patch path" do
     patch = <<~PATCH
       --- a/../secret.md
@@ -138,6 +166,34 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
         "error" => {
           "code" => "not_found",
           "message" => "note was not found"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_patch when apply payload is a JSON array" do
+    post "/mcp/patch/apply", "[]", "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_patch",
+          "message" => "patch is required"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_patch when apply payload is a JSON scalar" do
+    post "/mcp/patch/apply", "123", "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_patch",
+          "message" => "patch is required"
         }
       }
     )

@@ -24,9 +24,12 @@ class App < Sinatra::Base
       halt status, { error: { code: code, message: message } }.to_json
     end
 
-    def parsed_json_body
+    def parsed_patch_payload
       request.body.rewind
-      JSON.parse(request.body.read)
+      payload = JSON.parse(request.body.read)
+      render_error(400, "invalid_patch", "patch is required") unless payload.is_a?(Hash)
+
+      payload
     rescue JSON::ParserError
       render_error(400, "invalid_patch", "patch is required")
     end
@@ -57,7 +60,7 @@ class App < Sinatra::Base
   end
 
   post "/mcp/patch/propose" do
-    payload = parsed_json_body
+    payload = parsed_patch_payload
     validator = PatchValidator.new(notes_root: settings.notes_root)
     result = validator.validate(payload["patch"])
     result.slice(:path, :hunk_count, :net_line_delta).to_json
@@ -70,7 +73,7 @@ class App < Sinatra::Base
   end
 
   post "/mcp/patch/apply" do
-    payload = parsed_json_body
+    payload = parsed_patch_payload
     applier = PatchApplier.new(notes_root: settings.notes_root)
     applier.apply(payload["patch"]).to_json
   rescue PatchValidator::InvalidPatchError => e
