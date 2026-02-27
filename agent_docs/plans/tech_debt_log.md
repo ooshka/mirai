@@ -40,3 +40,15 @@
 - Debt paid down next: establish deterministic commit metadata for patch apply so mutation history remains auditable.
 - Debt potentially added: metadata remains encoded in plain commit subjects (not structured trailers/events) for now.
 - Refactor signal: if multiple mutation tools need distinct commit semantics, introduce a shared commit-message policy object instead of endpoint-local string construction.
+
+## 2026-02-27 (indexing foundation planning pass)
+
+### Observed signals
+- Mutation safety and commit auditing are now in place, but there is no indexing/retrieval path yet despite roadmap intent.
+- Current code has no shared chunking/indexing policy, so retrieval work would otherwise start with ad hoc behavior.
+- `app.rb` is still manageable after orchestration hardening, but adding retrieval endpoints without service-first indexing would reintroduce route-level complexity risk.
+
+### Debt posture for next slice
+- Debt paid down next: establish deterministic indexing/chunking contracts in services and request specs before retrieval/provider integration.
+- Debt potentially added: initial indexing may remain synchronous and summary-only (no persistence/query), which is acceptable for this bounded slice.
+- Refactor signal: if indexing capabilities expand (rebuild, incremental update, query, metadata filters), introduce a dedicated indexing policy/builder object to keep endpoint actions thin.
