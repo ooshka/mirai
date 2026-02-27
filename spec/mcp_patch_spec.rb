@@ -2,6 +2,7 @@
 
 require "fileutils"
 require "tmpdir"
+require "open3"
 
 RSpec.describe "MCP patch proposal/apply endpoints" do
   around do |example|
@@ -9,6 +10,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
+      init_git_repo
       App.set :notes_root, notes_root
       example.run
     end
@@ -127,6 +129,8 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     FileUtils.mkdir_p(File.join(@notes_root, "notes"))
     file_path = File.join(@notes_root, "notes/today.md")
     File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
 
     patch = <<~PATCH
       --- a/notes/today.md
@@ -147,6 +151,8 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       }
     )
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
+    expect(git!("log", "--format=%s", "-n", "1", "--", "notes/today.md").strip)
+      .to eq("Apply patch to notes/today.md")
   end
 
   it "returns not_found when apply target is missing" do
@@ -222,5 +228,48 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
         }
       }
     )
+  end
+
+  it "returns git_error when patch apply cannot commit changes" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+    FileUtils.rm_rf(File.join(@notes_root, ".git"))
+
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1,2 @@
+       alpha
+      +beta
+    PATCH
+
+    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(500)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "git_error",
+          "message" => "failed to commit patch"
+        }
+      }
+    )
+    expect(File.read(file_path)).to eq("alpha\nbeta\n")
+  end
+
+  def init_git_repo
+    git!("init")
+    git!("config", "user.email", "agent@example.com")
+    git!("config", "user.name", "Agent")
+  end
+
+  def git!(*args)
+    stdout, stderr, status = Open3.capture3("git", *args, chdir: @notes_root)
+    raise "git command failed: git #{args.join(' ')}\n#{stderr}" unless status.success?
+
+    stdout
   end
 end

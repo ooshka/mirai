@@ -56,3 +56,4 @@ The app also exposes a constrained patch workflow for markdown notes under `NOTE
 - invalid extension: HTTP `400`, code `invalid_extension`
 - missing target file: HTTP `404`, code `not_found`
 - patch conflict: HTTP `409`, code `conflict`
+- git commit failure: HTTP `500`, code `git_error`

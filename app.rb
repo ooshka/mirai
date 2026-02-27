@@ -86,5 +86,7 @@ class App < Sinatra::Base
     render_error(404, "not_found", "note was not found")
   rescue PatchApplier::ConflictError => e
     render_error(409, "conflict", e.message)
+  rescue PatchApplier::CommitError
+    render_error(500, "git_error", "failed to commit patch")
   end
 end

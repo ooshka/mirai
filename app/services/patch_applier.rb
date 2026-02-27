@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 require_relative "patch_validator"
+require_relative "notes_git_committer"
 
 class PatchApplier
   class ConflictError < StandardError; end
+  class CommitError < StandardError; end
 
   def initialize(notes_root:)
     @validator = PatchValidator.new(notes_root: notes_root)
+    @committer = NotesGitCommitter.new(notes_root: notes_root)
   end
 
   def apply(untrusted_patch)
@@ -18,8 +21,14 @@ class PatchApplier
     original = File.read(absolute_path)
     updated = apply_hunks(original, validated_patch[:hunks])
     File.write(absolute_path, updated)
+    @committer.commit_file(
+      path: validated_patch[:path],
+      message: "Apply patch to #{validated_patch[:path]}"
+    )
 
     validated_patch.slice(:path, :hunk_count, :net_line_delta)
+  rescue NotesGitCommitter::CommitError => e
+    raise CommitError, e.message
   end
 
   private
