@@ -12,6 +12,7 @@ require_relative "app/services/mcp/notes_read_action"
 require_relative "app/services/mcp/patch_propose_action"
 require_relative "app/services/mcp/patch_apply_action"
 require_relative "app/services/mcp/index_rebuild_action"
+require_relative "app/services/mcp/index_query_action"
 
 class App < Sinatra::Base
   set :bind, "0.0.0.0"
@@ -87,6 +88,14 @@ class App < Sinatra::Base
   post "/mcp/index/rebuild" do
     with_mcp_error_handling do
       Mcp::IndexRebuildAction.new(notes_root: settings.notes_root).call.to_json
+    end
+  end
+
+  get "/mcp/index/query" do
+    with_mcp_error_handling do
+      Mcp::IndexQueryAction.new(notes_root: settings.notes_root)
+        .call(query: params["q"], limit: params["limit"])
+        .to_json
     end
   end
 end

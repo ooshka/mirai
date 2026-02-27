@@ -51,6 +51,22 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps invalid query errors" do
+    error = Mcp::IndexQueryAction::InvalidQueryError.new("query is required")
+
+    expect(described_class.map(error)).to eq(
+      {status: 400, code: "invalid_query", message: "query is required"}
+    )
+  end
+
+  it "maps invalid limit errors" do
+    error = Mcp::IndexQueryAction::InvalidLimitError.new("limit must be an integer")
+
+    expect(described_class.map(error)).to eq(
+      {status: 400, code: "invalid_limit", message: "limit must be an integer"}
+    )
+  end
+
   it "returns nil for unknown errors" do
     expect(described_class.map(StandardError.new("no mapping"))).to be_nil
   end

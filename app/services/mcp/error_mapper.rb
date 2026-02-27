@@ -3,6 +3,7 @@
 require_relative "../safe_notes_path"
 require_relative "../patch_validator"
 require_relative "../patch_applier"
+require_relative "index_query_action"
 
 module Mcp
   class ErrorMapper
@@ -20,6 +21,10 @@ module Mcp
         {status: 409, code: "conflict", message: error.message}
       when PatchApplier::CommitError
         {status: 500, code: "git_error", message: "failed to commit patch"}
+      when Mcp::IndexQueryAction::InvalidQueryError
+        {status: 400, code: "invalid_query", message: error.message}
+      when Mcp::IndexQueryAction::InvalidLimitError
+        {status: 400, code: "invalid_limit", message: error.message}
       end
     end
   end
