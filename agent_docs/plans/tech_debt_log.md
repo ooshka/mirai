@@ -52,3 +52,15 @@
 - Debt paid down next: establish deterministic indexing/chunking contracts in services and request specs before retrieval/provider integration.
 - Debt potentially added: initial indexing may remain synchronous and summary-only (no persistence/query), which is acceptable for this bounded slice.
 - Refactor signal: if indexing capabilities expand (rebuild, incremental update, query, metadata filters), introduce a dedicated indexing policy/builder object to keep endpoint actions thin.
+
+## 2026-02-27 (retrieval contract planning pass)
+
+### Observed signals
+- Deterministic indexing exists, but there is still no retrieval query endpoint for runtime-agent consumption.
+- `NotesIndexer` currently materializes full chunk content for counting; this is acceptable now but may become costly once query traffic increases.
+- API surface is growing (`notes`, `patch`, `index rebuild`), so retrieval should continue the service-first endpoint pattern to avoid route-level complexity drift.
+
+### Debt posture for next slice
+- Debt paid down next: establish deterministic retrieval API and ranking contract before embedding/vector provider decisions.
+- Debt potentially added: lexical scoring quality will be limited compared with semantic retrieval, but this isolates contract risk while keeping implementation local.
+- Refactor signal: if retrieval ranking heuristics expand, introduce a scoring strategy seam to avoid a monolithic retriever implementation.
