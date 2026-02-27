@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-- `agent_docs/cases/CASE_patch_proposal_validation_apply.md`
+- `agent_docs/cases/CASE_mcp_route_orchestration_hardening.md`
 
 ## Sprint Goal
-Ship a constrained mutation safety slice for runtime-agent note edits:
-- patch proposal validation for unified diffs targeting notes
-- controlled patch apply endpoint limited to safe `.md` targets under `NOTES_ROOT`
-- test-backed error contracts for invalid patch/path/conflict cases
+Stabilize endpoint architecture before adding new MCP capabilities:
+- extract MCP route orchestration from `app.rb` into focused units
+- centralize exception-to-error mapping for consistent API contracts
+- preserve current read/patch endpoint behavior with test-backed parity

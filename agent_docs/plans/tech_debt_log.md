@@ -23,3 +23,8 @@
 - Debt paid down: introduces explicit patch validation/apply services and test-backed mutation error contracts.
 - Debt potentially added: initial patch grammar will likely be intentionally narrow (single-file markdown diffs).
 - Refactor signal: if endpoint count or service wiring keeps growing, extract route orchestration from `app.rb` into focused endpoint modules.
+
+### Planner follow-up (next slice)
+- Debt paid down next: reduce route-layer duplication by extracting MCP endpoint orchestration and shared error mapping from `app.rb`.
+- Debt potentially added: temporary adapter/wrapper objects may introduce a thin indirection layer before broader modular route structure is established.
+- Refactor signal: if additional MCP tools are introduced after this slice, move Sinatra route wiring into separate route files/modules to avoid a second controller-style bottleneck.
