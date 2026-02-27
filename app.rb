@@ -6,11 +6,16 @@ require_relative "app/services/notes_reader"
 require_relative "app/services/safe_notes_path"
 require_relative "app/services/patch_validator"
 require_relative "app/services/patch_applier"
+require_relative "app/services/mcp/error_mapper"
+require_relative "app/services/mcp/notes_list_action"
+require_relative "app/services/mcp/notes_read_action"
+require_relative "app/services/mcp/patch_propose_action"
+require_relative "app/services/mcp/patch_apply_action"
 
 class App < Sinatra::Base
   set :bind, "0.0.0.0"
   set :port, (ENV["PORT"] || "4567").to_i
-  
+
   configure do
     set :notes_root, ENV.fetch("NOTES_ROOT", "/notes")
   end
@@ -21,7 +26,7 @@ class App < Sinatra::Base
 
   helpers do
     def render_error(status, code, message)
-      halt status, { error: { code: code, message: message } }.to_json
+      halt status, {error: {code: code, message: message}}.to_json
     end
 
     def parsed_patch_payload
@@ -33,60 +38,48 @@ class App < Sinatra::Base
     rescue JSON::ParserError
       render_error(400, "invalid_patch", "patch is required")
     end
+
+    def with_mcp_error_handling
+      yield
+    rescue => e
+      mapped = Mcp::ErrorMapper.map(e)
+      raise unless mapped
+
+      render_error(mapped[:status], mapped[:code], mapped[:message])
+    end
   end
 
   get "/health" do
-    { ok: true }.to_json
+    {ok: true}.to_json
   end
 
   get "/config" do
-    { notes_root: settings.notes_root }.to_json
+    {notes_root: settings.notes_root}.to_json
   end
 
   get "/mcp/notes" do
-    reader = NotesReader.new(notes_root: settings.notes_root)
-    { notes: reader.list_notes }.to_json
+    with_mcp_error_handling do
+      Mcp::NotesListAction.new(notes_root: settings.notes_root).call.to_json
+    end
   end
 
   get "/mcp/notes/read" do
-    reader = NotesReader.new(notes_root: settings.notes_root)
-    { path: params["path"], content: reader.read_note(params["path"]) }.to_json
-  rescue SafeNotesPath::InvalidPathError => e
-    render_error(400, "invalid_path", e.message)
-  rescue SafeNotesPath::InvalidExtensionError => e
-    render_error(400, "invalid_extension", e.message)
-  rescue Errno::ENOENT
-    render_error(404, "not_found", "note was not found")
+    with_mcp_error_handling do
+      Mcp::NotesReadAction.new(notes_root: settings.notes_root).call(path: params["path"]).to_json
+    end
   end
 
   post "/mcp/patch/propose" do
     payload = parsed_patch_payload
-    validator = PatchValidator.new(notes_root: settings.notes_root)
-    result = validator.validate(payload["patch"])
-    result.slice(:path, :hunk_count, :net_line_delta).to_json
-  rescue PatchValidator::InvalidPatchError => e
-    render_error(400, "invalid_patch", e.message)
-  rescue SafeNotesPath::InvalidPathError => e
-    render_error(400, "invalid_path", e.message)
-  rescue SafeNotesPath::InvalidExtensionError => e
-    render_error(400, "invalid_extension", e.message)
+    with_mcp_error_handling do
+      Mcp::PatchProposeAction.new(notes_root: settings.notes_root).call(patch: payload["patch"]).to_json
+    end
   end
 
   post "/mcp/patch/apply" do
     payload = parsed_patch_payload
-    applier = PatchApplier.new(notes_root: settings.notes_root)
-    applier.apply(payload["patch"]).to_json
-  rescue PatchValidator::InvalidPatchError => e
-    render_error(400, "invalid_patch", e.message)
-  rescue SafeNotesPath::InvalidPathError => e
-    render_error(400, "invalid_path", e.message)
-  rescue SafeNotesPath::InvalidExtensionError => e
-    render_error(400, "invalid_extension", e.message)
-  rescue Errno::ENOENT
-    render_error(404, "not_found", "note was not found")
-  rescue PatchApplier::ConflictError => e
-    render_error(409, "conflict", e.message)
-  rescue PatchApplier::CommitError
-    render_error(500, "git_error", "failed to commit patch")
+    with_mcp_error_handling do
+      Mcp::PatchApplyAction.new(notes_root: settings.notes_root).call(patch: payload["patch"]).to_json
+    end
   end
 end
