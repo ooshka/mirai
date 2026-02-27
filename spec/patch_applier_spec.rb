@@ -91,7 +91,7 @@ RSpec.describe PatchApplier do
 
     expect { applier.apply(patch) }
       .to raise_error(PatchApplier::CommitError)
-    expect(File.read(file_path)).to eq("alpha\nbeta\n")
+    expect(File.read(file_path)).to eq("alpha\n")
   end
 
   def init_git_repo

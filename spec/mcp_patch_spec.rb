@@ -257,7 +257,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
         }
       }
     )
-    expect(File.read(file_path)).to eq("alpha\nbeta\n")
+    expect(File.read(file_path)).to eq("alpha\n")
   end
 
   def init_git_repo

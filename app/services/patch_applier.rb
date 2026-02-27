@@ -28,6 +28,7 @@ class PatchApplier
 
     validated_patch.slice(:path, :hunk_count, :net_line_delta)
   rescue NotesGitCommitter::CommitError => e
+    File.write(absolute_path, original) if defined?(absolute_path) && defined?(original)
     raise CommitError, e.message
   end
 
