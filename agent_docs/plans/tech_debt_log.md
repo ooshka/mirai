@@ -28,3 +28,15 @@
 - Debt paid down next: reduce route-layer duplication by extracting MCP endpoint orchestration and shared error mapping from `app.rb`.
 - Debt potentially added: temporary adapter/wrapper objects may introduce a thin indirection layer before broader modular route structure is established.
 - Refactor signal: if additional MCP tools are introduced after this slice, move Sinatra route wiring into separate route files/modules to avoid a second controller-style bottleneck.
+
+## 2026-02-27 (post-orchestration planning pass)
+
+### Observed signals
+- Patch apply currently commits with a generic subject line that omits explicit MCP operation context.
+- As mutation capabilities expand, commit history readability and incident debugging will depend on stable, descriptive metadata.
+- Commit message formatting appears flow-local; without a small policy seam, future tool-specific subjects are likely to drift.
+
+### Debt posture for next slice
+- Debt paid down next: establish deterministic commit metadata for patch apply so mutation history remains auditable.
+- Debt potentially added: metadata remains encoded in plain commit subjects (not structured trailers/events) for now.
+- Refactor signal: if multiple mutation tools need distinct commit semantics, introduce a shared commit-message policy object instead of endpoint-local string construction.
