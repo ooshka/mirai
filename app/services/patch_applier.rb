@@ -6,6 +6,7 @@ require_relative "notes_git_committer"
 class PatchApplier
   class ConflictError < StandardError; end
   class CommitError < StandardError; end
+  COMMIT_MESSAGE_PREFIX = "mcp.patch_apply"
 
   def initialize(notes_root:)
     @validator = PatchValidator.new(notes_root: notes_root)
@@ -23,7 +24,7 @@ class PatchApplier
     File.write(absolute_path, updated)
     @committer.commit_file(
       path: validated_patch[:path],
-      message: "Apply patch to #{validated_patch[:path]}"
+      message: commit_message_for(validated_patch[:path])
     )
 
     validated_patch.slice(:path, :hunk_count, :net_line_delta)
@@ -33,6 +34,10 @@ class PatchApplier
   end
 
   private
+
+  def commit_message_for(path)
+    "#{COMMIT_MESSAGE_PREFIX}: #{path}"
+  end
 
   def apply_hunks(content, hunks)
     lines = content.lines(chomp: true)
