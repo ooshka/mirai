@@ -36,6 +36,23 @@ RSpec.describe "MCP index query endpoint" do
     )
   end
 
+  it "uses default limit when limit is omitted" do
+    %w[a.md b.md c.md d.md e.md f.md].each do |filename|
+      File.write(File.join(@notes_root, filename), "alpha\n")
+    end
+
+    get "/mcp/index/query", q: "alpha"
+
+    expect(last_response.status).to eq(200)
+
+    body = JSON.parse(last_response.body)
+    expect(body["limit"]).to eq(5)
+    expect(body["chunks"].length).to eq(5)
+    expect(body["chunks"].map { |chunk| chunk["path"] }).to eq(
+      %w[a.md b.md c.md d.md e.md]
+    )
+  end
+
   it "returns invalid_query when query is missing" do
     get "/mcp/index/query"
 
