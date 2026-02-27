@@ -4,6 +4,8 @@ require "sinatra/base"
 require "json"
 require_relative "app/services/notes_reader"
 require_relative "app/services/safe_notes_path"
+require_relative "app/services/patch_validator"
+require_relative "app/services/patch_applier"
 
 class App < Sinatra::Base
   set :bind, "0.0.0.0"
@@ -20,6 +22,13 @@ class App < Sinatra::Base
   helpers do
     def render_error(status, code, message)
       halt status, { error: { code: code, message: message } }.to_json
+    end
+
+    def parsed_json_body
+      request.body.rewind
+      JSON.parse(request.body.read)
+    rescue JSON::ParserError
+      render_error(400, "invalid_patch", "patch is required")
     end
   end
 
@@ -45,5 +54,34 @@ class App < Sinatra::Base
     render_error(400, "invalid_extension", e.message)
   rescue Errno::ENOENT
     render_error(404, "not_found", "note was not found")
+  end
+
+  post "/mcp/patch/propose" do
+    payload = parsed_json_body
+    validator = PatchValidator.new(notes_root: settings.notes_root)
+    result = validator.validate(payload["patch"])
+    result.slice(:path, :hunk_count, :net_line_delta).to_json
+  rescue PatchValidator::InvalidPatchError => e
+    render_error(400, "invalid_patch", e.message)
+  rescue SafeNotesPath::InvalidPathError => e
+    render_error(400, "invalid_path", e.message)
+  rescue SafeNotesPath::InvalidExtensionError => e
+    render_error(400, "invalid_extension", e.message)
+  end
+
+  post "/mcp/patch/apply" do
+    payload = parsed_json_body
+    applier = PatchApplier.new(notes_root: settings.notes_root)
+    applier.apply(payload["patch"]).to_json
+  rescue PatchValidator::InvalidPatchError => e
+    render_error(400, "invalid_patch", e.message)
+  rescue SafeNotesPath::InvalidPathError => e
+    render_error(400, "invalid_path", e.message)
+  rescue SafeNotesPath::InvalidExtensionError => e
+    render_error(400, "invalid_extension", e.message)
+  rescue Errno::ENOENT
+    render_error(404, "not_found", "note was not found")
+  rescue PatchApplier::ConflictError => e
+    render_error(409, "conflict", e.message)
   end
 end
