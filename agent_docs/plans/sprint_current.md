@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-- `agent_docs/cases/CASE_patch_policy_hardening_edge_diffs.md`
+No active case.
 
 ## Sprint Goal
 Harden patch mutation contracts for edge-case unified diffs:
