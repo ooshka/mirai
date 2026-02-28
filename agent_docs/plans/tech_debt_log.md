@@ -88,3 +88,15 @@
 - Debt paid down next: codify deterministic accept/reject contracts for edge-case diff lines and keep endpoint error mapping stable.
 - Debt potentially added: patch grammar remains intentionally partial (single-file modifications only), deferring broader git diff compatibility.
 - Refactor signal: if patch syntax support continues to expand, split parsing into a dedicated patch parser object to reduce validator complexity growth.
+
+## 2026-02-28 (retrieval scoring seam planning pass)
+
+### Observed signals
+- `NotesRetriever` currently owns tokenization, scoring policy, sorting, and index-source selection in one class.
+- Lexical scoring behavior is currently simple and deterministic, but upcoming semantic retrieval work will likely require policy swaps.
+- Without a scoring seam, adding alternate ranking logic risks growing conditional complexity and weakly isolated tests.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a small scoring strategy boundary to preserve deterministic query behavior while reducing retriever coupling.
+- Debt potentially added: initial strategy interface may be minimal and focused on current lexical needs only.
+- Refactor signal: if retrieval policy variants multiply (hybrid, boosting, metadata-aware), promote strategy selection into an explicit policy/config object.

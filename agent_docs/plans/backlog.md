@@ -2,14 +2,14 @@
 
 ## Next 3 Candidate Slices
 
-1. Patch Policy Hardening (edge-case diffs) (selected)
-- Value: hardens runtime mutation safety by making unified-diff edge behavior explicit and test-backed.
+1. Retrieval Scoring Strategy Seam (selected)
+- Value: isolates ranking policy behind a small boundary so retrieval evolution (semantic scoring later) does not bloat `NotesRetriever`.
 - Size: ~0.5-1 day.
 
-2. Retrieval Scoring Strategy Seam
-- Value: isolates ranking policy before semantic retrieval work to prevent monolithic retriever complexity.
-- Size: ~0.5-1 day.
-
-3. Index Lifecycle Controls (manual invalidate + status)
+2. Index Lifecycle Controls (manual invalidate + status)
 - Value: reduces stale-artifact ambiguity by making index freshness and operator controls explicit.
+- Size: ~0.5-1 day.
+
+3. Patch Parser Extraction (if grammar expansion continues)
+- Value: contains diff-format complexity by separating syntax parsing from policy validation before parser growth becomes fragile.
 - Size: ~0.5-1 day.

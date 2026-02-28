@@ -25,20 +25,20 @@
 
 ## Current Focus (Next Slice)
 
-6. Patch policy hardening (edge-case diffs)
-- Expand malformed/complex diff coverage in validator/apply surfaces
-- Keep deterministic error contracts for unsupported patch shapes
-- Reduce mutation regression risk before adding broader patch capabilities
+6. Retrieval scoring strategy seam
+- Extract lexical ranking into a small scorer policy boundary
+- Keep current query contract and deterministic tie-break ordering stable
+- De-risk semantic retrieval integration by reducing retriever coupling
 
 ## Near-Term Follow-ons
 
-7. Retrieval scoring strategy seam
-- Isolate lexical scoring policy behind a small strategy boundary
-- Reduce churn risk before introducing semantic retrieval providers
-
-8. Index lifecycle + stale-state controls
+7. Index lifecycle + stale-state controls
 - Expose explicit index freshness/status semantics for operators
 - Add bounded controls (for example invalidate/rebuild orchestration) before async scaling work
+
+8. Patch parser boundary extraction (conditional)
+- If diff grammar support expands, split parsing from validation policy
+- Prevent validator complexity drift as patch surface area grows
 
 ## Later (After Contracts Stabilize)
 
