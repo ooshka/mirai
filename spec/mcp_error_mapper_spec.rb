@@ -67,6 +67,14 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps invalid index artifact errors" do
+    error = IndexStore::InvalidArtifactError.new("index artifact is invalid")
+
+    expect(described_class.map(error)).to eq(
+      {status: 500, code: "invalid_index_artifact", message: "index artifact is invalid"}
+    )
+  end
+
   it "returns nil for unknown errors" do
     expect(described_class.map(StandardError.new("no mapping"))).to be_nil
   end

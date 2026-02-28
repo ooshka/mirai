@@ -53,6 +53,37 @@ RSpec.describe "MCP index query endpoint" do
     )
   end
 
+  it "uses persisted artifact chunks when available" do
+    FileUtils.mkdir_p(File.join(@notes_root, ".mirai"))
+    File.write(
+      File.join(@notes_root, ".mirai", "index.json"),
+      JSON.pretty_generate(
+        {
+          "version" => 1,
+          "generated_at" => "2026-02-28T12:00:00Z",
+          "notes_indexed" => 1,
+          "chunks_indexed" => 1,
+          "chunks" => [
+            {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta"}
+          ]
+        }
+      )
+    )
+
+    get "/mcp/index/query", q: "alpha"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 5,
+        "chunks" => [
+          {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta", "score" => 1}
+        ]
+      }
+    )
+  end
+
   it "returns invalid_query when query is missing" do
     get "/mcp/index/query"
 
@@ -104,6 +135,53 @@ RSpec.describe "MCP index query endpoint" do
         "error" => {
           "code" => "invalid_limit",
           "message" => "limit must be between 1 and 50"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_index_artifact when artifact payload is malformed" do
+    FileUtils.mkdir_p(File.join(@notes_root, ".mirai"))
+    File.write(File.join(@notes_root, ".mirai", "index.json"), "{\"version\":1")
+
+    get "/mcp/index/query", q: "alpha"
+
+    expect(last_response.status).to eq(500)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_index_artifact",
+          "message" => "index artifact is invalid"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_index_artifact when artifact version is stale" do
+    FileUtils.mkdir_p(File.join(@notes_root, ".mirai"))
+    File.write(
+      File.join(@notes_root, ".mirai", "index.json"),
+      JSON.pretty_generate(
+        {
+          "version" => 2,
+          "generated_at" => "2026-02-28T12:00:00Z",
+          "notes_indexed" => 1,
+          "chunks_indexed" => 1,
+          "chunks" => [
+            {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta"}
+          ]
+        }
+      )
+    )
+
+    get "/mcp/index/query", q: "alpha"
+
+    expect(last_response.status).to eq(500)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_index_artifact",
+          "message" => "index artifact is invalid"
         }
       }
     )
