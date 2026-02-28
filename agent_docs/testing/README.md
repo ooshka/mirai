@@ -109,9 +109,6 @@ Expected:
 - Runtime/config wiring concerns:
   - Optional smoke check with `docker compose up` + `curl`
 
-## Current Baseline
-
-At time of writing, the repository contains a minimal HTTP health spec:
-- `spec/health_spec.rb`
+## Upkeep
 
 As the codebase grows (path safety, patching, git operations), extend tests in `spec/` and keep this guide updated with any new mandatory verification commands.
