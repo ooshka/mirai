@@ -64,3 +64,15 @@
 - Debt paid down next: establish deterministic retrieval API and ranking contract before embedding/vector provider decisions.
 - Debt potentially added: lexical scoring quality will be limited compared with semantic retrieval, but this isolates contract risk while keeping implementation local.
 - Refactor signal: if retrieval ranking heuristics expand, introduce a scoring strategy seam to avoid a monolithic retriever implementation.
+
+## 2026-02-28 (index artifact persistence planning pass)
+
+### Observed signals
+- Retrieval contract is implemented, but `NotesRetriever` currently triggers fresh indexing per query, causing avoidable repeated full-note scans.
+- No persisted local index artifact exists yet, so query performance and behavior depend on synchronous filesystem traversal each request.
+- Index lifecycle behavior (rebuild vs query reuse) is implicit, increasing risk of ad hoc caching logic in route/action layers.
+
+### Debt posture for next slice
+- Debt paid down next: establish a deterministic local index artifact contract and retrieval-path reuse boundary.
+- Debt potentially added: artifact invalidation remains manual (rebuild-driven) until explicit lifecycle controls are introduced.
+- Refactor signal: if lifecycle actions grow (rebuild/load/invalidate/metrics), extract an index lifecycle orchestrator to prevent service/action sprawl.

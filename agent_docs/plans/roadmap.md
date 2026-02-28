@@ -18,31 +18,36 @@
 - `POST /mcp/index/rebuild` summary contract (`notes_indexed`, `chunks_indexed`)
 - Local deterministic note chunking service layer
 
-## In Progress (Next Slice)
-
 5. Retrieval query contract (non-embedding baseline)
-- Add deterministic MCP query endpoint over local chunk data
-- Include explicit query/limit validation and bounded results
-- Use simple lexical scoring + stable tie-break ordering
+- Deterministic `GET /mcp/index/query` endpoint over local chunk data
+- Explicit query/limit validation with bounded result contract
+- Simple lexical scoring + stable tie-break ordering
 
-## Near-Term Follow-ons
+## Current Focus (Next Slice)
 
 6. Local index artifact persistence contract
-- Define how rebuilt index/chunks are stored locally (no external vector DB yet)
-- Reduce repeated full-note scans for query paths
+- Persist deterministic rebuild output to a local artifact under `NOTES_ROOT`
+- Reuse persisted chunks in query paths to avoid repeated full-note scans
+- Keep retrieval contract stable while persistence/storage internals evolve
+
+## Near-Term Follow-ons
 
 7. Patch policy hardening (edge-case diffs)
 - Expand malformed/complex diff coverage
 - Tighten deterministic conflict/error contracts
 
+8. Retrieval scoring strategy seam
+- Isolate lexical scoring policy behind a small strategy boundary
+- Reduce churn risk before introducing semantic retrieval providers
+
 ## Later (After Contracts Stabilize)
 
-8. Semantic retrieval integration
+9. Semantic retrieval integration
 - Add provider abstraction for embeddings
 - Introduce vector-store adapter boundary (swap-friendly by design)
 - Keep MCP retrieval contract stable while changing retrieval internals
 
-9. Index lifecycle + scale controls
+10. Index lifecycle + scale controls
 - Incremental indexing triggers
 - Optional async rebuild path if note volume grows
 - Retrieval quality/performance tuning after semantic baseline is live
