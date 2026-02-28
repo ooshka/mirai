@@ -99,4 +99,50 @@ RSpec.describe PatchValidator do
     expect { validator.validate(patch) }
       .to raise_error(PatchValidator::InvalidPatchError, "unsupported hunk line prefix")
   end
+
+  it "accepts no-newline marker metadata lines" do
+    patch = <<~'PATCH'
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1 @@
+      -alpha
+      \ No newline at end of file
+      +beta
+      \ No newline at end of file
+    PATCH
+
+    result = validator.validate(patch)
+
+    expect(result[:path]).to eq("notes/today.md")
+    expect(result[:hunk_count]).to eq(1)
+    expect(result[:net_line_delta]).to eq(0)
+    expect(result[:hunks]).to eq(
+      [
+        {
+          old_start: 1,
+          old_count: 1,
+          new_start: 1,
+          new_count: 1,
+          lines: [
+            {op: "-", text: "alpha"},
+            {op: "+", text: "beta"}
+          ]
+        }
+      ]
+    )
+  end
+
+  it "rejects unknown hunk metadata lines" do
+    patch = <<~'PATCH'
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1 @@
+      -alpha
+      \ unsupported metadata
+      +beta
+    PATCH
+
+    expect { validator.validate(patch) }
+      .to raise_error(PatchValidator::InvalidPatchError, "unsupported hunk metadata line")
+  end
 end
