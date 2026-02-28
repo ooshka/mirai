@@ -1,59 +1,126 @@
 # mirai
-Personal OS
 
-## Read-only MCP endpoints
+Experimental Sinatra backend for safe, git-backed markdown note operations and deterministic retrieval primitives.
 
-The app exposes a minimal read-only notes API backed by `NOTES_ROOT`.
+## What this service does
+
+- Reads markdown notes from a separate notes repository mounted at `NOTES_ROOT` (default: `/notes`).
+- Applies validated unified-diff patches to notes and commits changes in the notes repo.
+- Builds and queries a deterministic lexical index, persisted as an artifact under `NOTES_ROOT/.mirai/index.json`.
+
+The runtime model is treated as untrusted and can only mutate notes through constrained endpoints.
+
+## Stack
+
+- Ruby + Sinatra
+- RSpec (`rack-test`) for request/service coverage
+- Docker Compose for reproducible local runtime
+
+## Local development
+
+Start the app:
+
+```bash
+docker compose up
+```
+
+Run tests:
+
+```bash
+docker compose run --rm dev bundle exec rspec
+```
+
+Default container config:
+
+- `NOTES_ROOT=/notes`
+- `PORT=4567`
+
+## HTTP endpoints
+
+### Health/config
+
+- `GET /health` -> `{ "ok": true }`
+- `GET /config` -> `{ "notes_root": "/notes" }` (value depends on environment)
+
+### Notes read APIs
 
 - `GET /mcp/notes`
-  - Returns all markdown notes under `NOTES_ROOT` as relative paths.
-  - Response shape: `{ "notes": ["path/to/note.md"] }`
+  - Lists markdown files under `NOTES_ROOT`.
+  - Response: `{ "notes": ["path/to/note.md"] }`
 
 - `GET /mcp/notes/read?path=relative/path.md`
-  - Reads one markdown note under `NOTES_ROOT`.
-  - Response shape: `{ "path": "relative/path.md", "content": "..." }`
+  - Reads one markdown note.
+  - Response: `{ "path": "relative/path.md", "content": "..." }`
 
-### Safety constraints
-
-All note reads are validated before touching disk:
-
-- paths are treated as untrusted input
-- absolute paths are rejected
-- traversal outside `NOTES_ROOT` is rejected
-- only `.md` files are allowed
-
-Error responses:
-
-- invalid path: HTTP `400`, code `invalid_path`
-- invalid extension: HTTP `400`, code `invalid_extension`
-- missing file: HTTP `404`, code `not_found`
-
-## MCP patch endpoints
-
-The app also exposes a constrained patch workflow for markdown notes under `NOTES_ROOT`.
+### Patch APIs
 
 - `POST /mcp/patch/propose`
-  - Validates a unified diff payload without writing.
-  - Request JSON: `{ "patch": "..." }`
-  - Response shape: `{ "path": "relative/path.md", "hunk_count": 1, "net_line_delta": 2 }`
+  - Validates a single-file unified diff without writing.
+  - Request: `{ "patch": "..." }`
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1 }`
 
 - `POST /mcp/patch/apply`
-  - Validates and applies the patch to an existing markdown note.
-  - Request JSON: `{ "patch": "..." }`
-  - Response shape: `{ "path": "relative/path.md", "hunk_count": 1, "net_line_delta": 2 }`
+  - Validates, applies patch, and commits note changes in the notes git repo.
+  - Request: `{ "patch": "..." }`
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1 }`
+  - Commit message format: `mcp.patch_apply: <relative-path>`
 
-### Patch constraints
+### Index APIs
 
-- only single-file unified diffs are supported
-- both file headers must target the same path
-- only `.md` files under `NOTES_ROOT` are allowed
-- malformed/unsupported patch shapes are rejected
+- `POST /mcp/index/rebuild`
+  - Rebuilds lexical index from notes and writes artifact to `NOTES_ROOT/.mirai/index.json`.
+  - Response: `{ "notes_indexed": 2, "chunks_indexed": 3 }`
 
-### Patch error responses
+- `GET /mcp/index/query?q=<text>&limit=<n>`
+  - Queries ranked chunks from persisted artifact when present; falls back to on-demand indexing if artifact is missing.
+  - Response: `{ "query": "alpha", "limit": 5, "chunks": [...] }`
+  - Default limit: `5`, max limit: `50`.
 
-- invalid patch shape: HTTP `400`, code `invalid_patch`
-- invalid path: HTTP `400`, code `invalid_path`
-- invalid extension: HTTP `400`, code `invalid_extension`
-- missing target file: HTTP `404`, code `not_found`
-- patch conflict: HTTP `409`, code `conflict`
-- git commit failure: HTTP `500`, code `git_error`
+## Safety and error contracts
+
+Filesystem/path safety:
+
+- Treat all paths as untrusted.
+- Reject absolute paths and traversal outside `NOTES_ROOT`.
+- Only allow `.md` targets.
+
+Patch safety:
+
+- Only single-file unified diffs are supported.
+- Patch apply requires clean hunk context and uses git commit as the durability boundary.
+
+Common error payload shape:
+
+```json
+{
+  "error": {
+    "code": "invalid_path",
+    "message": "path escapes notes root"
+  }
+}
+```
+
+Important error codes:
+
+- `invalid_path` (400)
+- `invalid_extension` (400)
+- `invalid_patch` (400)
+- `invalid_query` (400)
+- `invalid_limit` (400)
+- `not_found` (404)
+- `conflict` (409)
+- `git_error` (500)
+- `invalid_index_artifact` (500)
+
+## Notes artifact format
+
+`NOTES_ROOT/.mirai/index.json`:
+
+- `version` (currently `1`)
+- `generated_at` (ISO8601 UTC timestamp)
+- `notes_indexed`
+- `chunks_indexed`
+- `chunks`: array of `{ path, chunk_index, content }`
+
+Malformed or stale artifact versions are rejected with `invalid_index_artifact`.
+
