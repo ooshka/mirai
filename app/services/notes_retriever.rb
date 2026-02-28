@@ -20,7 +20,7 @@ class NotesRetriever
   end
 
   def query(text:, limit: DEFAULT_LIMIT)
-    query_tokens = tokenize(text).uniq
+    query_tokens = @scorer.tokenize(text).uniq
     return [] if query_tokens.empty?
 
     chunks_for_query.map do |chunk|
@@ -32,10 +32,6 @@ class NotesRetriever
   end
 
   private
-
-  def tokenize(text)
-    text.to_s.downcase.scan(/[a-z0-9]+/)
-  end
 
   def chunks_for_query
     stored_index = @index_store.read

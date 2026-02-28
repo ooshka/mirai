@@ -94,8 +94,9 @@ RSpec.describe NotesRetriever do
     )
   end
 
-  it "uses the injected scorer for ranking" do
+  it "uses the injected scorer and de-duplicates repeated query tokens" do
     scorer = instance_double("LexicalChunkScorer")
+    allow(scorer).to receive(:tokenize).with("alpha alpha").and_return(%w[alpha alpha])
     allow(scorer).to receive(:score).with(query_tokens: ["alpha"], content: "one").and_return(1)
     allow(scorer).to receive(:score).with(query_tokens: ["alpha"], content: "two").and_return(2)
 
@@ -112,7 +113,7 @@ RSpec.describe NotesRetriever do
     )
 
     retriever = described_class.new(notes_root: @notes_root, indexer: indexer, scorer: scorer)
-    result = retriever.query(text: "alpha", limit: 5)
+    result = retriever.query(text: "alpha alpha", limit: 5)
 
     expect(result).to eq(
       [

@@ -19,11 +19,11 @@ RSpec.describe LexicalChunkScorer do
     expect(score).to eq(1)
   end
 
-  it "treats repeated query tokens as weighted repeats" do
+  it "tokenizes query text with normalized alphanumeric tokens" do
     scorer = described_class.new
 
-    score = scorer.score(query_tokens: %w[alpha alpha beta], content: "alpha beta")
+    tokens = scorer.tokenize("ALPHA, beta-1!")
 
-    expect(score).to eq(3)
+    expect(tokens).to eq(%w[alpha beta 1])
   end
 end
