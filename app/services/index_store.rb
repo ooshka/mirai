@@ -25,6 +25,25 @@ class IndexStore
     raise InvalidArtifactError, "index artifact is invalid"
   end
 
+  def status
+    payload = read
+    return {present: false, generated_at: nil, notes_indexed: nil, chunks_indexed: nil} unless payload
+
+    {
+      present: true,
+      generated_at: payload.fetch(:generated_at),
+      notes_indexed: payload.fetch(:notes_indexed),
+      chunks_indexed: payload.fetch(:chunks_indexed)
+    }
+  end
+
+  def delete
+    return false unless File.exist?(artifact_path)
+
+    File.delete(artifact_path)
+    true
+  end
+
   def write(index_data, generated_at: Time.now.utc)
     payload = {
       "version" => ARTIFACT_VERSION,
