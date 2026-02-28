@@ -100,3 +100,15 @@
 - Debt paid down next: introduce a small scoring strategy boundary to preserve deterministic query behavior while reducing retriever coupling.
 - Debt potentially added: initial strategy interface may be minimal and focused on current lexical needs only.
 - Refactor signal: if retrieval policy variants multiply (hybrid, boosting, metadata-aware), promote strategy selection into an explicit policy/config object.
+
+## 2026-02-28 (index lifecycle controls planning pass)
+
+### Observed signals
+- Index artifact persistence now exists, but lifecycle state is implicit and only indirectly observable via rebuild/query side effects.
+- There is no bounded invalidation path, so stale artifact handling depends on manual filesystem intervention outside MCP contracts.
+- As retrieval internals evolve, unclear lifecycle semantics increase risk of ad hoc state handling across routes/services.
+
+### Debt posture for next slice
+- Debt paid down next: add explicit lifecycle boundaries for index status and manual invalidation with deterministic MCP responses.
+- Debt potentially added: lifecycle controls remain manual/synchronous and may not scale operationally without follow-on automation.
+- Refactor signal: if lifecycle operations expand (status, invalidate, rebuild, freshness policy), introduce a dedicated lifecycle coordinator instead of distributing logic across actions/routes.

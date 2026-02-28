@@ -25,29 +25,25 @@
 
 ## Current Focus (Next Slice)
 
-6. Retrieval scoring strategy seam
-- Extract lexical ranking into a small scorer policy boundary
-- Keep current query contract and deterministic tie-break ordering stable
-- De-risk semantic retrieval integration by reducing retriever coupling
+6. Index lifecycle controls (status + invalidate)
+- Expose explicit index status/freshness metadata to MCP consumers
+- Add bounded manual invalidation before rebuild/query workflows
+- Keep current rebuild/query contracts stable while clarifying lifecycle semantics
 
 ## Near-Term Follow-ons
 
-7. Index lifecycle + stale-state controls
-- Expose explicit index freshness/status semantics for operators
-- Add bounded controls (for example invalidate/rebuild orchestration) before async scaling work
-
-8. Patch parser boundary extraction (conditional)
+7. Patch parser boundary extraction (conditional)
 - If diff grammar support expands, split parsing from validation policy
 - Prevent validator complexity drift as patch surface area grows
 
-## Later (After Contracts Stabilize)
-
-9. Semantic retrieval integration
+8. Semantic retrieval integration
 - Add provider abstraction for embeddings
 - Introduce vector-store adapter boundary (swap-friendly by design)
 - Keep MCP retrieval contract stable while changing retrieval internals
 
-10. Index lifecycle + scale controls
+## Later (After Contracts Stabilize)
+
+9. Index lifecycle + scale controls
 - Incremental indexing triggers
 - Optional async rebuild path if note volume grows
 - Retrieval quality/performance tuning after semantic baseline is live

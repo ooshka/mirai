@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+- `CASE_index_lifecycle_controls`
 
 ## Sprint Goal
-Establish a retrieval scoring policy seam before semantic retrieval work:
-- isolate lexical scoring behind a small strategy boundary
-- preserve deterministic MCP `/mcp/index/query` response ordering and limits
-- reduce retriever complexity growth as scoring variants are introduced
+Establish explicit index lifecycle controls before semantic retrieval expansion:
+- expose deterministic index status metadata
+- support safe manual invalidation of persisted index artifacts
+- keep existing rebuild/query contracts stable while making lifecycle state observable
