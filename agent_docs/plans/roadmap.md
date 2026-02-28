@@ -25,20 +25,20 @@
 
 ## Current Focus (Next Slice)
 
-6. Local index artifact persistence contract
-- Persist deterministic rebuild output to a local artifact under `NOTES_ROOT`
-- Reuse persisted chunks in query paths to avoid repeated full-note scans
-- Keep retrieval contract stable while persistence/storage internals evolve
+6. Patch policy hardening (edge-case diffs)
+- Expand malformed/complex diff coverage in validator/apply surfaces
+- Keep deterministic error contracts for unsupported patch shapes
+- Reduce mutation regression risk before adding broader patch capabilities
 
 ## Near-Term Follow-ons
 
-7. Patch policy hardening (edge-case diffs)
-- Expand malformed/complex diff coverage
-- Tighten deterministic conflict/error contracts
-
-8. Retrieval scoring strategy seam
+7. Retrieval scoring strategy seam
 - Isolate lexical scoring policy behind a small strategy boundary
 - Reduce churn risk before introducing semantic retrieval providers
+
+8. Index lifecycle + stale-state controls
+- Expose explicit index freshness/status semantics for operators
+- Add bounded controls (for example invalidate/rebuild orchestration) before async scaling work
 
 ## Later (After Contracts Stabilize)
 

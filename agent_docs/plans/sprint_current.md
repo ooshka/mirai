@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-- `agent_docs/cases/CASE_index_artifact_persistence_contract.md`
+- `agent_docs/cases/CASE_patch_policy_hardening_edge_diffs.md`
 
 ## Sprint Goal
-Persist deterministic index artifacts for query reuse:
-- write local rebuild artifact under `NOTES_ROOT` with stable schema
-- consume persisted chunks in query flow with deterministic fallback behavior
-- preserve current retrieval API contract while reducing recomputation debt
+Harden patch mutation contracts for edge-case unified diffs:
+- define explicit accept/reject behavior for common diff edge markers
+- preserve deterministic MCP error mapping for unsupported shapes
+- reduce mutation-path regressions before expanding patch capabilities

@@ -76,3 +76,15 @@
 - Debt paid down next: establish a deterministic local index artifact contract and retrieval-path reuse boundary.
 - Debt potentially added: artifact invalidation remains manual (rebuild-driven) until explicit lifecycle controls are introduced.
 - Refactor signal: if lifecycle actions grow (rebuild/load/invalidate/metrics), extract an index lifecycle orchestrator to prevent service/action sprawl.
+
+## 2026-02-28 (patch policy hardening planning pass)
+
+### Observed signals
+- Patch mutation contracts are in place, but validator coverage for unified-diff edge markers remains narrow.
+- `PatchValidator` and `PatchApplier` currently rely on tightly coupled line-prefix assumptions that may not hold for all agent-generated diffs.
+- Without explicit edge-case policy tests, small parser tweaks risk silent drift in MCP mutation behavior.
+
+### Debt posture for next slice
+- Debt paid down next: codify deterministic accept/reject contracts for edge-case diff lines and keep endpoint error mapping stable.
+- Debt potentially added: patch grammar remains intentionally partial (single-file modifications only), deferring broader git diff compatibility.
+- Refactor signal: if patch syntax support continues to expand, split parsing into a dedicated patch parser object to reduce validator complexity growth.

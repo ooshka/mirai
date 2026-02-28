@@ -2,14 +2,14 @@
 
 ## Next 3 Candidate Slices
 
-1. Index Artifact Persistence Contract (selected)
-- Value: persists deterministic chunk/index output locally so query paths can avoid repeated full-note scans.
-- Size: ~1 day.
-
-2. Patch Policy Hardening (extended diff edge cases)
-- Value: hardens mutation safety for unusual hunks/context shapes and reduces patch-apply regressions before broadening mutation operations.
+1. Patch Policy Hardening (edge-case diffs) (selected)
+- Value: hardens runtime mutation safety by making unified-diff edge behavior explicit and test-backed.
 - Size: ~0.5-1 day.
 
-3. Retrieval Scoring Strategy Seam
-- Value: prevents monolithic retriever complexity by isolating scoring policy before semantic retrieval integration.
+2. Retrieval Scoring Strategy Seam
+- Value: isolates ranking policy before semantic retrieval work to prevent monolithic retriever complexity.
+- Size: ~0.5-1 day.
+
+3. Index Lifecycle Controls (manual invalidate + status)
+- Value: reduces stale-artifact ambiguity by making index freshness and operator controls explicit.
 - Size: ~0.5-1 day.
