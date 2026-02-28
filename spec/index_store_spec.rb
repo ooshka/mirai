@@ -68,4 +68,26 @@ RSpec.describe IndexStore do
 
     expect { store.read }.to raise_error(described_class::InvalidArtifactError, "index artifact is invalid")
   end
+
+  it "raises invalid artifact error for stale artifact version" do
+    FileUtils.mkdir_p(File.join(@notes_root, ".mirai"))
+    File.write(
+      File.join(@notes_root, ".mirai", "index.json"),
+      JSON.pretty_generate(
+        {
+          "version" => 2,
+          "generated_at" => "2026-02-28T12:00:00Z",
+          "notes_indexed" => 1,
+          "chunks_indexed" => 1,
+          "chunks" => [
+            {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta"}
+          ]
+        }
+      )
+    )
+
+    store = described_class.new(notes_root: @notes_root)
+
+    expect { store.read }.to raise_error(described_class::InvalidArtifactError, "index artifact is invalid")
+  end
 end

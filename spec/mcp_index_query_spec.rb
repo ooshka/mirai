@@ -156,4 +156,34 @@ RSpec.describe "MCP index query endpoint" do
       }
     )
   end
+
+  it "returns invalid_index_artifact when artifact version is stale" do
+    FileUtils.mkdir_p(File.join(@notes_root, ".mirai"))
+    File.write(
+      File.join(@notes_root, ".mirai", "index.json"),
+      JSON.pretty_generate(
+        {
+          "version" => 2,
+          "generated_at" => "2026-02-28T12:00:00Z",
+          "notes_indexed" => 1,
+          "chunks_indexed" => 1,
+          "chunks" => [
+            {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta"}
+          ]
+        }
+      )
+    )
+
+    get "/mcp/index/query", q: "alpha"
+
+    expect(last_response.status).to eq(500)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_index_artifact",
+          "message" => "index artifact is invalid"
+        }
+      }
+    )
+  end
 end
