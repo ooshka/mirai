@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-- `CASE_retrieval_scoring_strategy_seam`
+No active case.
 
 ## Sprint Goal
 Establish a retrieval scoring policy seam before semantic retrieval work:
