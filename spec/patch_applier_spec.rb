@@ -73,6 +73,31 @@ RSpec.describe PatchApplier do
     expect(File.read(file_path)).to eq("current\n")
   end
 
+  it "applies a patch with no-newline marker metadata lines" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    patch = <<~'PATCH'
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1 @@
+      -alpha
+      \ No newline at end of file
+      +beta
+      \ No newline at end of file
+    PATCH
+
+    result = applier.apply(patch)
+
+    expect(result[:path]).to eq("notes/today.md")
+    expect(result[:hunk_count]).to eq(1)
+    expect(result[:net_line_delta]).to eq(0)
+    expect(File.read(file_path)).to eq("beta\n")
+  end
+
   it "raises commit error when git commit cannot run" do
     FileUtils.mkdir_p(File.join(@notes_root, "notes"))
     file_path = File.join(@notes_root, "notes/today.md")

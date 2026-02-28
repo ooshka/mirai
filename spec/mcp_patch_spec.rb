@@ -53,6 +53,52 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     )
   end
 
+  it "proposes a patch with no-newline marker metadata lines" do
+    patch = <<~'PATCH'
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1 @@
+      -hello
+      \ No newline at end of file
+      +world
+      \ No newline at end of file
+    PATCH
+
+    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "path" => "notes/today.md",
+        "hunk_count" => 1,
+        "net_line_delta" => 0
+      }
+    )
+  end
+
+  it "returns invalid_patch for unknown hunk metadata lines" do
+    patch = <<~'PATCH'
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1 @@
+      -hello
+      \ unsupported metadata
+      +world
+    PATCH
+
+    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_patch",
+          "message" => "unsupported hunk metadata line"
+        }
+      }
+    )
+  end
+
   it "returns invalid_patch when propose payload is a JSON array" do
     post "/mcp/patch/propose", "[]", "CONTENT_TYPE" => "application/json"
 
@@ -153,6 +199,36 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
     expect(git!("log", "--format=%s", "-n", "1", "--", "notes/today.md").strip)
       .to eq("mcp.patch_apply: notes/today.md")
+  end
+
+  it "applies a patch with no-newline marker metadata lines" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    patch = <<~'PATCH'
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1 @@
+      -alpha
+      \ No newline at end of file
+      +beta
+      \ No newline at end of file
+    PATCH
+
+    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "path" => "notes/today.md",
+        "hunk_count" => 1,
+        "net_line_delta" => 0
+      }
+    )
+    expect(File.read(file_path)).to eq("beta\n")
   end
 
   it "returns not_found when apply target is missing" do

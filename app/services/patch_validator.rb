@@ -6,6 +6,7 @@ class PatchValidator
   class InvalidPatchError < StandardError; end
 
   HUNK_HEADER = /^@@\s+-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s+@@/
+  NO_NEWLINE_MARKER = "\\ No newline at end of file"
 
   def initialize(notes_root:)
     @safe_path = SafeNotesPath.new(notes_root: notes_root)
@@ -83,6 +84,13 @@ class PatchValidator
       while index < lines.length && !lines[index].start_with?("@@")
         current = lines[index]
         raise InvalidPatchError, "only single-file patches are supported" if current.start_with?("--- ", "+++ ")
+
+        if current == NO_NEWLINE_MARKER
+          index += 1
+          next
+        end
+
+        raise InvalidPatchError, "unsupported hunk metadata line" if current.start_with?("\\")
 
         prefix = current[0]
         raise InvalidPatchError, "unsupported hunk line prefix" unless [" ", "+", "-"].include?(prefix)
