@@ -2,6 +2,7 @@
 
 require "fileutils"
 require "tmpdir"
+require "time"
 
 RSpec.describe "MCP index rebuild endpoint" do
   around do |example|
@@ -30,6 +31,18 @@ RSpec.describe "MCP index rebuild endpoint" do
         "notes_indexed" => 2,
         "chunks_indexed" => 3
       }
+    )
+
+    artifact_path = File.join(@notes_root, ".mirai", "index.json")
+    expect(File.exist?(artifact_path)).to be(true)
+
+    artifact = JSON.parse(File.read(artifact_path))
+    expect(artifact["version"]).to eq(1)
+    expect { Time.iso8601(artifact["generated_at"]) }.not_to raise_error
+    expect(artifact["notes_indexed"]).to eq(2)
+    expect(artifact["chunks_indexed"]).to eq(3)
+    expect(artifact["chunks"].map { |chunk| chunk["path"] }).to eq(
+      ["nested/child.md", "root.md", "root.md"]
     )
   end
 
