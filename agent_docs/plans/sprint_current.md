@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-- `CASE_index_lifecycle_controls`
+No active case.
 
 ## Sprint Goal
 Establish explicit index lifecycle controls before semantic retrieval expansion:
