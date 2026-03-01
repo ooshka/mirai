@@ -112,7 +112,8 @@ RSpec.describe NotesRetriever do
       }
     )
 
-    retriever = described_class.new(notes_root: @notes_root, indexer: indexer, scorer: scorer)
+    provider = LexicalRetrievalProvider.new(scorer: scorer)
+    retriever = described_class.new(notes_root: @notes_root, indexer: indexer, provider: provider)
     result = retriever.query(text: "alpha alpha", limit: 5)
 
     expect(result).to eq(

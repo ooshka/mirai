@@ -13,12 +13,11 @@ class NotesRetriever
     notes_root:,
     indexer: NotesIndexer.new(notes_root: notes_root),
     index_store: IndexStore.new(notes_root: notes_root),
-    provider: nil,
-    scorer: LexicalChunkScorer.new
+    provider: nil
   )
     @indexer = indexer
     @index_store = index_store
-    @provider = provider || LexicalRetrievalProvider.new(scorer: scorer)
+    @provider = provider || LexicalRetrievalProvider.new
   end
 
   def query(text:, limit: DEFAULT_LIMIT)
