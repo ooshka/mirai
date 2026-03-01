@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_index_auto_invalidation_on_patch_apply.md`
+No active case.
 
 ## Sprint Goal
 Eliminate stale index reuse immediately after note mutations:

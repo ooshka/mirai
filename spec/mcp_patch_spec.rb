@@ -201,6 +201,69 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       .to eq("mcp.patch_apply: notes/today.md")
   end
 
+  it "invalidates index artifact after successful apply when artifact exists" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    artifact_path = File.join(@notes_root, ".mirai", "index.json")
+    FileUtils.mkdir_p(File.dirname(artifact_path))
+    File.write(artifact_path, "{\"version\":1}")
+    expect(File.exist?(artifact_path)).to be(true)
+
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1,2 @@
+       alpha
+      +beta
+    PATCH
+
+    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "path" => "notes/today.md",
+        "hunk_count" => 1,
+        "net_line_delta" => 1
+      }
+    )
+    expect(File.exist?(artifact_path)).to be(false)
+  end
+
+  it "remains successful when applying patch and index artifact is missing" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    artifact_path = File.join(@notes_root, ".mirai", "index.json")
+    expect(File.exist?(artifact_path)).to be(false)
+
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1,2 @@
+       alpha
+      +beta
+    PATCH
+
+    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "path" => "notes/today.md",
+        "hunk_count" => 1,
+        "net_line_delta" => 1
+      }
+    )
+  end
+
   it "applies a patch with no-newline marker metadata lines" do
     FileUtils.mkdir_p(File.join(@notes_root, "notes"))
     file_path = File.join(@notes_root, "notes/today.md")
@@ -285,6 +348,11 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     FileUtils.mkdir_p(File.join(@notes_root, "notes"))
     File.write(File.join(@notes_root, "notes/today.md"), "current\n")
 
+    artifact_path = File.join(@notes_root, ".mirai", "index.json")
+    FileUtils.mkdir_p(File.dirname(artifact_path))
+    File.write(artifact_path, "{\"version\":1}")
+    expect(File.exist?(artifact_path)).to be(true)
+
     patch = <<~PATCH
       --- a/notes/today.md
       +++ b/notes/today.md
@@ -304,6 +372,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
         }
       }
     )
+    expect(File.exist?(artifact_path)).to be(true)
   end
 
   it "returns git_error when patch apply cannot commit changes" do
