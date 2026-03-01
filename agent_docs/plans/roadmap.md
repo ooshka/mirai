@@ -25,25 +25,23 @@
 
 ## Current Focus (Next Slice)
 
-6. Index lifecycle + scale controls
-- Introduce bounded lifecycle ergonomics after staleness signaling is in place
-- Keep rebuild/invalidate/query contracts explicit and predictable
-- Prepare for higher note volume without forcing query-time writes
+6. Route wiring module extraction
+- Move Sinatra route definitions out of `app.rb` into explicit route modules
+- Preserve current MCP/health/config contracts while reducing composition complexity
+- Keep service boundaries stable for upcoming runtime-agent and retrieval work
 
 ## Near-Term Follow-ons
 
-7. Local smoke script + test-flow integration
-- Add a reproducible end-to-end smoke workflow for local and future EC2 staging checks
-- Exercise critical MCP contracts (read, patch, index lifecycle, query) through one script
-- Integrate smoke execution guidance into testing docs without changing API contracts
+7. Runtime-agent action policy layer
+- Add explicit allow/deny policy seams for runtime tool actions before autonomy expansion
+- Keep policy enforcement centralized and testable rather than route-local
 
-8. Route composition modularization
-- Reduce `app.rb` endpoint concentration as MCP action set grows
-- Keep route wiring explicit while limiting controller-style bloat
+8. Semantic retrieval runtime integration
+- Wire provider-backed retrieval behind existing query contract
+- Keep lexical fallback path available while semantic path stabilizes
 
 ## Later (After Contracts Stabilize)
 
-9. Semantic retrieval integration (provider-backed)
-- Add concrete embedding provider adapter(s)
-- Introduce vector store persistence/query layer
-- Keep MCP query contract stable while swapping retrieval internals
+9. Retrieval storage and lifecycle hardening
+- Add durable vector/chunk storage lifecycle controls and migration posture
+- Preserve MCP query contract while scaling retrieval internals

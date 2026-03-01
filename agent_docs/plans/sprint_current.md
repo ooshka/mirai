@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_route_wiring_module_extraction.md`
 
 ## Sprint Goal
-Reduce operational risk before EC2 staging:
-- add a repeatable local smoke workflow for critical MCP contracts
-- integrate smoke guidance into the test flow alongside targeted RSpec
-- keep API contracts stable while improving environment-level confidence
+Keep API delivery sustainable as MCP surface grows:
+- reduce route-layer coupling by modularizing Sinatra route wiring
+- preserve existing MCP contracts while changing composition only
+- maintain explicit, testable boundaries between HTTP wiring and service actions

@@ -196,3 +196,15 @@
 - Debt paid down next: add a deterministic local smoke script and test-flow guidance to close operational verification gaps.
 - Debt potentially added: script assertions may initially be coarse-grained and require future helper extraction as coverage grows.
 - Refactor signal: if smoke scenarios expand, split reusable request/assert utilities into `scripts/lib/` to avoid a monolithic script.
+
+## 2026-03-01 (route wiring modularization planning pass)
+
+### Observed signals
+- `app.rb` now holds all route declarations across health, config, notes, patch, and index MCP flows, creating a single high-churn wiring file.
+- Service/action extraction is already present, but route composition remains centralized enough to increase merge conflict risk as endpoints grow.
+- Current tests are contract-strong at the request level, making this a good time for a composition-only refactor with low behavior risk.
+
+### Debt posture for next slice
+- Debt paid down next: reduce route concentration by extracting explicit route modules while preserving existing endpoint contracts.
+- Debt potentially added: helper methods may remain coupled to `App` context until a later helper-boundary cleanup slice.
+- Refactor signal: if helper sharing across route modules becomes noisy, extract one focused shared helper module rather than duplicating route-level logic.
