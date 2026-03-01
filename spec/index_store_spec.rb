@@ -75,6 +75,8 @@ RSpec.describe IndexStore do
 
   it "returns status metadata when artifact exists" do
     store = described_class.new(notes_root: @notes_root)
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    File.utime(Time.utc(2026, 2, 28, 11, 0, 0), Time.utc(2026, 2, 28, 11, 0, 0), File.join(@notes_root, "root.md"))
     store.write(
       {
         notes_indexed: 2,
@@ -89,7 +91,32 @@ RSpec.describe IndexStore do
         present: true,
         generated_at: "2026-02-28T12:00:00Z",
         notes_indexed: 2,
-        chunks_indexed: 3
+        chunks_indexed: 3,
+        stale: false
+      }
+    )
+  end
+
+  it "returns stale true when a note is newer than artifact generated_at" do
+    store = described_class.new(notes_root: @notes_root)
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    File.utime(Time.utc(2026, 2, 28, 13, 0, 0), Time.utc(2026, 2, 28, 13, 0, 0), File.join(@notes_root, "root.md"))
+    store.write(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: [{path: "root.md", chunk_index: 0, content: "alpha"}]
+      },
+      generated_at: Time.utc(2026, 2, 28, 12, 0, 0)
+    )
+
+    expect(store.status).to eq(
+      {
+        present: true,
+        generated_at: "2026-02-28T12:00:00Z",
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        stale: true
       }
     )
   end

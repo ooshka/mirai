@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_index_freshness_status_signal.md`
+No active case.
 
 ## Sprint Goal
 Make index staleness observable before lifecycle automation:
