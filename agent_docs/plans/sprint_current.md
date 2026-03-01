@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_index_freshness_status_signal.md`
 
 ## Sprint Goal
-Eliminate stale index reuse immediately after note mutations:
-- invalidate persisted index artifact on successful patch apply
-- preserve existing `/mcp/patch/apply` response and error contracts
-- ensure failed patch apply paths do not invalidate existing artifacts
+Make index staleness observable before lifecycle automation:
+- add deterministic stale/fresh signal to `/mcp/index/status`
+- preserve existing rebuild/query behavior and error contracts
+- keep lifecycle controls explicit (no query-time rebuild side effects)

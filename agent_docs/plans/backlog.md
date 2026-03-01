@@ -2,8 +2,8 @@
 
 ## Next 3 Candidate Slices
 
-1. Index Auto-Invalidation on Patch Apply (selected)
-- Value: prevents stale retrieval artifacts immediately after successful note mutations.
+1. Index Freshness Status Signal (selected)
+- Value: makes stale vs fresh artifact state explicit without adding query write side effects.
 - Size: ~0.5-1 day.
 
 2. Index Lifecycle + Scale Controls

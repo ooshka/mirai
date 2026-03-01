@@ -25,10 +25,10 @@
 
 ## Current Focus (Next Slice)
 
-6. Index auto-invalidation on patch apply
-- Invalidate persisted index artifact after successful note mutation
-- Preserve existing `/mcp/patch/apply` response contract and error mapping
-- Reduce stale-query risk between mutation and explicit rebuild
+6. Index freshness status signal
+- Expose explicit stale/fresh lifecycle metadata in `/mcp/index/status`
+- Keep lifecycle read-only while improving rebuild decision clarity
+- Preserve existing index error and rebuild/query contracts
 
 ## Near-Term Follow-ons
 

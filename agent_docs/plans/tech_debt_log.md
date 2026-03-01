@@ -148,3 +148,15 @@
 - Debt paid down next: connect successful patch apply to deterministic index invalidation in MCP orchestration.
 - Debt potentially added: invalidation remains a delete-only lifecycle reaction (no automatic rebuild) in this slice.
 - Refactor signal: if more mutation actions are introduced, centralize post-mutation index lifecycle hooks in a shared coordinator.
+
+## 2026-03-01 (index freshness status signal planning pass)
+
+### Observed signals
+- Automatic invalidation on patch apply reduces stale windows, but there is still no explicit freshness signal for operator/tool decision-making.
+- `index/status` currently reports presence and counts only, so clients cannot distinguish fresh artifacts from potentially stale ones after out-of-band note changes.
+- Lifecycle automation decisions (manual rebuild vs defer) remain implicit without a deterministic stale indicator.
+
+### Debt posture for next slice
+- Debt paid down next: add explicit freshness observability to lifecycle status so rebuild decisions are data-driven.
+- Debt potentially added: status freshness checks may require filesystem scans that can become costlier with very large note sets.
+- Refactor signal: if freshness policy complexity grows (thresholds, ignore rules, partial scans), extract dedicated freshness policy logic from `IndexStore`.
