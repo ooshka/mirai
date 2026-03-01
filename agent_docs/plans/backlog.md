@@ -2,12 +2,12 @@
 
 ## Next 3 Candidate Slices
 
-1. Patch Parser Boundary Extraction (selected)
-- Value: reduces patch-mutation fragility by separating diff syntax parsing from safety policy logic.
+1. Semantic Retrieval Provider Seam (selected)
+- Value: prepares provider portability with minimal retrieval internals change and no MCP contract churn.
 - Size: ~0.5-1 day.
 
-2. Semantic Retrieval Provider Seam
-- Value: prepares embedding/vector integration behind provider boundaries without changing MCP query contract.
+2. Index Lifecycle + Scale Controls
+- Value: reduces operational risk by making rebuild/invalidation behavior easier to automate as notes volume grows.
 - Size: ~0.5-1 day.
 
 3. Route Composition Modularization

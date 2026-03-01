@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_semantic_retrieval_provider_seam.md`
 
 ## Sprint Goal
-Establish a parser/validator boundary for patch handling before any grammar growth:
-- extract unified-diff syntax parsing into a dedicated service
-- keep validator as policy owner for safety constraints and path rules
-- preserve existing MCP patch endpoint contracts while reducing validator complexity
+Establish a retrieval provider seam before semantic adapter work:
+- introduce a provider-facing retrieval boundary in service layer
+- keep lexical retrieval as deterministic default implementation
+- preserve `/mcp/index/query` request/response contract unchanged

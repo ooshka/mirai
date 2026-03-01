@@ -25,25 +25,25 @@
 
 ## Current Focus (Next Slice)
 
-6. Patch parser boundary extraction
-- Extract unified-diff syntax parsing from `PatchValidator` into a dedicated parser service
-- Preserve strict single-file markdown mutation policy and existing MCP error contracts
-- Reduce validator complexity before any further patch grammar expansion
+6. Semantic retrieval provider seam
+- Add a provider abstraction boundary for retrieval internals while preserving MCP query contract
+- Keep lexical retrieval as deterministic default behind the seam
+- Prepare for embedding/vector adapters without endpoint-level coupling
 
 ## Near-Term Follow-ons
 
-7. Semantic retrieval integration
-- Add provider abstraction for embeddings
-- Introduce vector-store adapter boundary (swap-friendly by design)
-- Keep MCP retrieval contract stable while changing retrieval internals
-
-8. Index lifecycle + scale controls
+7. Index lifecycle + scale controls
 - Incremental indexing triggers
 - Optional async rebuild path if note volume grows
 - Retrieval quality/performance tuning after semantic baseline is live
 
-## Later (After Contracts Stabilize)
-
-9. Route composition modularization
+8. Route composition modularization
 - Reduce `app.rb` endpoint concentration as MCP action set grows
 - Keep route wiring explicit while limiting controller-style bloat
+
+## Later (After Contracts Stabilize)
+
+9. Semantic retrieval integration (provider-backed)
+- Add concrete embedding provider adapter(s)
+- Introduce vector store persistence/query layer
+- Keep MCP query contract stable while swapping retrieval internals

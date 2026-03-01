@@ -124,3 +124,15 @@
 - Debt paid down next: separate syntax extraction from policy enforcement by introducing a dedicated parser service and keeping validator ownership of safety rules.
 - Debt potentially added: parser remains intentionally narrow (single-file unified diff subset) and may need controlled expansion later.
 - Refactor signal: if supported diff shapes grow beyond current hunk forms, centralize fixture-based parser contract tests to prevent incremental rule drift.
+
+## 2026-03-01 (semantic retrieval provider seam planning pass)
+
+### Observed signals
+- Retrieval query contracts are stable, but ranking internals remain effectively lexical-first and tightly connected to retriever orchestration.
+- The project explicitly targets provider portability, yet retrieval currently has no first-class provider abstraction boundary.
+- Without a seam now, future embedding/vector integration is likely to introduce endpoint-adjacent branching and broader regression risk.
+
+### Debt posture for next slice
+- Debt paid down next: establish a small retrieval-provider boundary so future semantic adapters can be swapped with minimal contract churn.
+- Debt potentially added: initial provider interface may be intentionally narrow and lexical-shaped, requiring expansion once semantic signals are introduced.
+- Refactor signal: if provider selection paths multiply, centralize strategy/policy selection in service layer instead of route/action classes.
