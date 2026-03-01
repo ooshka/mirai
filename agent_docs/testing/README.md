@@ -23,8 +23,8 @@ Relevant files:
 
 ## Environment Assumptions
 
-- The app expects `NOTES_ROOT` to exist at runtime (defaults to `/notes`).
-- In Docker, `NOTES_ROOT=/notes` is already configured.
+- The app expects `NOTES_ROOT` to exist at runtime (application default: `/notes`).
+- In Docker Compose, `NOTES_ROOT=/notes_repo/notes` is configured.
 - In local non-Docker runs, ensure Ruby/Bundler dependencies are installed and set required env vars if tests depend on them.
 - In tightly sandboxed agent environments, Docker commands require command escalation/approval.
 
@@ -35,6 +35,7 @@ When running as an agent in a restricted sandbox, assume `docker compose ...` co
 Approve only the narrow prefixes needed for verification:
 - `docker compose run` (required for test and lint commands)
 - `docker compose up` (optional, only for smoke testing)
+- `docker compose exec` (optional, for canonical smoke execution inside `dev`)
 
 Avoid broad approvals when possible; prefer the smallest prefix that still allows the required checks.
 
@@ -83,7 +84,7 @@ curl -sS http://localhost:4567/config
 
 Expected:
 - `/health` returns JSON with `{"ok":true}`
-- `/config` returns JSON including `notes_root` (typically `"/notes"` in Docker)
+- `/config` returns JSON including `notes_root` (typically `"/notes_repo/notes"` in Docker Compose)
 
 ### Local end-to-end smoke script
 
@@ -91,11 +92,20 @@ Prerequisites:
 - App running locally (for example via `docker compose up`)
 - Notes mount contains at least one markdown file (script uses an existing note and reverts the content change)
 
-Run:
+Canonical Docker run (recommended):
+
+```bash
+docker compose exec -T dev bash -lc 'BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh'
+```
+
+Optional host run:
 
 ```bash
 BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
 ```
+
+Note:
+- `BASE_URL=http://dev:4567` from another container may fail with host-authorization errors (`Host not permitted`) depending on app host checks.
 
 What it covers:
 - Health/config checks

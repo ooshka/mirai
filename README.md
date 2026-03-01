@@ -4,7 +4,7 @@ Experimental Sinatra backend for safe, git-backed markdown note operations and d
 
 ## What this service does
 
-- Reads markdown notes from a separate notes repository mounted at `NOTES_ROOT` (default: `/notes`).
+- Reads markdown notes from a separate notes repository mounted at `NOTES_ROOT` (app default: `/notes`; Docker Compose sets `/notes_repo/notes`).
 - Applies validated unified-diff patches to notes and commits changes in the notes repo.
 - Builds and queries a deterministic lexical index, persisted as an artifact under `NOTES_ROOT/.mirai/index.json`.
 
@@ -30,7 +30,15 @@ Run tests:
 docker compose run --rm dev bundle exec rspec
 ```
 
-Run local smoke workflow (with app running):
+Run local smoke workflow.
+
+Canonical Docker command (with app running via `docker compose up`):
+
+```bash
+docker compose exec -T dev bash -lc 'BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh'
+```
+
+Optional host command:
 
 ```bash
 BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
@@ -38,7 +46,7 @@ BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
 
 Default container config:
 
-- `NOTES_ROOT=/notes`
+- `NOTES_ROOT=/notes_repo/notes`
 - `PORT=4567`
 
 ## HTTP endpoints
