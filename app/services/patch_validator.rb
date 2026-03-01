@@ -28,8 +28,6 @@ class PatchValidator
     }
   rescue PatchParser::ParseError => e
     raise InvalidPatchError, e.message
-  rescue TypeError
-    raise InvalidPatchError, "patch is required"
   end
 
   private
