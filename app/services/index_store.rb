@@ -36,7 +36,9 @@ class IndexStore
         chunks_indexed: nil,
         stale: nil,
         artifact_age_seconds: nil,
-        notes_present: note_paths.length
+        notes_present: note_paths.length,
+        artifact_byte_size: nil,
+        chunks_content_bytes_total: nil
       }
     end
 
@@ -50,7 +52,9 @@ class IndexStore
       chunks_indexed: payload.fetch(:chunks_indexed),
       stale: !latest_note_mtime.nil? && generated_at.to_i < latest_note_mtime.to_i,
       artifact_age_seconds: [now.utc.to_i - generated_at.to_i, 0].max,
-      notes_present: note_paths.length
+      notes_present: note_paths.length,
+      artifact_byte_size: File.size(artifact_path),
+      chunks_content_bytes_total: payload.fetch(:chunks).sum { |chunk| chunk.fetch(:content).bytesize }
     }
   end
 

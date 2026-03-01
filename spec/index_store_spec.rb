@@ -71,7 +71,9 @@ RSpec.describe IndexStore do
         chunks_indexed: nil,
         stale: nil,
         artifact_age_seconds: nil,
-        notes_present: 0
+        notes_present: 0,
+        artifact_byte_size: nil,
+        chunks_content_bytes_total: nil
       }
     )
   end
@@ -88,6 +90,7 @@ RSpec.describe IndexStore do
       },
       generated_at: Time.utc(2026, 2, 28, 12, 0, 0)
     )
+    artifact_path = File.join(@notes_root, ".mirai", "index.json")
 
     expect(store.status(now: Time.utc(2026, 2, 28, 12, 0, 30))).to eq(
       {
@@ -97,7 +100,9 @@ RSpec.describe IndexStore do
         chunks_indexed: 3,
         stale: false,
         artifact_age_seconds: 30,
-        notes_present: 1
+        notes_present: 1,
+        artifact_byte_size: File.size(artifact_path),
+        chunks_content_bytes_total: "alpha".bytesize
       }
     )
   end
@@ -123,7 +128,9 @@ RSpec.describe IndexStore do
         chunks_indexed: 1,
         stale: true,
         artifact_age_seconds: 5,
-        notes_present: 1
+        notes_present: 1,
+        artifact_byte_size: File.size(File.join(@notes_root, ".mirai", "index.json")),
+        chunks_content_bytes_total: "alpha".bytesize
       }
     )
   end
@@ -143,6 +150,8 @@ RSpec.describe IndexStore do
     status = store.status(now: Time.utc(2026, 2, 28, 11, 59, 50))
 
     expect(status[:artifact_age_seconds]).to eq(0)
+    expect(status[:artifact_byte_size]).to be >= 0
+    expect(status[:chunks_content_bytes_total]).to eq("alpha".bytesize)
   end
 
   it "deletes artifact and returns true when artifact exists" do

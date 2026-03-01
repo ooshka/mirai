@@ -99,6 +99,8 @@ Default container config:
     - `stale` (boolean; true when any note mtime is newer than `generated_at`)
     - `artifact_age_seconds` (integer; bounded at zero)
     - `notes_present` (integer count of current markdown files)
+    - `artifact_byte_size` (integer artifact file size in bytes)
+    - `chunks_content_bytes_total` (integer total bytes across indexed chunk `content` fields)
   - Response when artifact is missing:
     - `present: false`
     - `generated_at: null`
@@ -107,6 +109,8 @@ Default container config:
     - `stale: null`
     - `artifact_age_seconds: null`
     - `notes_present` (integer count of current markdown files)
+    - `artifact_byte_size: null`
+    - `chunks_content_bytes_total: null`
 
 - `GET /mcp/index/query?q=<text>&limit=<n>`
   - Queries ranked chunks from persisted artifact when present; falls back to on-demand indexing if artifact is missing.

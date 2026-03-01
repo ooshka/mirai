@@ -84,6 +84,8 @@ RSpec.describe "MCP index endpoints" do
     expect(body["stale"]).to eq(false)
     expect(body["artifact_age_seconds"]).to be >= 0
     expect(body["notes_present"]).to eq(1)
+    expect(body["artifact_byte_size"]).to be >= 0
+    expect(body["chunks_content_bytes_total"]).to be >= 0
   end
 
   it "returns stale status when note mtime is newer than artifact generated_at" do
@@ -103,6 +105,8 @@ RSpec.describe "MCP index endpoints" do
     expect(body["stale"]).to eq(true)
     expect(body["artifact_age_seconds"]).to be >= 0
     expect(body["notes_present"]).to eq(1)
+    expect(body["artifact_byte_size"]).to be >= 0
+    expect(body["chunks_content_bytes_total"]).to be >= 0
   end
 
   it "returns missing index status when artifact does not exist" do
@@ -119,7 +123,9 @@ RSpec.describe "MCP index endpoints" do
         "chunks_indexed" => nil,
         "stale" => nil,
         "artifact_age_seconds" => nil,
-        "notes_present" => 1
+        "notes_present" => 1,
+        "artifact_byte_size" => nil,
+        "chunks_content_bytes_total" => nil
       }
     )
   end
