@@ -25,20 +25,20 @@
 
 ## Current Focus (Next Slice)
 
-6. Runtime-agent action policy layer
-- Add explicit allow/deny policy seams for runtime tool actions before autonomy expansion
-- Keep policy enforcement centralized and testable rather than route-local
-- Preserve existing MCP contracts for currently-allowed actions
+6. Semantic retrieval runtime integration
+- Wire provider-backed retrieval behind existing query contract
+- Keep lexical fallback path available while semantic path stabilizes
+- Preserve current `/mcp/index/query` response contract during integration
 
 ## Near-Term Follow-ons
 
-7. Semantic retrieval runtime integration
-- Wire provider-backed retrieval behind existing query contract
-- Keep lexical fallback path available while semantic path stabilizes
-
-8. Shared route helper boundary cleanup
+7. Shared route helper boundary cleanup
 - If helper coupling grows, extract one explicit helper module consumed by route registration
 - Keep route module composition deterministic and easy to review
+
+8. Runtime-agent policy mode hardening follow-up
+- Add clearer operator-facing policy mode docs/diagnostics and optional startup-time validation surface
+- Keep deny/invalid-mode behavior deterministic across environments
 
 ## Later (After Contracts Stabilize)
 

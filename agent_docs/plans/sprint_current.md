@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_semantic_retrieval_runtime_integration.md`
 
 ## Sprint Goal
-Introduce a centralized runtime-agent action policy seam:
-- allow safe read/status MCP operations while keeping mutation/index-control actions policy-gated
-- keep policy enforcement explicit and service-level testable, not route-scattered
-- preserve existing endpoint contracts for allowed actions and deterministic error contracts for denied actions
+Integrate semantic retrieval behind the existing query contract:
+- preserve current `/mcp/index/query` response shape while adding provider-backed ranking path
+- keep lexical retrieval as deterministic fallback when semantic mode is unavailable
+- maintain provider portability by isolating retrieval-mode selection in service wiring

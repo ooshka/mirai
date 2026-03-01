@@ -220,3 +220,15 @@
 - Debt paid down next: introduce a first-class action policy boundary to prevent route-local permission branching and make autonomy constraints auditable.
 - Debt potentially added: initial policy modes will be coarse-grained and environment-driven before identity-aware controls exist.
 - Refactor signal: if policy modes or action sets grow, separate mode/config parsing from enforcement to keep policy logic small and testable.
+
+## 2026-03-01 (semantic retrieval runtime integration planning pass)
+
+### Observed signals
+- Retrieval endpoint contracts are stable, and `NotesRetriever` already supports provider injection, but runtime wiring is still effectively lexical-first.
+- The provider-portability goal is explicit in architecture docs, yet retrieval mode selection is not first-class at runtime.
+- Without a bounded integration slice now, semantic retrieval adoption risks route-level branching or endpoint contract drift.
+
+### Debt posture for next slice
+- Debt paid down next: establish deterministic runtime provider selection with lexical fallback behind the existing query contract.
+- Debt potentially added: initial semantic adapter may expose a minimal rank contract before richer metadata/scoring controls are added.
+- Refactor signal: if provider choices or fallback policies multiply, extract a dedicated retrieval provider factory/policy object from `NotesRetriever`.
