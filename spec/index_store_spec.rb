@@ -68,7 +68,10 @@ RSpec.describe IndexStore do
         present: false,
         generated_at: nil,
         notes_indexed: nil,
-        chunks_indexed: nil
+        chunks_indexed: nil,
+        stale: nil,
+        artifact_age_seconds: nil,
+        notes_present: 0
       }
     )
   end
@@ -86,13 +89,15 @@ RSpec.describe IndexStore do
       generated_at: Time.utc(2026, 2, 28, 12, 0, 0)
     )
 
-    expect(store.status).to eq(
+    expect(store.status(now: Time.utc(2026, 2, 28, 12, 0, 30))).to eq(
       {
         present: true,
         generated_at: "2026-02-28T12:00:00Z",
         notes_indexed: 2,
         chunks_indexed: 3,
-        stale: false
+        stale: false,
+        artifact_age_seconds: 30,
+        notes_present: 1
       }
     )
   end
@@ -110,15 +115,34 @@ RSpec.describe IndexStore do
       generated_at: Time.utc(2026, 2, 28, 12, 0, 0)
     )
 
-    expect(store.status).to eq(
+    expect(store.status(now: Time.utc(2026, 2, 28, 12, 0, 5))).to eq(
       {
         present: true,
         generated_at: "2026-02-28T12:00:00Z",
         notes_indexed: 1,
         chunks_indexed: 1,
-        stale: true
+        stale: true,
+        artifact_age_seconds: 5,
+        notes_present: 1
       }
     )
+  end
+
+  it "bounds artifact age at zero when generated_at is in the future" do
+    store = described_class.new(notes_root: @notes_root)
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    store.write(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: [{path: "root.md", chunk_index: 0, content: "alpha"}]
+      },
+      generated_at: Time.utc(2026, 2, 28, 12, 0, 0)
+    )
+
+    status = store.status(now: Time.utc(2026, 2, 28, 11, 59, 50))
+
+    expect(status[:artifact_age_seconds]).to eq(0)
   end
 
   it "deletes artifact and returns true when artifact exists" do

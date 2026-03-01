@@ -71,6 +71,25 @@ Default container config:
   - Rebuilds lexical index from notes and writes artifact to `NOTES_ROOT/.mirai/index.json`.
   - Response: `{ "notes_indexed": 2, "chunks_indexed": 3 }`
 
+- `GET /mcp/index/status`
+  - Returns index artifact lifecycle status without rebuilding or writing.
+  - Response when artifact is present:
+    - `present` (boolean)
+    - `generated_at` (ISO8601 UTC timestamp)
+    - `notes_indexed` (integer)
+    - `chunks_indexed` (integer)
+    - `stale` (boolean; true when any note mtime is newer than `generated_at`)
+    - `artifact_age_seconds` (integer; bounded at zero)
+    - `notes_present` (integer count of current markdown files)
+  - Response when artifact is missing:
+    - `present: false`
+    - `generated_at: null`
+    - `notes_indexed: null`
+    - `chunks_indexed: null`
+    - `stale: null`
+    - `artifact_age_seconds: null`
+    - `notes_present` (integer count of current markdown files)
+
 - `GET /mcp/index/query?q=<text>&limit=<n>`
   - Queries ranked chunks from persisted artifact when present; falls back to on-demand indexing if artifact is missing.
   - Response: `{ "query": "alpha", "limit": 5, "chunks": [...] }`
@@ -123,4 +142,3 @@ Important error codes:
 - `chunks`: array of `{ path, chunk_index, content }`
 
 Malformed or stale artifact versions are rejected with `invalid_index_artifact`.
-

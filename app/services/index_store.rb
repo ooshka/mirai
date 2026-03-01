@@ -25,19 +25,32 @@ class IndexStore
     raise InvalidArtifactError, "index artifact is invalid"
   end
 
-  def status
+  def status(now: Time.now.utc)
+    note_paths = markdown_note_paths
     payload = read
-    return {present: false, generated_at: nil, notes_indexed: nil, chunks_indexed: nil} unless payload
+    unless payload
+      return {
+        present: false,
+        generated_at: nil,
+        notes_indexed: nil,
+        chunks_indexed: nil,
+        stale: nil,
+        artifact_age_seconds: nil,
+        notes_present: note_paths.length
+      }
+    end
 
     generated_at = Time.iso8601(payload.fetch(:generated_at))
-    latest_note_mtime = latest_markdown_mtime
+    latest_note_mtime = latest_markdown_mtime(note_paths)
 
     {
       present: true,
       generated_at: payload.fetch(:generated_at),
       notes_indexed: payload.fetch(:notes_indexed),
       chunks_indexed: payload.fetch(:chunks_indexed),
-      stale: !latest_note_mtime.nil? && generated_at.to_i < latest_note_mtime.to_i
+      stale: !latest_note_mtime.nil? && generated_at.to_i < latest_note_mtime.to_i,
+      artifact_age_seconds: [now.utc.to_i - generated_at.to_i, 0].max,
+      notes_present: note_paths.length
     }
   end
 
@@ -124,8 +137,11 @@ class IndexStore
     }
   end
 
-  def latest_markdown_mtime
-    note_paths = Dir.glob(File.join(@notes_root, "**", "*.md")).select { |path| File.file?(path) }
+  def markdown_note_paths
+    Dir.glob(File.join(@notes_root, "**", "*.md")).select { |path| File.file?(path) }
+  end
+
+  def latest_markdown_mtime(note_paths)
     return nil if note_paths.empty?
 
     note_paths.map { |path| File.mtime(path).utc }.max

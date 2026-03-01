@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_index_lifecycle_scale_controls.md`
+No active case.
 
 ## Sprint Goal
 Advance lifecycle operations after freshness signaling:
