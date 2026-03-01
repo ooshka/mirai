@@ -50,6 +50,8 @@ Default container config:
 - `PORT=4567`
 - `MCP_POLICY_MODE=allow_all` (`read_only` denies mutation/index-control actions)
   - Any other mode is rejected with `invalid_policy_mode`.
+- `MCP_RETRIEVAL_MODE=lexical` (`semantic` enables semantic provider path with lexical fallback)
+- `MCP_SEMANTIC_PROVIDER_ENABLED=false` (semantic mode falls back to lexical when unavailable)
 
 ## HTTP endpoints
 
@@ -108,6 +110,9 @@ Default container config:
 
 - `GET /mcp/index/query?q=<text>&limit=<n>`
   - Queries ranked chunks from persisted artifact when present; falls back to on-demand indexing if artifact is missing.
+  - Retrieval mode:
+    - `lexical` (default): lexical ranking provider.
+    - `semantic`: semantic provider adapter path; falls back to lexical ranking if semantic provider is unavailable.
   - Response: `{ "query": "alpha", "limit": 5, "chunks": [...] }`
   - Default limit: `5`, max limit: `50`.
 
