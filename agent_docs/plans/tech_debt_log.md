@@ -232,3 +232,15 @@
 - Debt paid down next: establish deterministic runtime provider selection with lexical fallback behind the existing query contract.
 - Debt potentially added: initial semantic adapter may expose a minimal rank contract before richer metadata/scoring controls are added.
 - Refactor signal: if provider choices or fallback policies multiply, extract a dedicated retrieval provider factory/policy object from `NotesRetriever`.
+
+## 2026-03-01 (retrieval provider factory extraction planning pass)
+
+### Observed signals
+- Semantic retrieval mode is now wired, but `NotesRetriever` owns mode parsing, env handling, provider construction, and query orchestration together.
+- Provider-selection concerns are starting to mix with retrieval behavior, increasing coupling in a central service.
+- The prior refactor signal for a provider factory is now active because additional modes/adapters are expected.
+
+### Debt posture for next slice
+- Debt paid down next: isolate provider selection/config parsing in a dedicated factory and keep retriever focused on query orchestration/fallback.
+- Debt potentially added: factory will initially encode only lexical/semantic selection and may need extension for richer policy rules.
+- Refactor signal: if fallback logic also expands (timeouts, partial results), extract fallback policy from retriever into a dedicated strategy object.

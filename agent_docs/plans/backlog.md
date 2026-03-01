@@ -2,10 +2,10 @@
 
 ## Next 3 Candidate Slices
 
-1. Semantic Retrieval Runtime Integration (selected)
-- Value: upgrades retrieval quality by wiring provider-backed retrieval behind existing `/mcp/index/query` contract.
-- Active case: `agent_docs/cases/CASE_semantic_retrieval_runtime_integration.md`
-- Size: ~1-2 days.
+1. Retrieval Provider Factory Extraction (selected)
+- Value: reduces retriever complexity by centralizing mode/config provider selection after semantic integration.
+- Active case: `agent_docs/cases/CASE_retrieval_provider_factory_extraction.md`
+- Size: ~0.5-1 day.
 
 2. Shared Route Helper Boundary Cleanup
 - Value: prevents helper-scope drift as modular route files grow, without changing endpoint contracts.

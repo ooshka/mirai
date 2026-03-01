@@ -25,10 +25,10 @@
 
 ## Current Focus (Next Slice)
 
-6. Semantic retrieval runtime integration
-- Wire provider-backed retrieval behind existing query contract
-- Keep lexical fallback path available while semantic path stabilizes
-- Preserve current `/mcp/index/query` response contract during integration
+6. Retrieval provider factory extraction
+- Move retrieval mode/config selection out of `NotesRetriever` into a dedicated factory
+- Preserve lexical-default + semantic fallback behavior while reducing retriever complexity
+- Keep `/mcp/index/query` contracts stable during internal wiring cleanup
 
 ## Near-Term Follow-ons
 

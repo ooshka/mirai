@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_retrieval_provider_factory_extraction.md`
 
 ## Sprint Goal
-Integrate semantic retrieval behind the existing query contract:
-- preserve current `/mcp/index/query` response shape while adding provider-backed ranking path
-- keep lexical retrieval as deterministic fallback when semantic mode is unavailable
-- maintain provider portability by isolating retrieval-mode selection in service wiring
+Stabilize retrieval provider wiring after semantic-mode integration:
+- extract mode/config selection from `NotesRetriever` into a dedicated provider factory
+- preserve lexical-default and semantic-fallback behavior with no query contract drift
+- keep retrieval internals ready for additional provider modes without route/action branching
