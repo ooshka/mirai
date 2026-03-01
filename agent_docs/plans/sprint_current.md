@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_local_smoke_script_test_flow_integration.md`
+No active case.
 
 ## Sprint Goal
 Reduce operational risk before EC2 staging:
