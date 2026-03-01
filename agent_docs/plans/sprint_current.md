@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_semantic_retrieval_provider_seam.md`
+No active case.
 
 ## Sprint Goal
 Establish a retrieval provider seam before semantic adapter work:
