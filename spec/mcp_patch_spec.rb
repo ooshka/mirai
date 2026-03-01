@@ -7,15 +7,18 @@ require "open3"
 RSpec.describe "MCP patch proposal/apply endpoints" do
   around do |example|
     original_notes_root = App.settings.notes_root
+    original_mcp_policy_mode = App.settings.mcp_policy_mode
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       init_git_repo
       App.set :notes_root, notes_root
+      App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
+    App.set :mcp_policy_mode, original_mcp_policy_mode
   end
 
   it "proposes a valid patch with summary details" do
@@ -403,6 +406,29 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       }
     )
     expect(File.read(file_path)).to eq("alpha\n")
+  end
+
+  it "returns policy_denied for patch propose in read_only policy mode" do
+    App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1,2 @@
+       hello
+      +world
+    PATCH
+
+    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(403)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "policy_denied",
+          "message" => "action patch.propose is denied in read_only mode"
+        }
+      }
+    )
   end
 
   def init_git_repo

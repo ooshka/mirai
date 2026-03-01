@@ -75,6 +75,33 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps policy denied errors" do
+    error = Mcp::ActionPolicy::DeniedError.new(
+      action: Mcp::ActionPolicy::ACTION_PATCH_APPLY,
+      mode: Mcp::ActionPolicy::MODE_READ_ONLY
+    )
+
+    expect(described_class.map(error)).to eq(
+      {
+        status: 403,
+        code: "policy_denied",
+        message: "action patch.apply is denied in read_only mode"
+      }
+    )
+  end
+
+  it "maps invalid policy mode errors" do
+    error = Mcp::ActionPolicy::InvalidModeError.new("bad_mode")
+
+    expect(described_class.map(error)).to eq(
+      {
+        status: 500,
+        code: "invalid_policy_mode",
+        message: "invalid MCP policy mode: bad_mode"
+      }
+    )
+  end
+
   it "returns nil for unknown errors" do
     expect(described_class.map(StandardError.new("no mapping"))).to be_nil
   end

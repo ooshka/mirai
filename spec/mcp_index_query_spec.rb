@@ -6,14 +6,17 @@ require "tmpdir"
 RSpec.describe "MCP index query endpoint" do
   around do |example|
     original_notes_root = App.settings.notes_root
+    original_mcp_policy_mode = App.settings.mcp_policy_mode
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       App.set :notes_root, notes_root
+      App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
+    App.set :mcp_policy_mode, original_mcp_policy_mode
   end
 
   it "returns ranked chunks for a query with an explicit limit" do
@@ -183,6 +186,24 @@ RSpec.describe "MCP index query endpoint" do
           "code" => "invalid_index_artifact",
           "message" => "index artifact is invalid"
         }
+      }
+    )
+  end
+
+  it "allows index query in read_only policy mode" do
+    App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+
+    get "/mcp/index/query", q: "alpha"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 5,
+        "chunks" => [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha", "score" => 1}
+        ]
       }
     )
   end

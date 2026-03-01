@@ -6,6 +6,7 @@ require_relative "app/services/notes_reader"
 require_relative "app/services/safe_notes_path"
 require_relative "app/services/patch_validator"
 require_relative "app/services/patch_applier"
+require_relative "app/services/mcp/action_policy"
 require_relative "app/services/mcp/error_mapper"
 require_relative "app/services/mcp/notes_list_action"
 require_relative "app/services/mcp/notes_read_action"
@@ -24,6 +25,7 @@ class App < Sinatra::Base
 
   configure do
     set :notes_root, ENV.fetch("NOTES_ROOT", "/notes")
+    set :mcp_policy_mode, ENV.fetch("MCP_POLICY_MODE", Mcp::ActionPolicy::MODE_ALLOW_ALL)
   end
 
   before do
@@ -52,6 +54,14 @@ class App < Sinatra::Base
       raise unless mapped
 
       render_error(mapped[:status], mapped[:code], mapped[:message])
+    end
+
+    def enforce_mcp_action!(action)
+      mcp_action_policy.enforce!(action)
+    end
+
+    def mcp_action_policy
+      @mcp_action_policy ||= Mcp::ActionPolicy.new(mode: settings.mcp_policy_mode)
     end
   end
 
