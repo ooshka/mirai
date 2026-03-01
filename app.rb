@@ -15,6 +15,8 @@ require_relative "app/services/mcp/index_rebuild_action"
 require_relative "app/services/mcp/index_query_action"
 require_relative "app/services/mcp/index_status_action"
 require_relative "app/services/mcp/index_invalidate_action"
+require_relative "app/routes/core_routes"
+require_relative "app/routes/mcp_routes"
 
 class App < Sinatra::Base
   set :bind, "0.0.0.0"
@@ -53,63 +55,6 @@ class App < Sinatra::Base
     end
   end
 
-  get "/health" do
-    {ok: true}.to_json
-  end
-
-  get "/config" do
-    {notes_root: settings.notes_root}.to_json
-  end
-
-  get "/mcp/notes" do
-    with_mcp_error_handling do
-      Mcp::NotesListAction.new(notes_root: settings.notes_root).call.to_json
-    end
-  end
-
-  get "/mcp/notes/read" do
-    with_mcp_error_handling do
-      Mcp::NotesReadAction.new(notes_root: settings.notes_root).call(path: params["path"]).to_json
-    end
-  end
-
-  post "/mcp/patch/propose" do
-    payload = parsed_patch_payload
-    with_mcp_error_handling do
-      Mcp::PatchProposeAction.new(notes_root: settings.notes_root).call(patch: payload["patch"]).to_json
-    end
-  end
-
-  post "/mcp/patch/apply" do
-    payload = parsed_patch_payload
-    with_mcp_error_handling do
-      Mcp::PatchApplyAction.new(notes_root: settings.notes_root).call(patch: payload["patch"]).to_json
-    end
-  end
-
-  post "/mcp/index/rebuild" do
-    with_mcp_error_handling do
-      Mcp::IndexRebuildAction.new(notes_root: settings.notes_root).call.to_json
-    end
-  end
-
-  get "/mcp/index/status" do
-    with_mcp_error_handling do
-      Mcp::IndexStatusAction.new(notes_root: settings.notes_root).call.to_json
-    end
-  end
-
-  post "/mcp/index/invalidate" do
-    with_mcp_error_handling do
-      Mcp::IndexInvalidateAction.new(notes_root: settings.notes_root).call.to_json
-    end
-  end
-
-  get "/mcp/index/query" do
-    with_mcp_error_handling do
-      Mcp::IndexQueryAction.new(notes_root: settings.notes_root)
-        .call(query: params["q"], limit: params["limit"])
-        .to_json
-    end
-  end
+  register Routes::Core
+  register Routes::Mcp
 end
