@@ -122,4 +122,31 @@ RSpec.describe NotesRetriever do
       ]
     )
   end
+
+  it "uses injected provider for ranking" do
+    provider = instance_double("LexicalRetrievalProvider")
+    indexer = instance_double(NotesIndexer)
+    allow(indexer).to receive(:index).and_return(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: [{path: "fallback.md", chunk_index: 0, content: "alpha"}]
+      }
+    )
+    allow(provider).to receive(:rank).and_return(
+      [{path: "fallback.md", chunk_index: 0, content: "alpha", score: 9}]
+    )
+
+    retriever = described_class.new(notes_root: @notes_root, indexer: indexer, provider: provider)
+    result = retriever.query(text: "alpha", limit: 3)
+
+    expect(provider).to have_received(:rank).with(
+      query_text: "alpha",
+      chunks: [{path: "fallback.md", chunk_index: 0, content: "alpha"}],
+      limit: 3
+    )
+    expect(result).to eq(
+      [{path: "fallback.md", chunk_index: 0, content: "alpha", score: 9}]
+    )
+  end
 end

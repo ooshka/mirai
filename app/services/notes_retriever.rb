@@ -3,6 +3,7 @@
 require_relative "notes_indexer"
 require_relative "index_store"
 require_relative "lexical_chunk_scorer"
+require_relative "lexical_retrieval_provider"
 
 class NotesRetriever
   DEFAULT_LIMIT = 5
@@ -12,23 +13,16 @@ class NotesRetriever
     notes_root:,
     indexer: NotesIndexer.new(notes_root: notes_root),
     index_store: IndexStore.new(notes_root: notes_root),
+    provider: nil,
     scorer: LexicalChunkScorer.new
   )
     @indexer = indexer
     @index_store = index_store
-    @scorer = scorer
+    @provider = provider || LexicalRetrievalProvider.new(scorer: scorer)
   end
 
   def query(text:, limit: DEFAULT_LIMIT)
-    query_tokens = @scorer.tokenize(text).uniq
-    return [] if query_tokens.empty?
-
-    chunks_for_query.map do |chunk|
-      score = @scorer.score(query_tokens: query_tokens, content: chunk.fetch(:content, ""))
-      chunk.merge(score: score)
-    end.select { |chunk| chunk[:score].positive? }
-      .sort_by { |chunk| [-chunk[:score], chunk[:path], chunk[:chunk_index]] }
-      .first(limit)
+    @provider.rank(query_text: text, chunks: chunks_for_query, limit: limit)
   end
 
   private
