@@ -38,21 +38,16 @@ RSpec.describe RetrievalProviderFactory do
     )
   end
 
-  it "falls back to lexical mode for unknown mode values" do
+  it "raises on unknown mode values" do
     lexical_provider = instance_double("LexicalRetrievalProvider")
     semantic_provider = instance_double("SemanticRetrievalProvider")
 
-    result = described_class.new(
-      mode: "unknown-mode",
-      lexical_provider: lexical_provider,
-      semantic_provider: semantic_provider
-    ).build
-
-    expect(result).to eq(
-      {
-        primary_provider: lexical_provider,
-        fallback_provider: lexical_provider
-      }
-    )
+    expect do
+      described_class.new(
+        mode: "unknown-mode",
+        lexical_provider: lexical_provider,
+        semantic_provider: semantic_provider
+      ).build
+    end.to raise_error(described_class::InvalidModeError, "invalid MCP retrieval mode: unknown-mode")
   end
 end
