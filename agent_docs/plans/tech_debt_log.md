@@ -256,3 +256,15 @@
 - Debt paid down next: separate helper ownership from app composition by introducing an explicit shared MCP helper module.
 - Debt potentially added: helper module may remain multi-responsibility initially to keep this slice bounded and contract-safe.
 - Refactor signal: if helper complexity continues to grow, split helper module by concern (error rendering, payload parsing, policy enforcement).
+
+## 2026-03-01 (runtime-agent policy mode hardening follow-up planning pass)
+
+### Observed signals
+- The action policy layer is functionally in place, but policy mode validity still primarily surfaces during request execution.
+- Operator visibility is limited because `/config` does not currently expose policy mode diagnostics.
+- Environment-driven control surfaces are growing (`MCP_POLICY_MODE`, retrieval mode flags), increasing the cost of late configuration failure.
+
+### Debt posture for next slice
+- Debt paid down next: centralize policy mode normalization/metadata and use it for both startup validation and runtime enforcement wiring.
+- Debt potentially added: another small config boundary object must remain synchronized with policy constants.
+- Refactor signal: if additional runtime mode/env parsing keeps expanding, introduce a single typed app-config parser to avoid scattered environment handling.

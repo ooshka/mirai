@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_runtime_agent_policy_mode_hardening_follow_up.md`
 
 ## Sprint Goal
-Reduce route/helper coupling after module extraction:
-- move shared MCP route helpers into one explicit helper module
-- keep `App` as thin composition shell (settings + registration)
-- preserve existing MCP request/error contracts while changing helper ownership only
+Harden policy mode operator ergonomics after action-policy rollout:
+- add one deterministic policy-mode config seam used by both boot-time validation and runtime enforcement
+- surface policy mode diagnostics in `/config` for easier local/staging troubleshooting
+- preserve existing deny and invalid-mode MCP request contracts while tightening startup behavior

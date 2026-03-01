@@ -25,23 +25,22 @@
 
 ## Current Focus (Next Slice)
 
-6. Shared route helper boundary cleanup
-- Move shared MCP helper methods out of `App` into one explicit helper module
-- Keep route module composition deterministic while reducing helper coupling in the app shell
-- Preserve current endpoint and error contracts during helper ownership cleanup
+6. Runtime-agent policy mode hardening follow-up
+- Add operator-facing policy mode diagnostics and startup validation using one deterministic config seam
+- Keep deny and invalid-mode request contracts stable while improving deployment ergonomics
 
 ## Near-Term Follow-ons
 
-7. Runtime-agent policy mode hardening follow-up
-- Add clearer operator-facing policy mode docs/diagnostics and optional startup-time validation surface
-- Keep deny/invalid-mode behavior deterministic across environments
-
-8. Retrieval storage and lifecycle hardening
+7. Retrieval storage and lifecycle hardening
 - Add durable vector/chunk storage lifecycle controls and migration posture
 - Preserve MCP query contract while scaling retrieval internals
+
+8. Runtime-agent policy identity extension seam
+- Prepare a narrow config/policy boundary for future identity-aware controls without introducing auth yet
+- Keep current mode-based enforcement as the only active policy behavior
 
 ## Later (After Contracts Stabilize)
 
-9. Retrieval storage and lifecycle hardening
-- Add durable vector/chunk storage lifecycle controls and migration posture
-- Preserve MCP query contract while scaling retrieval internals
+9. Retrieval fallback policy extraction
+- If semantic/lexical fallback rules expand, extract fallback policy from retriever orchestration
+- Preserve query endpoint contract while reducing service branching complexity
