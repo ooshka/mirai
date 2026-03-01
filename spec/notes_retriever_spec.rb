@@ -171,9 +171,11 @@ RSpec.describe NotesRetriever do
     retriever = described_class.new(
       notes_root: @notes_root,
       indexer: indexer,
-      mode: described_class::MODE_SEMANTIC,
-      semantic_provider: semantic_provider,
-      lexical_provider: lexical_provider
+      provider_factory: RetrievalProviderFactory.new(
+        mode: RetrievalProviderFactory::MODE_SEMANTIC,
+        lexical_provider: lexical_provider,
+        semantic_provider: semantic_provider
+      )
     )
 
     result = retriever.query(text: "alpha", limit: 2)
@@ -210,9 +212,11 @@ RSpec.describe NotesRetriever do
     retriever = described_class.new(
       notes_root: @notes_root,
       indexer: indexer,
-      mode: described_class::MODE_SEMANTIC,
-      semantic_provider: semantic_provider,
-      lexical_provider: lexical_provider
+      provider_factory: RetrievalProviderFactory.new(
+        mode: RetrievalProviderFactory::MODE_SEMANTIC,
+        lexical_provider: lexical_provider,
+        semantic_provider: semantic_provider
+      )
     )
 
     result = retriever.query(text: "alpha", limit: 2)

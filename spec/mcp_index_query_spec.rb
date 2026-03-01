@@ -14,7 +14,7 @@ RSpec.describe "MCP index query endpoint" do
       @notes_root = notes_root
       App.set :notes_root, notes_root
       App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
-      ENV["MCP_RETRIEVAL_MODE"] = NotesRetriever::MODE_LEXICAL
+      ENV["MCP_RETRIEVAL_MODE"] = RetrievalProviderFactory::MODE_LEXICAL
       ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "false"
       example.run
     end
@@ -215,7 +215,7 @@ RSpec.describe "MCP index query endpoint" do
   end
 
   it "preserves query contract when semantic mode is enabled" do
-    ENV["MCP_RETRIEVAL_MODE"] = NotesRetriever::MODE_SEMANTIC
+    ENV["MCP_RETRIEVAL_MODE"] = RetrievalProviderFactory::MODE_SEMANTIC
     ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "true"
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
 
@@ -234,7 +234,7 @@ RSpec.describe "MCP index query endpoint" do
   end
 
   it "falls back to lexical retrieval when semantic provider is unavailable" do
-    ENV["MCP_RETRIEVAL_MODE"] = NotesRetriever::MODE_SEMANTIC
+    ENV["MCP_RETRIEVAL_MODE"] = RetrievalProviderFactory::MODE_SEMANTIC
     ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "false"
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
 
