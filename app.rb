@@ -6,6 +6,7 @@ require_relative "app/services/notes_reader"
 require_relative "app/services/safe_notes_path"
 require_relative "app/services/patch_validator"
 require_relative "app/services/patch_applier"
+require_relative "app/services/runtime_config"
 require_relative "app/services/mcp/action_policy"
 require_relative "app/services/mcp/error_mapper"
 require_relative "app/services/mcp/notes_list_action"
@@ -25,9 +26,11 @@ class App < Sinatra::Base
   set :port, (ENV["PORT"] || "4567").to_i
 
   configure do
-    set :notes_root, ENV.fetch("NOTES_ROOT", "/notes")
-    raw_policy_mode = ENV.fetch("MCP_POLICY_MODE", Mcp::ActionPolicy::MODE_ALLOW_ALL)
-    set :mcp_policy_mode, Mcp::ActionPolicy.normalize_mode(raw_policy_mode)
+    runtime_config = RuntimeConfig.from_env
+    set :notes_root, runtime_config.notes_root
+    set :mcp_policy_mode, runtime_config.mcp_policy_mode
+    set :mcp_retrieval_mode, runtime_config.mcp_retrieval_mode
+    set :mcp_semantic_provider_enabled, runtime_config.mcp_semantic_provider_enabled
   end
 
   before do

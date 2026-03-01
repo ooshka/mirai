@@ -2,10 +2,21 @@
 
 require_relative "lexical_retrieval_provider"
 require_relative "semantic_retrieval_provider"
+require_relative "mcp/retrieval_mode"
 
 class RetrievalProviderFactory
-  MODE_LEXICAL = "lexical"
-  MODE_SEMANTIC = "semantic"
+  MODE_LEXICAL = Mcp::RetrievalMode::MODE_LEXICAL
+  MODE_SEMANTIC = Mcp::RetrievalMode::MODE_SEMANTIC
+  SUPPORTED_MODES = Mcp::RetrievalMode::SUPPORTED_MODES
+  InvalidModeError = Mcp::RetrievalMode::InvalidModeError
+
+  def self.supported_modes
+    Mcp::RetrievalMode.supported_modes
+  end
+
+  def self.normalize_mode!(mode)
+    Mcp::RetrievalMode.normalize_mode!(mode)
+  end
 
   def initialize(
     mode: ENV.fetch("MCP_RETRIEVAL_MODE", MODE_LEXICAL),
@@ -13,7 +24,7 @@ class RetrievalProviderFactory
     lexical_provider: LexicalRetrievalProvider.new,
     semantic_provider: nil
   )
-    @mode = normalize_mode(mode)
+    @mode = self.class.normalize_mode!(mode)
     @semantic_provider_enabled = truthy?(semantic_provider_enabled)
     @lexical_provider = lexical_provider
     @semantic_provider = semantic_provider
@@ -25,21 +36,16 @@ class RetrievalProviderFactory
       lexical_provider: @lexical_provider
     )
 
-    {
-      primary_provider: @mode == MODE_SEMANTIC ? resolved_semantic_provider : @lexical_provider,
-      fallback_provider: @lexical_provider
-    }
+    primary_provider = if @mode == MODE_SEMANTIC
+      resolved_semantic_provider
+    else
+      @lexical_provider
+    end
+
+    {primary_provider: primary_provider, fallback_provider: @lexical_provider}
   end
 
   private
-
-  def normalize_mode(mode)
-    normalized = mode.to_s.strip.downcase
-    return MODE_LEXICAL if normalized.empty?
-    return MODE_SEMANTIC if normalized == MODE_SEMANTIC
-
-    MODE_LEXICAL
-  end
 
   def truthy?(value)
     value.to_s.strip.downcase == "true"

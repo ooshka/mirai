@@ -1,14 +1,26 @@
 # frozen_string_literal: true
 
 require_relative "../notes_retriever"
+require_relative "../retrieval_provider_factory"
 
 module Mcp
   class IndexQueryAction
     class InvalidQueryError < StandardError; end
     class InvalidLimitError < StandardError; end
 
-    def initialize(notes_root:, retriever: NotesRetriever.new(notes_root: notes_root))
-      @retriever = retriever
+    def initialize(
+      notes_root:,
+      retrieval_mode: RetrievalProviderFactory::MODE_LEXICAL,
+      semantic_provider_enabled: false,
+      retriever: nil
+    )
+      @retriever = retriever || NotesRetriever.new(
+        notes_root: notes_root,
+        provider_factory: RetrievalProviderFactory.new(
+          mode: retrieval_mode,
+          semantic_provider_enabled: semantic_provider_enabled
+        )
+      )
     end
 
     def call(query:, limit: nil)

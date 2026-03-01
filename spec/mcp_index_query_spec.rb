@@ -7,22 +7,22 @@ RSpec.describe "MCP index query endpoint" do
   around do |example|
     original_notes_root = App.settings.notes_root
     original_mcp_policy_mode = App.settings.mcp_policy_mode
-    original_retrieval_mode = ENV["MCP_RETRIEVAL_MODE"]
-    original_semantic_enabled = ENV["MCP_SEMANTIC_PROVIDER_ENABLED"]
+    original_mcp_retrieval_mode = App.settings.mcp_retrieval_mode
+    original_semantic_enabled = App.settings.mcp_semantic_provider_enabled
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       App.set :notes_root, notes_root
       App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
-      ENV["MCP_RETRIEVAL_MODE"] = RetrievalProviderFactory::MODE_LEXICAL
-      ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "false"
+      App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_LEXICAL
+      App.set :mcp_semantic_provider_enabled, false
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
     App.set :mcp_policy_mode, original_mcp_policy_mode
-    ENV["MCP_RETRIEVAL_MODE"] = original_retrieval_mode
-    ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = original_semantic_enabled
+    App.set :mcp_retrieval_mode, original_mcp_retrieval_mode
+    App.set :mcp_semantic_provider_enabled, original_semantic_enabled
   end
 
   it "returns ranked chunks for a query with an explicit limit" do
@@ -215,8 +215,8 @@ RSpec.describe "MCP index query endpoint" do
   end
 
   it "preserves query contract when semantic mode is enabled" do
-    ENV["MCP_RETRIEVAL_MODE"] = RetrievalProviderFactory::MODE_SEMANTIC
-    ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "true"
+    App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
+    App.set :mcp_semantic_provider_enabled, true
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
 
     get "/mcp/index/query", q: "alpha", limit: "2"
@@ -234,8 +234,8 @@ RSpec.describe "MCP index query endpoint" do
   end
 
   it "falls back to lexical retrieval when semantic provider is unavailable" do
-    ENV["MCP_RETRIEVAL_MODE"] = RetrievalProviderFactory::MODE_SEMANTIC
-    ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "false"
+    App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
+    App.set :mcp_semantic_provider_enabled, false
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
 
     get "/mcp/index/query", q: "alpha", limit: "2"

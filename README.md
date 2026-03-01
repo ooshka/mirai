@@ -51,6 +51,7 @@ Default container config:
 - `MCP_POLICY_MODE=allow_all` (`read_only` denies mutation/index-control actions)
   - Mode is validated at startup; invalid values fail boot with `invalid MCP policy mode: <value>`.
 - `MCP_RETRIEVAL_MODE=lexical` (`semantic` enables semantic provider path with lexical fallback)
+  - Mode is validated at startup; invalid values fail boot with `invalid MCP retrieval mode: <value>`.
 - `MCP_SEMANTIC_PROVIDER_ENABLED=false` (semantic mode falls back to lexical when unavailable)
 
 ## HTTP endpoints
@@ -58,7 +59,7 @@ Default container config:
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"] }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"] }` (values depend on environment)
 
 ### Notes read APIs
 

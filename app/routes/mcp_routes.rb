@@ -57,7 +57,11 @@ module Routes
       app.get "/mcp/index/query" do
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_INDEX_QUERY)
-          ::Mcp::IndexQueryAction.new(notes_root: settings.notes_root)
+          ::Mcp::IndexQueryAction.new(
+            notes_root: settings.notes_root,
+            retrieval_mode: settings.mcp_retrieval_mode,
+            semantic_provider_enabled: settings.mcp_semantic_provider_enabled
+          )
             .call(query: params["q"], limit: params["limit"])
             .to_json
         end
