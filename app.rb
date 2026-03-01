@@ -26,7 +26,8 @@ class App < Sinatra::Base
 
   configure do
     set :notes_root, ENV.fetch("NOTES_ROOT", "/notes")
-    set :mcp_policy_mode, ENV.fetch("MCP_POLICY_MODE", Mcp::ActionPolicy::MODE_ALLOW_ALL)
+    raw_policy_mode = ENV.fetch("MCP_POLICY_MODE", Mcp::ActionPolicy::MODE_ALLOW_ALL)
+    set :mcp_policy_mode, Mcp::ActionPolicy.normalize_mode(raw_policy_mode)
   end
 
   before do

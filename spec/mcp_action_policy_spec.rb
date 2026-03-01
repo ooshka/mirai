@@ -35,7 +35,24 @@ RSpec.describe Mcp::ActionPolicy do
   end
 
   describe "mode validation" do
+    it "returns supported modes" do
+      expect(described_class.supported_modes).to eq([
+        described_class::MODE_ALLOW_ALL,
+        described_class::MODE_READ_ONLY
+      ])
+    end
+
+    it "normalizes blank values to allow_all" do
+      expect(described_class.normalize_mode(nil)).to eq(described_class::MODE_ALLOW_ALL)
+      expect(described_class.normalize_mode("  ")).to eq(described_class::MODE_ALLOW_ALL)
+    end
+
     it "raises for unknown modes" do
+      expect { described_class.normalize_mode("read-only") }
+        .to raise_error(described_class::InvalidModeError, "invalid MCP policy mode: read-only")
+    end
+
+    it "raises for unknown modes during initialization" do
       expect { described_class.new(mode: "read-only") }
         .to raise_error(described_class::InvalidModeError, "invalid MCP policy mode: read-only")
     end
