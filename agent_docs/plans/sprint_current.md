@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_patch_parser_boundary_extraction.md`
+No active case.
 
 ## Sprint Goal
 Establish a parser/validator boundary for patch handling before any grammar growth:
