@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_retrieval_storage_lifecycle_hardening_artifact_telemetry.md`
+No active case.
 
 ## Sprint Goal
 Harden retrieval storage lifecycle observability as note volume scales:
