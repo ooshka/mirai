@@ -4,6 +4,7 @@ module Mcp
   class ActionPolicy
     MODE_ALLOW_ALL = "allow_all"
     MODE_READ_ONLY = "read_only"
+    SUPPORTED_MODES = [MODE_ALLOW_ALL, MODE_READ_ONLY].freeze
 
     ACTION_NOTES_LIST = "notes.list"
     ACTION_NOTES_READ = "notes.read"
@@ -40,8 +41,20 @@ module Mcp
       end
     end
 
+    def self.supported_modes
+      SUPPORTED_MODES
+    end
+
+    def self.normalize_mode(mode)
+      normalized = mode.to_s.strip
+      return MODE_ALLOW_ALL if normalized.empty?
+      return normalized if SUPPORTED_MODES.include?(normalized)
+
+      raise InvalidModeError, normalized
+    end
+
     def initialize(mode: MODE_ALLOW_ALL)
-      @mode = normalize_mode(mode)
+      @mode = self.class.normalize_mode(mode)
     end
 
     def enforce!(action)
@@ -57,14 +70,6 @@ module Mcp
       when MODE_READ_ONLY
         READ_ONLY_ALLOWED_ACTIONS.include?(action)
       end
-    end
-
-    def normalize_mode(mode)
-      normalized = mode.to_s.strip
-      return MODE_ALLOW_ALL if normalized.empty?
-      return normalized if [MODE_ALLOW_ALL, MODE_READ_ONLY].include?(normalized)
-
-      raise InvalidModeError, normalized
     end
   end
 end
