@@ -4,7 +4,7 @@
 No active case.
 
 ## Sprint Goal
-Make index staleness observable before lifecycle automation:
-- add deterministic stale/fresh signal to `/mcp/index/status`
-- preserve existing rebuild/query behavior and error contracts
-- keep lifecycle controls explicit (no query-time rebuild side effects)
+Advance lifecycle operations after freshness signaling:
+- improve index lifecycle controls for higher-volume workflows
+- keep query path read-only and contract-stable
+- defer smoke-script/test-env integration as next risk-reduction slice

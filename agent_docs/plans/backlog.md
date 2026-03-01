@@ -2,12 +2,12 @@
 
 ## Next 3 Candidate Slices
 
-1. Index Freshness Status Signal (selected)
-- Value: makes stale vs fresh artifact state explicit without adding query write side effects.
+1. Index Lifecycle + Scale Controls (selected)
+- Value: improves lifecycle ergonomics and prepares for growth now that freshness and invalidation signals exist.
 - Size: ~0.5-1 day.
 
-2. Index Lifecycle + Scale Controls
-- Value: reduces operational risk by making rebuild/invalidation behavior easier to automate as notes volume grows.
+2. Local Smoke Script + Test-Flow Integration
+- Value: creates a repeatable end-to-end validation path for local development and future EC2 staging.
 - Size: ~0.5-1 day.
 
 3. Route Composition Modularization

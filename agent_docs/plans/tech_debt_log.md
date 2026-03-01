@@ -160,3 +160,15 @@
 - Debt paid down next: add explicit freshness observability to lifecycle status so rebuild decisions are data-driven.
 - Debt potentially added: status freshness checks may require filesystem scans that can become costlier with very large note sets.
 - Refactor signal: if freshness policy complexity grows (thresholds, ignore rules, partial scans), extract dedicated freshness policy logic from `IndexStore`.
+
+## 2026-03-01 (ops smoke-script planning pass)
+
+### Observed signals
+- Core MCP contracts now span read, patch mutation, index lifecycle, and query, but there is no single repeatable end-to-end smoke workflow.
+- Current verification is mostly spec-driven and command-level, which leaves a gap for environment-level regressions before EC2 rollout.
+- Adding semantic retrieval later will increase external dependencies and operational variables, amplifying the cost of missing baseline smoke checks.
+
+### Debt posture for next slice
+- Debt paid down soon: codify a local smoke script and test-flow entrypoint that validates critical contracts in one repeatable run.
+- Debt potentially added if deferred: environment drift risk between local dev and future EC2 staging increases as features accumulate.
+- Refactor signal: if smoke coverage grows significantly, split smoke helpers/fixtures from single-script orchestration to keep scripts maintainable.

@@ -25,17 +25,17 @@
 
 ## Current Focus (Next Slice)
 
-6. Index freshness status signal
-- Expose explicit stale/fresh lifecycle metadata in `/mcp/index/status`
-- Keep lifecycle read-only while improving rebuild decision clarity
-- Preserve existing index error and rebuild/query contracts
+6. Index lifecycle + scale controls
+- Introduce bounded lifecycle ergonomics after staleness signaling is in place
+- Keep rebuild/invalidate/query contracts explicit and predictable
+- Prepare for higher note volume without forcing query-time writes
 
 ## Near-Term Follow-ons
 
-7. Index lifecycle + scale controls
-- Incremental indexing triggers
-- Optional async rebuild path if note volume grows
-- Retrieval quality/performance tuning after semantic baseline is live
+7. Local smoke script + test-flow integration
+- Add a reproducible end-to-end smoke workflow for local and future EC2 staging checks
+- Exercise critical MCP contracts (read, patch, index lifecycle, query) through one script
+- Integrate smoke execution guidance into testing docs without changing API contracts
 
 8. Route composition modularization
 - Reduce `app.rb` endpoint concentration as MCP action set grows
