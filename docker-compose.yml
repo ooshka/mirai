@@ -10,13 +10,18 @@ services:
     user: "${UID}:${GID}"
     environment:
       HOME: /home/dev
-      NOTES_ROOT: /notes
+      NOTES_ROOT: /notes_repo/notes
+      GIT_AUTHOR_NAME: mirai-dev
+      GIT_AUTHOR_EMAIL: mirai-dev@example.local
+      GIT_COMMITTER_NAME: mirai-dev
+      GIT_COMMITTER_EMAIL: mirai-dev@example.local
     volumes:
       - .:/workspace:cached
-      - ../notes_repo/notes:/notes:cached
+      - ../notes_repo:/notes_repo:cached
       - dev-home:/home/dev
       - bundler-cache:/home/dev/.bundle
     working_dir: /workspace
+    command: bundle exec puma -b tcp://0.0.0.0:4567 config.ru
     tty: true
     stdin_open: true
     ports:
