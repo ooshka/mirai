@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_retrieval_provider_factory_extraction.md`
+No active case.
 
 ## Sprint Goal
 Stabilize retrieval provider wiring after semantic-mode integration:
