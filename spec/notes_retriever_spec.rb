@@ -6,6 +6,7 @@ require "time"
 require_relative "../app/services/notes_retriever"
 require_relative "../app/services/notes_chunker"
 require_relative "../app/services/index_store"
+require_relative "../app/services/semantic_retrieval_provider"
 
 RSpec.describe NotesRetriever do
   around do |example|
@@ -148,6 +149,82 @@ RSpec.describe NotesRetriever do
     )
     expect(result).to eq(
       [{path: "fallback.md", chunk_index: 0, content: "alpha", score: 9}]
+    )
+  end
+
+  it "uses semantic provider when semantic mode is enabled" do
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    indexer = instance_double(NotesIndexer)
+    allow(indexer).to receive(:index).and_return(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: [{path: "mode.md", chunk_index: 0, content: "alpha"}]
+      }
+    )
+    allow(semantic_provider).to receive(:rank).and_return(
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 7}]
+    )
+    allow(lexical_provider).to receive(:rank)
+
+    retriever = described_class.new(
+      notes_root: @notes_root,
+      indexer: indexer,
+      mode: described_class::MODE_SEMANTIC,
+      semantic_provider: semantic_provider,
+      lexical_provider: lexical_provider
+    )
+
+    result = retriever.query(text: "alpha", limit: 2)
+
+    expect(result).to eq(
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 7}]
+    )
+    expect(semantic_provider).to have_received(:rank).with(
+      query_text: "alpha",
+      chunks: [{path: "mode.md", chunk_index: 0, content: "alpha"}],
+      limit: 2
+    )
+    expect(lexical_provider).not_to have_received(:rank)
+  end
+
+  it "falls back to lexical provider when semantic provider is unavailable" do
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    indexer = instance_double(NotesIndexer)
+    allow(indexer).to receive(:index).and_return(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: [{path: "mode.md", chunk_index: 0, content: "alpha"}]
+      }
+    )
+    allow(semantic_provider).to receive(:rank).and_raise(
+      SemanticRetrievalProvider::UnavailableError, "semantic retrieval provider is unavailable"
+    )
+    allow(lexical_provider).to receive(:rank).and_return(
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 1}]
+    )
+
+    retriever = described_class.new(
+      notes_root: @notes_root,
+      indexer: indexer,
+      mode: described_class::MODE_SEMANTIC,
+      semantic_provider: semantic_provider,
+      lexical_provider: lexical_provider
+    )
+
+    result = retriever.query(text: "alpha", limit: 2)
+
+    expect(result).to eq(
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 1}]
+    )
+    expect(semantic_provider).to have_received(:rank)
+    expect(lexical_provider).to have_received(:rank).with(
+      query_text: "alpha",
+      chunks: [{path: "mode.md", chunk_index: 0, content: "alpha"}],
+      limit: 2
     )
   end
 end

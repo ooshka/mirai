@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_semantic_retrieval_runtime_integration.md`
+No active case.
 
 ## Sprint Goal
 Integrate semantic retrieval behind the existing query contract:

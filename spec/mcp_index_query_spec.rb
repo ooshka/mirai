@@ -7,16 +7,22 @@ RSpec.describe "MCP index query endpoint" do
   around do |example|
     original_notes_root = App.settings.notes_root
     original_mcp_policy_mode = App.settings.mcp_policy_mode
+    original_retrieval_mode = ENV["MCP_RETRIEVAL_MODE"]
+    original_semantic_enabled = ENV["MCP_SEMANTIC_PROVIDER_ENABLED"]
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       App.set :notes_root, notes_root
       App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
+      ENV["MCP_RETRIEVAL_MODE"] = NotesRetriever::MODE_LEXICAL
+      ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "false"
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
     App.set :mcp_policy_mode, original_mcp_policy_mode
+    ENV["MCP_RETRIEVAL_MODE"] = original_retrieval_mode
+    ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = original_semantic_enabled
   end
 
   it "returns ranked chunks for a query with an explicit limit" do
@@ -203,6 +209,44 @@ RSpec.describe "MCP index query endpoint" do
         "limit" => 5,
         "chunks" => [
           {"path" => "root.md", "chunk_index" => 0, "content" => "alpha", "score" => 1}
+        ]
+      }
+    )
+  end
+
+  it "preserves query contract when semantic mode is enabled" do
+    ENV["MCP_RETRIEVAL_MODE"] = NotesRetriever::MODE_SEMANTIC
+    ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "true"
+    File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
+
+    get "/mcp/index/query", q: "alpha", limit: "2"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 2,
+        "chunks" => [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 1}
+        ]
+      }
+    )
+  end
+
+  it "falls back to lexical retrieval when semantic provider is unavailable" do
+    ENV["MCP_RETRIEVAL_MODE"] = NotesRetriever::MODE_SEMANTIC
+    ENV["MCP_SEMANTIC_PROVIDER_ENABLED"] = "false"
+    File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
+
+    get "/mcp/index/query", q: "alpha", limit: "2"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 2,
+        "chunks" => [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 1}
         ]
       }
     )
