@@ -184,3 +184,15 @@
 - Debt paid down next: add deterministic lifecycle telemetry in status for scale-aware operations while preserving contract stability.
 - Debt potentially added: status metadata gathering may incur extra filesystem scan cost at larger repository sizes.
 - Refactor signal: if lifecycle telemetry and policy branching increase, extract dedicated lifecycle policy/coordinator logic from `IndexStore`.
+
+## 2026-03-01 (local smoke-script + test-flow planning pass)
+
+### Observed signals
+- Core MCP contracts now span read, patch, index lifecycle, and query, but no single local smoke flow validates the full runtime path.
+- Current confidence is mostly spec-level; environment-level drift (mounts, runtime config, wiring) can still pass unnoticed until later staging.
+- EC2 deployment is planned, so local production-like checks should be stabilized before introducing additional retrieval complexity.
+
+### Debt posture for next slice
+- Debt paid down next: add a deterministic local smoke script and test-flow guidance to close operational verification gaps.
+- Debt potentially added: script assertions may initially be coarse-grained and require future helper extraction as coverage grows.
+- Refactor signal: if smoke scenarios expand, split reusable request/assert utilities into `scripts/lib/` to avoid a monolithic script.

@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_local_smoke_script_test_flow_integration.md`
 
 ## Sprint Goal
-Advance lifecycle operations after freshness signaling:
-- improve index lifecycle controls for higher-volume workflows
-- keep query path read-only and contract-stable
-- defer smoke-script/test-env integration as next risk-reduction slice
+Reduce operational risk before EC2 staging:
+- add a repeatable local smoke workflow for critical MCP contracts
+- integrate smoke guidance into the test flow alongside targeted RSpec
+- keep API contracts stable while improving environment-level confidence
