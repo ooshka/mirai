@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_runtime_agent_policy_mode_hardening_follow_up.md`
+No active case.
 
 ## Sprint Goal
 Harden policy mode operator ergonomics after action-policy rollout:
