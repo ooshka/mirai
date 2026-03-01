@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_shared_route_helper_boundary_cleanup.md`
 
 ## Sprint Goal
-Stabilize retrieval provider wiring after semantic-mode integration:
-- extract mode/config selection from `NotesRetriever` into a dedicated provider factory
-- preserve lexical-default and semantic-fallback behavior with no query contract drift
-- keep retrieval internals ready for additional provider modes without route/action branching
+Reduce route/helper coupling after module extraction:
+- move shared MCP route helpers into one explicit helper module
+- keep `App` as thin composition shell (settings + registration)
+- preserve existing MCP request/error contracts while changing helper ownership only

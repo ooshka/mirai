@@ -244,3 +244,15 @@
 - Debt paid down next: isolate provider selection/config parsing in a dedicated factory and keep retriever focused on query orchestration/fallback.
 - Debt potentially added: factory will initially encode only lexical/semantic selection and may need extension for richer policy rules.
 - Refactor signal: if fallback logic also expands (timeouts, partial results), extract fallback policy from retriever into a dedicated strategy object.
+
+## 2026-03-01 (shared route helper boundary cleanup planning pass)
+
+### Observed signals
+- Route declarations are modularized, but shared helper behavior (`render_error`, payload parsing, MCP error handling/policy enforcement) still lives in `App`.
+- This keeps non-boot helper logic coupled to the app shell and increases future risk of `app.rb` growth.
+- MCP endpoint count is now large enough that helper ownership clarity improves reviewability and reduces churn hotspots.
+
+### Debt posture for next slice
+- Debt paid down next: separate helper ownership from app composition by introducing an explicit shared MCP helper module.
+- Debt potentially added: helper module may remain multi-responsibility initially to keep this slice bounded and contract-safe.
+- Refactor signal: if helper complexity continues to grow, split helper module by concern (error rendering, payload parsing, policy enforcement).

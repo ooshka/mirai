@@ -25,20 +25,20 @@
 
 ## Current Focus (Next Slice)
 
-6. Retrieval provider factory extraction
-- Move retrieval mode/config selection out of `NotesRetriever` into a dedicated factory
-- Preserve lexical-default + semantic fallback behavior while reducing retriever complexity
-- Keep `/mcp/index/query` contracts stable during internal wiring cleanup
+6. Shared route helper boundary cleanup
+- Move shared MCP helper methods out of `App` into one explicit helper module
+- Keep route module composition deterministic while reducing helper coupling in the app shell
+- Preserve current endpoint and error contracts during helper ownership cleanup
 
 ## Near-Term Follow-ons
 
-7. Shared route helper boundary cleanup
-- If helper coupling grows, extract one explicit helper module consumed by route registration
-- Keep route module composition deterministic and easy to review
-
-8. Runtime-agent policy mode hardening follow-up
+7. Runtime-agent policy mode hardening follow-up
 - Add clearer operator-facing policy mode docs/diagnostics and optional startup-time validation surface
 - Keep deny/invalid-mode behavior deterministic across environments
+
+8. Retrieval storage and lifecycle hardening
+- Add durable vector/chunk storage lifecycle controls and migration posture
+- Preserve MCP query contract while scaling retrieval internals
 
 ## Later (After Contracts Stabilize)
 
