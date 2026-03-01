@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_shared_route_helper_boundary_cleanup.md`
+No active case.
 
 ## Sprint Goal
 Reduce route/helper coupling after module extraction:
