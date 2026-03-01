@@ -4,6 +4,7 @@ require_relative "../safe_notes_path"
 require_relative "../patch_validator"
 require_relative "../patch_applier"
 require_relative "../index_store"
+require_relative "action_policy"
 require_relative "index_query_action"
 
 module Mcp
@@ -28,6 +29,8 @@ module Mcp
         {status: 400, code: "invalid_limit", message: error.message}
       when IndexStore::InvalidArtifactError
         {status: 500, code: "invalid_index_artifact", message: error.message}
+      when Mcp::ActionPolicy::DeniedError
+        {status: 403, code: "policy_denied", message: error.message}
       end
     end
   end

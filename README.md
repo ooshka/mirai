@@ -48,6 +48,7 @@ Default container config:
 
 - `NOTES_ROOT=/notes_repo/notes`
 - `PORT=4567`
+- `MCP_POLICY_MODE=allow_all` (`read_only` denies mutation/index-control actions)
 
 ## HTTP endpoints
 
@@ -144,6 +145,7 @@ Important error codes:
 - `conflict` (409)
 - `git_error` (500)
 - `invalid_index_artifact` (500)
+- `policy_denied` (403)
 
 ## Notes artifact format
 

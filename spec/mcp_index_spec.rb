@@ -7,14 +7,17 @@ require "time"
 RSpec.describe "MCP index endpoints" do
   around do |example|
     original_notes_root = App.settings.notes_root
+    original_mcp_policy_mode = App.settings.mcp_policy_mode
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       App.set :notes_root, notes_root
+      App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
+    App.set :mcp_policy_mode, original_mcp_policy_mode
   end
 
   it "rebuilds the index and returns summary metadata" do
@@ -157,5 +160,21 @@ RSpec.describe "MCP index endpoints" do
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq({"invalidated" => false})
+  end
+
+  it "returns policy_denied for index rebuild in read_only policy mode" do
+    App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
+
+    post "/mcp/index/rebuild"
+
+    expect(last_response.status).to eq(403)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "policy_denied",
+          "message" => "action index.rebuild is denied in read_only mode"
+        }
+      }
+    )
   end
 end

@@ -6,14 +6,17 @@ require "tmpdir"
 RSpec.describe "MCP notes read-only endpoints" do
   around do |example|
     original_notes_root = App.settings.notes_root
+    original_mcp_policy_mode = App.settings.mcp_policy_mode
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       App.set :notes_root, notes_root
+      App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
+    App.set :mcp_policy_mode, original_mcp_policy_mode
   end
 
   it "lists markdown notes" do
@@ -118,6 +121,18 @@ RSpec.describe "MCP notes read-only endpoints" do
           "message" => "path escapes notes root"
         }
       }
+    )
+  end
+
+  it "allows notes read endpoints in read_only policy mode" do
+    App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
+    File.write(File.join(@notes_root, "root.md"), "root")
+
+    get "/mcp/notes"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {"notes" => ["root.md"]}
     )
   end
 end
