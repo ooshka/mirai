@@ -30,6 +30,12 @@ Run tests:
 docker compose run --rm dev bundle exec rspec
 ```
 
+Run local smoke workflow (with app running):
+
+```bash
+BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
+```
+
 Default container config:
 
 - `NOTES_ROOT=/notes`

@@ -85,6 +85,24 @@ Expected:
 - `/health` returns JSON with `{"ok":true}`
 - `/config` returns JSON including `notes_root` (typically `"/notes"` in Docker)
 
+### Local end-to-end smoke script
+
+Prerequisites:
+- App running locally (for example via `docker compose up`)
+- Notes mount contains at least one markdown file (script uses an existing note and reverts the content change)
+
+Run:
+
+```bash
+BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
+```
+
+What it covers:
+- Health/config checks
+- Notes list/read checks
+- Patch propose/apply and cleanup revert
+- Index rebuild/status/query lifecycle checks
+
 ## Agent Verification Workflow
 
 1. Identify change type.
@@ -108,6 +126,10 @@ Expected:
   - `docker compose run --rm dev bundle exec standardrb`
 - Runtime/config wiring concerns:
   - Optional smoke check with `docker compose up` + `curl`
+- Endpoint orchestration or environment-level risk:
+  - Run targeted specs first, then smoke:
+  - `docker compose run --rm dev bundle exec rspec <relevant-specs>`
+  - `BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh`
 
 ## Upkeep
 
