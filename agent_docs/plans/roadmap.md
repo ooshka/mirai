@@ -25,10 +25,10 @@
 
 ## Current Focus (Next Slice)
 
-6. Semantic retrieval provider seam
-- Add a provider abstraction boundary for retrieval internals while preserving MCP query contract
-- Keep lexical retrieval as deterministic default behind the seam
-- Prepare for embedding/vector adapters without endpoint-level coupling
+6. Index auto-invalidation on patch apply
+- Invalidate persisted index artifact after successful note mutation
+- Preserve existing `/mcp/patch/apply` response contract and error mapping
+- Reduce stale-query risk between mutation and explicit rebuild
 
 ## Near-Term Follow-ons
 

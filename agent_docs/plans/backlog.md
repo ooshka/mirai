@@ -2,8 +2,8 @@
 
 ## Next 3 Candidate Slices
 
-1. Semantic Retrieval Provider Seam (selected)
-- Value: prepares provider portability with minimal retrieval internals change and no MCP contract churn.
+1. Index Auto-Invalidation on Patch Apply (selected)
+- Value: prevents stale retrieval artifacts immediately after successful note mutations.
 - Size: ~0.5-1 day.
 
 2. Index Lifecycle + Scale Controls

@@ -136,3 +136,15 @@
 - Debt paid down next: establish a small retrieval-provider boundary so future semantic adapters can be swapped with minimal contract churn.
 - Debt potentially added: initial provider interface may be intentionally narrow and lexical-shaped, requiring expansion once semantic signals are introduced.
 - Refactor signal: if provider selection paths multiply, centralize strategy/policy selection in service layer instead of route/action classes.
+
+## 2026-03-01 (index auto-invalidation on patch apply planning pass)
+
+### Observed signals
+- Index artifact lifecycle controls exist, but patch mutation success currently does not affect artifact freshness automatically.
+- This leaves a stale-data window where `/mcp/index/query` can serve outdated chunks until manual invalidation/rebuild occurs.
+- Mutation and retrieval lifecycle logic are currently separate, increasing risk of correctness drift as mutation traffic grows.
+
+### Debt posture for next slice
+- Debt paid down next: connect successful patch apply to deterministic index invalidation in MCP orchestration.
+- Debt potentially added: invalidation remains a delete-only lifecycle reaction (no automatic rebuild) in this slice.
+- Refactor signal: if more mutation actions are introduced, centralize post-mutation index lifecycle hooks in a shared coordinator.

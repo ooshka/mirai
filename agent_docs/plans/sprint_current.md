@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_index_auto_invalidation_on_patch_apply.md`
 
 ## Sprint Goal
-Establish a retrieval provider seam before semantic adapter work:
-- introduce a provider-facing retrieval boundary in service layer
-- keep lexical retrieval as deterministic default implementation
-- preserve `/mcp/index/query` request/response contract unchanged
+Eliminate stale index reuse immediately after note mutations:
+- invalidate persisted index artifact on successful patch apply
+- preserve existing `/mcp/patch/apply` response and error contracts
+- ensure failed patch apply paths do not invalidate existing artifacts
