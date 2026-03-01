@@ -2,31 +2,20 @@
 
 require_relative "lexical_retrieval_provider"
 require_relative "semantic_retrieval_provider"
+require_relative "mcp/retrieval_mode"
 
 class RetrievalProviderFactory
-  MODE_LEXICAL = "lexical"
-  MODE_SEMANTIC = "semantic"
-  SUPPORTED_MODES = [MODE_LEXICAL, MODE_SEMANTIC].freeze
-
-  class InvalidModeError < StandardError
-    attr_reader :mode
-
-    def initialize(mode)
-      @mode = mode
-      super("invalid MCP retrieval mode: #{mode}")
-    end
-  end
+  MODE_LEXICAL = Mcp::RetrievalMode::MODE_LEXICAL
+  MODE_SEMANTIC = Mcp::RetrievalMode::MODE_SEMANTIC
+  SUPPORTED_MODES = Mcp::RetrievalMode::SUPPORTED_MODES
+  InvalidModeError = Mcp::RetrievalMode::InvalidModeError
 
   def self.supported_modes
-    SUPPORTED_MODES
+    Mcp::RetrievalMode.supported_modes
   end
 
   def self.normalize_mode!(mode)
-    normalized = mode.to_s.strip.downcase
-    return MODE_LEXICAL if normalized.empty?
-    return normalized if SUPPORTED_MODES.include?(normalized)
-
-    raise InvalidModeError, normalized
+    Mcp::RetrievalMode.normalize_mode!(mode)
   end
 
   def initialize(
