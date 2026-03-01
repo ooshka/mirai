@@ -67,6 +67,8 @@ RSpec.describe "MCP index endpoints" do
     File.write(File.join(@notes_root, "root.md"), "#{lines}\n")
 
     post "/mcp/index/rebuild"
+    fixed_now = Time.utc(2026, 2, 28, 12, 0, 30)
+    allow(Time).to receive(:now).and_return(fixed_now)
     get "/mcp/index/status"
 
     expect(last_response.status).to eq(200)
@@ -77,6 +79,8 @@ RSpec.describe "MCP index endpoints" do
     expect(body["notes_indexed"]).to eq(1)
     expect(body["chunks_indexed"]).to eq(2)
     expect(body["stale"]).to eq(false)
+    expect(body["artifact_age_seconds"]).to be >= 0
+    expect(body["notes_present"]).to eq(1)
   end
 
   it "returns stale status when note mtime is newer than artifact generated_at" do
@@ -94,9 +98,13 @@ RSpec.describe "MCP index endpoints" do
 
     expect(body["present"]).to eq(true)
     expect(body["stale"]).to eq(true)
+    expect(body["artifact_age_seconds"]).to be >= 0
+    expect(body["notes_present"]).to eq(1)
   end
 
   it "returns missing index status when artifact does not exist" do
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+
     get "/mcp/index/status"
 
     expect(last_response.status).to eq(200)
@@ -105,7 +113,10 @@ RSpec.describe "MCP index endpoints" do
         "present" => false,
         "generated_at" => nil,
         "notes_indexed" => nil,
-        "chunks_indexed" => nil
+        "chunks_indexed" => nil,
+        "stale" => nil,
+        "artifact_age_seconds" => nil,
+        "notes_present" => 1
       }
     )
   end
