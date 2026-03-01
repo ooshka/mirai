@@ -172,3 +172,15 @@
 - Debt paid down soon: codify a local smoke script and test-flow entrypoint that validates critical contracts in one repeatable run.
 - Debt potentially added if deferred: environment drift risk between local dev and future EC2 staging increases as features accumulate.
 - Refactor signal: if smoke coverage grows significantly, split smoke helpers/fixtures from single-script orchestration to keep scripts maintainable.
+
+## 2026-03-01 (index lifecycle + scale controls planning pass)
+
+### Observed signals
+- Freshness and invalidation signals now exist, but lifecycle status still lacks bounded telemetry for operational scale decisions.
+- As note volume and mutation frequency grow, manual rebuild timing decisions need explicit status cues to avoid ad hoc operator behavior.
+- Query path is intentionally read-only, so scale-oriented lifecycle observability must come from status/rebuild controls.
+
+### Debt posture for next slice
+- Debt paid down next: add deterministic lifecycle telemetry in status for scale-aware operations while preserving contract stability.
+- Debt potentially added: status metadata gathering may incur extra filesystem scan cost at larger repository sizes.
+- Refactor signal: if lifecycle telemetry and policy branching increase, extract dedicated lifecycle policy/coordinator logic from `IndexStore`.

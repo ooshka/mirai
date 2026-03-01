@@ -4,6 +4,7 @@
 
 1. Index Lifecycle + Scale Controls (selected)
 - Value: improves lifecycle ergonomics and prepares for growth now that freshness and invalidation signals exist.
+- Active case: `agent_docs/cases/CASE_index_lifecycle_scale_controls.md`
 - Size: ~0.5-1 day.
 
 2. Local Smoke Script + Test-Flow Integration
