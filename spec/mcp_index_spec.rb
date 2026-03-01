@@ -76,6 +76,24 @@ RSpec.describe "MCP index endpoints" do
     expect(Time.iso8601(body["generated_at"]).utc?).to eq(true)
     expect(body["notes_indexed"]).to eq(1)
     expect(body["chunks_indexed"]).to eq(2)
+    expect(body["stale"]).to eq(false)
+  end
+
+  it "returns stale status when note mtime is newer than artifact generated_at" do
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    post "/mcp/index/rebuild"
+
+    note_path = File.join(@notes_root, "root.md")
+    now = Time.now.utc + 2
+    File.utime(now, now, note_path)
+
+    get "/mcp/index/status"
+
+    expect(last_response.status).to eq(200)
+    body = JSON.parse(last_response.body)
+
+    expect(body["present"]).to eq(true)
+    expect(body["stale"]).to eq(true)
   end
 
   it "returns missing index status when artifact does not exist" do
