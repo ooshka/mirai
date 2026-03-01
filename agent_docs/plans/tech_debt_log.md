@@ -208,3 +208,15 @@
 - Debt paid down next: reduce route concentration by extracting explicit route modules while preserving existing endpoint contracts.
 - Debt potentially added: helper methods may remain coupled to `App` context until a later helper-boundary cleanup slice.
 - Refactor signal: if helper sharing across route modules becomes noisy, extract one focused shared helper module rather than duplicating route-level logic.
+
+## 2026-03-01 (runtime-agent action policy planning pass)
+
+### Observed signals
+- Route wiring is now modular, but there is still no centralized policy guard for runtime-agent action execution.
+- Mutation and lifecycle-control endpoints are directly callable whenever transport reaches the service, leaving no explicit deny seam for constrained autonomy modes.
+- Error mapping is already centralized, making this a low-risk point to add deterministic denied-action contracts without broad route rewrites.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a first-class action policy boundary to prevent route-local permission branching and make autonomy constraints auditable.
+- Debt potentially added: initial policy modes will be coarse-grained and environment-driven before identity-aware controls exist.
+- Refactor signal: if policy modes or action sets grow, separate mode/config parsing from enforcement to keep policy logic small and testable.

@@ -25,20 +25,20 @@
 
 ## Current Focus (Next Slice)
 
-6. Route wiring module extraction
-- Move Sinatra route definitions out of `app.rb` into explicit route modules
-- Preserve current MCP/health/config contracts while reducing composition complexity
-- Keep service boundaries stable for upcoming runtime-agent and retrieval work
+6. Runtime-agent action policy layer
+- Add explicit allow/deny policy seams for runtime tool actions before autonomy expansion
+- Keep policy enforcement centralized and testable rather than route-local
+- Preserve existing MCP contracts for currently-allowed actions
 
 ## Near-Term Follow-ons
 
-7. Runtime-agent action policy layer
-- Add explicit allow/deny policy seams for runtime tool actions before autonomy expansion
-- Keep policy enforcement centralized and testable rather than route-local
-
-8. Semantic retrieval runtime integration
+7. Semantic retrieval runtime integration
 - Wire provider-backed retrieval behind existing query contract
 - Keep lexical fallback path available while semantic path stabilizes
+
+8. Shared route helper boundary cleanup
+- If helper coupling grows, extract one explicit helper module consumed by route registration
+- Keep route module composition deterministic and easy to review
 
 ## Later (After Contracts Stabilize)
 
