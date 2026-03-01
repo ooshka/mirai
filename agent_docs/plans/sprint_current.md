@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_runtime_config_mode_contract_hardening.md`
+No active case.
 
 ## Sprint Goal
 Harden runtime mode configuration safety and diagnostics:
