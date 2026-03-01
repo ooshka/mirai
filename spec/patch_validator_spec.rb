@@ -100,6 +100,19 @@ RSpec.describe PatchValidator do
       .to raise_error(PatchValidator::InvalidPatchError, "unsupported hunk line prefix")
   end
 
+  it "rejects malformed hunk headers" do
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ bad @@
+      -alpha
+      +beta
+    PATCH
+
+    expect { validator.validate(patch) }
+      .to raise_error(PatchValidator::InvalidPatchError, "invalid hunk header")
+  end
+
   it "accepts no-newline marker metadata lines" do
     patch = <<~'PATCH'
       --- a/notes/today.md
