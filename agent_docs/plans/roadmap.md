@@ -25,9 +25,9 @@
 
 ## Current Focus (Next Slice)
 
-6. Retrieval storage/lifecycle hardening - artifact telemetry
-- Add deterministic artifact storage telemetry in `index/status` for scale-aware operations
-- Preserve retrieval/query contracts while expanding status observability only
+6. Runtime config mode contract hardening
+- Centralize runtime mode parsing/validation for policy and retrieval config
+- Expose retrieval mode diagnostics in `/config` and fail fast on invalid mode inputs
 
 ## Near-Term Follow-ons
 

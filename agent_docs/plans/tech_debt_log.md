@@ -280,3 +280,15 @@
 - Debt paid down next: add deterministic artifact storage telemetry to the lifecycle status contract for scale-aware operations.
 - Debt potentially added: status computation may accumulate metric-specific logic inside `IndexStore` before extraction.
 - Refactor signal: if telemetry fields continue to grow, extract a focused status-metrics helper from `IndexStore` to avoid a monolithic lifecycle method.
+
+## 2026-03-01 (runtime config mode contract hardening planning pass)
+
+### Observed signals
+- Runtime mode parsing is currently split across app boot (`MCP_POLICY_MODE`) and retrieval provider selection (`MCP_RETRIEVAL_MODE`), which creates inconsistent failure behavior.
+- Policy mode already fails fast on invalid values, while retrieval mode silently falls back to lexical, increasing risk of unnoticed environment drift.
+- `/config` exposes policy diagnostics but not retrieval mode diagnostics, limiting operator visibility when runtime behavior diverges from expectation.
+
+### Debt posture for next slice
+- Debt paid down next: centralize runtime mode parsing/validation in one config boundary and expose deterministic diagnostics for both policy and retrieval modes.
+- Debt potentially added: introducing a config object adds one more indirection layer that must remain synchronized with mode constants.
+- Refactor signal: if additional runtime toggles continue to grow, consolidate environment parsing into a typed app-config module rather than service-local env reads.
