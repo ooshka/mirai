@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_runtime_agent_action_policy_layer.md`
+No active case.
 
 ## Sprint Goal
 Introduce a centralized runtime-agent action policy seam:
