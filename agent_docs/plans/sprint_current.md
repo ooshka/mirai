@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_route_wiring_module_extraction.md`
+No active case.
 
 ## Sprint Goal
 Keep API delivery sustainable as MCP surface grows:
