@@ -25,25 +25,25 @@
 
 ## Current Focus (Next Slice)
 
-6. Index lifecycle controls (status + invalidate)
-- Expose explicit index status/freshness metadata to MCP consumers
-- Add bounded manual invalidation before rebuild/query workflows
-- Keep current rebuild/query contracts stable while clarifying lifecycle semantics
+6. Patch parser boundary extraction
+- Extract unified-diff syntax parsing from `PatchValidator` into a dedicated parser service
+- Preserve strict single-file markdown mutation policy and existing MCP error contracts
+- Reduce validator complexity before any further patch grammar expansion
 
 ## Near-Term Follow-ons
 
-7. Patch parser boundary extraction (conditional)
-- If diff grammar support expands, split parsing from validation policy
-- Prevent validator complexity drift as patch surface area grows
-
-8. Semantic retrieval integration
+7. Semantic retrieval integration
 - Add provider abstraction for embeddings
 - Introduce vector-store adapter boundary (swap-friendly by design)
 - Keep MCP retrieval contract stable while changing retrieval internals
 
-## Later (After Contracts Stabilize)
-
-9. Index lifecycle + scale controls
+8. Index lifecycle + scale controls
 - Incremental indexing triggers
 - Optional async rebuild path if note volume grows
 - Retrieval quality/performance tuning after semantic baseline is live
+
+## Later (After Contracts Stabilize)
+
+9. Route composition modularization
+- Reduce `app.rb` endpoint concentration as MCP action set grows
+- Keep route wiring explicit while limiting controller-style bloat

@@ -112,3 +112,15 @@
 - Debt paid down next: add explicit lifecycle boundaries for index status and manual invalidation with deterministic MCP responses.
 - Debt potentially added: lifecycle controls remain manual/synchronous and may not scale operationally without follow-on automation.
 - Refactor signal: if lifecycle operations expand (status, invalidate, rebuild, freshness policy), introduce a dedicated lifecycle coordinator instead of distributing logic across actions/routes.
+
+## 2026-03-01 (patch parser boundary extraction planning pass)
+
+### Observed signals
+- `PatchValidator` currently mixes unified-diff syntax parsing and mutation safety policy, increasing coupling inside a critical path.
+- Patch edge-case hardening has expanded parser-like logic in validator methods, making future grammar changes riskier to reason about.
+- `PatchApplier` depends on validator output shape; without an explicit parsing boundary, parser changes can unintentionally affect apply behavior.
+
+### Debt posture for next slice
+- Debt paid down next: separate syntax extraction from policy enforcement by introducing a dedicated parser service and keeping validator ownership of safety rules.
+- Debt potentially added: parser remains intentionally narrow (single-file unified diff subset) and may need controlled expansion later.
+- Refactor signal: if supported diff shapes grow beyond current hunk forms, centralize fixture-based parser contract tests to prevent incremental rule drift.
