@@ -25,19 +25,19 @@
 
 ## Current Focus (Next Slice)
 
-6. Runtime-agent policy mode hardening follow-up
-- Add operator-facing policy mode diagnostics and startup validation using one deterministic config seam
-- Keep deny and invalid-mode request contracts stable while improving deployment ergonomics
+6. Retrieval storage/lifecycle hardening - artifact telemetry
+- Add deterministic artifact storage telemetry in `index/status` for scale-aware operations
+- Preserve retrieval/query contracts while expanding status observability only
 
 ## Near-Term Follow-ons
 
-7. Retrieval storage and lifecycle hardening
-- Add durable vector/chunk storage lifecycle controls and migration posture
-- Preserve MCP query contract while scaling retrieval internals
-
-8. Runtime-agent policy identity extension seam
+7. Runtime-agent policy identity extension seam
 - Prepare a narrow config/policy boundary for future identity-aware controls without introducing auth yet
 - Keep current mode-based enforcement as the only active policy behavior
+
+8. Retrieval storage lifecycle controls (phase 2)
+- Add bounded retention/cleanup controls for retrieval artifacts after telemetry baseline lands
+- Preserve current artifact schema while introducing explicit lifecycle operations
 
 ## Later (After Contracts Stabilize)
 

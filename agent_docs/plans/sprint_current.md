@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_retrieval_storage_lifecycle_hardening_artifact_telemetry.md`
 
 ## Sprint Goal
-Harden policy mode operator ergonomics after action-policy rollout:
-- add one deterministic policy-mode config seam used by both boot-time validation and runtime enforcement
-- surface policy mode diagnostics in `/config` for easier local/staging troubleshooting
-- preserve existing deny and invalid-mode MCP request contracts while tightening startup behavior
+Harden retrieval storage lifecycle observability as note volume scales:
+- add deterministic index artifact telemetry to `index/status` for storage-aware rebuild operations
+- keep retrieval/query endpoint contracts stable while expanding status-only diagnostics
+- preserve current artifact validation and error mapping behavior

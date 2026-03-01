@@ -268,3 +268,15 @@
 - Debt paid down next: centralize policy mode normalization/metadata and use it for both startup validation and runtime enforcement wiring.
 - Debt potentially added: another small config boundary object must remain synchronized with policy constants.
 - Refactor signal: if additional runtime mode/env parsing keeps expanding, introduce a single typed app-config parser to avoid scattered environment handling.
+
+## 2026-03-01 (retrieval storage/lifecycle artifact telemetry planning pass)
+
+### Observed signals
+- Retrieval status already reports freshness and counts, but lacks direct storage-size visibility for artifact growth decisions.
+- As notes/chunks grow, operators currently infer storage pressure indirectly, increasing ad hoc rebuild timing and cleanup decisions.
+- Retrieval query contracts are stable, so status-only observability is the lowest-risk place to improve lifecycle operations.
+
+### Debt posture for next slice
+- Debt paid down next: add deterministic artifact storage telemetry to the lifecycle status contract for scale-aware operations.
+- Debt potentially added: status computation may accumulate metric-specific logic inside `IndexStore` before extraction.
+- Refactor signal: if telemetry fields continue to grow, extract a focused status-metrics helper from `IndexStore` to avoid a monolithic lifecycle method.
