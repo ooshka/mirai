@@ -90,6 +90,18 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps invalid policy mode errors" do
+    error = Mcp::ActionPolicy::InvalidModeError.new("bad_mode")
+
+    expect(described_class.map(error)).to eq(
+      {
+        status: 500,
+        code: "invalid_policy_mode",
+        message: "invalid MCP policy mode: bad_mode"
+      }
+    )
+  end
+
   it "returns nil for unknown errors" do
     expect(described_class.map(StandardError.new("no mapping"))).to be_nil
   end

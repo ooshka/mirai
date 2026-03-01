@@ -31,6 +31,8 @@ module Mcp
         {status: 500, code: "invalid_index_artifact", message: error.message}
       when Mcp::ActionPolicy::DeniedError
         {status: 403, code: "policy_denied", message: error.message}
+      when Mcp::ActionPolicy::InvalidModeError
+        {status: 500, code: "invalid_policy_mode", message: error.message}
       end
     end
   end

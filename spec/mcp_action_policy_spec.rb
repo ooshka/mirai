@@ -33,4 +33,11 @@ RSpec.describe Mcp::ActionPolicy do
         .to raise_error(described_class::DeniedError, "action index.invalidate is denied in read_only mode")
     end
   end
+
+  describe "mode validation" do
+    it "raises for unknown modes" do
+      expect { described_class.new(mode: "read-only") }
+        .to raise_error(described_class::InvalidModeError, "invalid MCP policy mode: read-only")
+    end
+  end
 end

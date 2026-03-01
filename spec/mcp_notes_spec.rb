@@ -135,4 +135,20 @@ RSpec.describe "MCP notes read-only endpoints" do
       {"notes" => ["root.md"]}
     )
   end
+
+  it "returns invalid_policy_mode for unknown MCP policy mode" do
+    App.set :mcp_policy_mode, "read-only"
+
+    get "/mcp/notes"
+
+    expect(last_response.status).to eq(500)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_policy_mode",
+          "message" => "invalid MCP policy mode: read-only"
+        }
+      }
+    )
+  end
 end

@@ -31,6 +31,15 @@ module Mcp
       end
     end
 
+    class InvalidModeError < StandardError
+      attr_reader :mode
+
+      def initialize(mode)
+        @mode = mode
+        super("invalid MCP policy mode: #{mode}")
+      end
+    end
+
     def initialize(mode: MODE_ALLOW_ALL)
       @mode = normalize_mode(mode)
     end
@@ -47,16 +56,15 @@ module Mcp
         true
       when MODE_READ_ONLY
         READ_ONLY_ALLOWED_ACTIONS.include?(action)
-      else
-        true
       end
     end
 
     def normalize_mode(mode)
       normalized = mode.to_s.strip
       return MODE_ALLOW_ALL if normalized.empty?
+      return normalized if [MODE_ALLOW_ALL, MODE_READ_ONLY].include?(normalized)
 
-      normalized
+      raise InvalidModeError, normalized
     end
   end
 end
