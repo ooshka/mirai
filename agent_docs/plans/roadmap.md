@@ -25,22 +25,22 @@
 
 ## Current Focus (Next Slice)
 
-6. Runtime-agent policy identity extension seam
-- Add a narrow identity-context contract for policy evaluation without introducing auth yet
-- Preserve existing mode-based enforcement while preparing future identity-aware controls
+6. Retrieval fallback policy extraction
+- Extract semantic-to-lexical fallback handling from retriever orchestration into a dedicated policy seam
+- Preserve existing `GET /mcp/index/query` behavior while reducing retrieval branching complexity
 
 ## Near-Term Follow-ons
 
-7. Runtime config surface parity + boolean parsing contract follow-up
-- Keep semantic-provider diagnostics/parsing contracts aligned if parity regressions appear
-- Preserve current retrieval behavior while maintaining single-owner config parsing
-
-8. Retrieval storage lifecycle controls (phase 2)
+7. Retrieval storage lifecycle controls (phase 2)
 - Add bounded retention/cleanup controls for retrieval artifacts after telemetry baseline lands
 - Preserve current artifact schema while introducing explicit lifecycle operations
 
+8. Runtime config surface parity + boolean parsing contract follow-up
+- Keep semantic-provider diagnostics/parsing contracts aligned if parity regressions appear
+- Preserve current retrieval behavior while maintaining single-owner config parsing
+
 ## Later (After Contracts Stabilize)
 
-10. Retrieval fallback policy extraction
-- If semantic/lexical fallback rules expand, extract fallback policy from retriever orchestration
-- Preserve query endpoint contract while reducing service branching complexity
+10. Retrieval quality and policy extensions
+- Add richer ranking/selection controls only after fallback policy ownership is explicit
+- Preserve deterministic request contracts while evolving retrieval internals

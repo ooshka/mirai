@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_retrieval_fallback_policy_extraction.md`
 
 ## Sprint Goal
-Create an identity-ready policy seam without changing behavior:
-- add a small identity-context contract for policy evaluation inputs
-- thread identity context through one shared MCP policy helper path
-- preserve existing mode-based allow/deny behavior and request contracts
+Keep retrieval orchestration maintainable while preserving contract stability:
+- extract semantic fallback behavior from `NotesRetriever` into one explicit policy seam
+- preserve existing lexical fallback behavior for semantic unavailability
+- keep `GET /mcp/index/query` request/response contracts unchanged

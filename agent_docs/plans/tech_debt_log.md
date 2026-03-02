@@ -340,3 +340,15 @@
 - Debt paid down next: introduce a narrow identity-context seam so policy extension remains service-first and testable.
 - Debt potentially added: context attributes will start minimal and may need a later adapter when transport/auth layers exist.
 - Refactor signal: if context construction logic begins branching by endpoint/source, extract a dedicated context builder separate from route helpers.
+
+## 2026-03-02 (retrieval fallback policy extraction planning pass)
+
+### Observed signals
+- `NotesRetriever` currently owns chunk sourcing, provider invocation, and fallback error handling in one method.
+- Semantic-mode fallback currently works, but behavior ownership is implicit (`rescue` inside retriever) and will become harder to extend safely.
+- Retrieval provider selection has already been extracted to `RetrievalProviderFactory`, so fallback policy is now the remaining mixed concern in retriever orchestration.
+
+### Debt posture for next slice
+- Debt paid down next: isolate fallback decision logic into a dedicated seam so retriever remains orchestration-focused.
+- Debt potentially added: one additional retrieval abstraction layer that must stay intentionally narrow.
+- Refactor signal: if fallback conditions expand beyond `UnavailableError`, introduce an explicit retrieval error taxonomy/policy contract to avoid ad hoc rescues.
