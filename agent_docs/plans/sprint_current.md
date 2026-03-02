@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_symlink_listing_policy_contract_alignment.md`
+No active case.
 
 ## Sprint Goal
 Align notes discovery and read safety contracts:
