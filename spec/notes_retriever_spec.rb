@@ -191,6 +191,45 @@ RSpec.describe NotesRetriever do
     expect(lexical_provider).not_to have_received(:rank)
   end
 
+  it "delegates primary/fallback ranking to the fallback policy seam" do
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    fallback_policy = instance_double("RetrievalFallbackPolicy")
+    indexer = instance_double(NotesIndexer)
+    chunks = [{path: "mode.md", chunk_index: 0, content: "alpha"}]
+    ranked_chunks = [{path: "mode.md", chunk_index: 0, content: "alpha", score: 3}]
+    allow(indexer).to receive(:index).and_return(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: chunks
+      }
+    )
+    allow(fallback_policy).to receive(:rank).and_return(ranked_chunks)
+
+    retriever = described_class.new(
+      notes_root: @notes_root,
+      indexer: indexer,
+      fallback_policy: fallback_policy,
+      provider_factory: RetrievalProviderFactory.new(
+        mode: RetrievalProviderFactory::MODE_SEMANTIC,
+        lexical_provider: lexical_provider,
+        semantic_provider: semantic_provider
+      )
+    )
+
+    result = retriever.query(text: "alpha", limit: 2)
+
+    expect(result).to eq(ranked_chunks)
+    expect(fallback_policy).to have_received(:rank).with(
+      primary_provider: semantic_provider,
+      fallback_provider: lexical_provider,
+      query_text: "alpha",
+      chunks: chunks,
+      limit: 2
+    )
+  end
+
   it "falls back to lexical provider when semantic provider is unavailable" do
     semantic_provider = instance_double("SemanticRetrievalProvider")
     lexical_provider = instance_double("LexicalRetrievalProvider")
