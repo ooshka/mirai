@@ -38,7 +38,7 @@ class PatchParser
 
   def normalize_prefixed_path(path_with_prefix)
     path = path_with_prefix.strip
-    raise ParseError, "invalid patch header" if path == "/dev/null"
+    raise ParseError, "invalid patch header" if path == File::NULL
 
     prefix, relative_path = path.split("/", 2)
     raise ParseError, "invalid patch header" unless %w[a b].include?(prefix)

@@ -3,24 +3,24 @@
 require "tmpdir"
 require "timeout"
 
-RSpec.describe "MCP index lifecycle locking" do
-  class LockSpy
-    attr_reader :calls, :inside
+class LockSpy
+  attr_reader :calls, :inside
 
-    def initialize
-      @calls = 0
-      @inside = false
-    end
-
-    def with_exclusive_lock
-      @calls += 1
-      @inside = true
-      yield
-    ensure
-      @inside = false
-    end
+  def initialize
+    @calls = 0
+    @inside = false
   end
 
+  def with_exclusive_lock
+    @calls += 1
+    @inside = true
+    yield
+  ensure
+    @inside = false
+  end
+end
+
+RSpec.describe "MCP index lifecycle locking" do
   it "wraps patch apply and artifact invalidation in one exclusive lock" do
     lock = LockSpy.new
     applier = instance_double(PatchApplier)

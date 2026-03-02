@@ -30,7 +30,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +world
     PATCH
 
-    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
@@ -43,7 +43,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
   end
 
   it "returns invalid_patch for malformed patch" do
-    post "/mcp/patch/propose", { patch: "bad patch" }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: "bad patch"}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -67,7 +67,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       \ No newline at end of file
     PATCH
 
-    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
@@ -89,7 +89,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +world
     PATCH
 
-    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -139,7 +139,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +y
     PATCH
 
-    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -161,7 +161,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +y
     PATCH
 
-    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -189,7 +189,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +beta
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
@@ -224,7 +224,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +beta
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
@@ -255,7 +255,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +beta
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
@@ -284,7 +284,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       \ No newline at end of file
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
@@ -306,7 +306,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +y
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(404)
     expect(JSON.parse(last_response.body)).to eq(
@@ -364,7 +364,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +updated
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(409)
     expect(JSON.parse(last_response.body)).to eq(
@@ -394,7 +394,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +beta
     PATCH
 
-    post "/mcp/patch/apply", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(500)
     expect(JSON.parse(last_response.body)).to eq(
@@ -418,7 +418,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
       +world
     PATCH
 
-    post "/mcp/patch/propose", { patch: patch }.to_json, "CONTENT_TYPE" => "application/json"
+    post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
     expect(last_response.status).to eq(403)
     expect(JSON.parse(last_response.body)).to eq(
@@ -439,7 +439,7 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
 
   def git!(*args)
     stdout, stderr, status = Open3.capture3("git", *args, chdir: @notes_root)
-    raise "git command failed: git #{args.join(' ')}\n#{stderr}" unless status.success?
+    raise "git command failed: git #{args.join(" ")}\n#{stderr}" unless status.success?
 
     stdout
   end
