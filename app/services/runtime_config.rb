@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "mcp/action_policy"
+require_relative "mcp/boolean_flag"
 require_relative "mcp/retrieval_mode"
 
 class RuntimeConfig
@@ -21,12 +22,6 @@ class RuntimeConfig
     @notes_root = notes_root
     @mcp_policy_mode = Mcp::ActionPolicy.normalize_mode(mcp_policy_mode)
     @mcp_retrieval_mode = Mcp::RetrievalMode.normalize_mode!(mcp_retrieval_mode)
-    @mcp_semantic_provider_enabled = truthy?(mcp_semantic_provider_enabled)
-  end
-
-  private
-
-  def truthy?(value)
-    value.to_s.strip.downcase == "true"
+    @mcp_semantic_provider_enabled = Mcp::BooleanFlag.enabled?(mcp_semantic_provider_enabled)
   end
 end
