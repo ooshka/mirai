@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "identity_context"
+
 module Mcp
   class ActionPolicy
     MODE_ALLOW_ALL = "allow_all"
@@ -53,17 +55,20 @@ module Mcp
       raise InvalidModeError, normalized
     end
 
-    def initialize(mode: MODE_ALLOW_ALL)
+    def initialize(mode: MODE_ALLOW_ALL, identity_context: nil)
       @mode = self.class.normalize_mode(mode)
+      @default_identity_context = identity_context
     end
 
-    def enforce!(action)
-      raise DeniedError.new(action: action, mode: @mode) unless allowed?(action)
+    def enforce!(action, identity_context: nil)
+      resolved_identity_context = identity_context || @default_identity_context || IdentityContext.runtime_agent
+      raise DeniedError.new(action: action, mode: @mode) unless allowed?(action, identity_context: resolved_identity_context)
     end
 
     private
 
-    def allowed?(action)
+    def allowed?(action, identity_context:)
+      _identity_context = identity_context
       case @mode
       when MODE_ALLOW_ALL
         true

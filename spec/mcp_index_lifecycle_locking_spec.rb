@@ -4,25 +4,27 @@ require "tmpdir"
 require "timeout"
 
 RSpec.describe "MCP index lifecycle locking" do
-  class LockSpy
-    attr_reader :calls, :inside
+  let(:lock_spy_class) do
+    Class.new do
+      attr_reader :calls, :inside
 
-    def initialize
-      @calls = 0
-      @inside = false
-    end
+      def initialize
+        @calls = 0
+        @inside = false
+      end
 
-    def with_exclusive_lock
-      @calls += 1
-      @inside = true
-      yield
-    ensure
-      @inside = false
+      def with_exclusive_lock
+        @calls += 1
+        @inside = true
+        yield
+      ensure
+        @inside = false
+      end
     end
   end
 
   it "wraps patch apply and artifact invalidation in one exclusive lock" do
-    lock = LockSpy.new
+    lock = lock_spy_class.new
     applier = instance_double(PatchApplier)
     index_store = instance_double(IndexStore)
 
@@ -49,7 +51,7 @@ RSpec.describe "MCP index lifecycle locking" do
   end
 
   it "wraps index rebuild in an exclusive lock" do
-    lock = LockSpy.new
+    lock = lock_spy_class.new
     index = {
       notes_indexed: 1,
       chunks_indexed: 2,
@@ -83,7 +85,7 @@ RSpec.describe "MCP index lifecycle locking" do
   end
 
   it "wraps index invalidation in an exclusive lock" do
-    lock = LockSpy.new
+    lock = lock_spy_class.new
     index_store = instance_double(IndexStore)
 
     expect(index_store).to receive(:delete) do

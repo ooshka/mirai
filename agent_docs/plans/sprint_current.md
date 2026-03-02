@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_runtime_agent_policy_identity_extension_seam.md`
+No active case.
 
 ## Sprint Goal
 Create an identity-ready policy seam without changing behavior:

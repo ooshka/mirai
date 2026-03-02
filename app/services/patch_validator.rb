@@ -49,7 +49,7 @@ class PatchValidator
         prefix = current[0]
         raise InvalidPatchError, "unsupported hunk line prefix" unless [" ", "+", "-"].include?(prefix)
 
-        hunk_lines << { op: prefix, text: current[1..] || "" }
+        hunk_lines << {op: prefix, text: current[1..] || ""}
       end
 
       validate_hunk_counts!(hunk_lines, parsed_hunk[:old_count], parsed_hunk[:new_count])

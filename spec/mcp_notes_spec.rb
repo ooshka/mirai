@@ -29,7 +29,7 @@ RSpec.describe "MCP notes read-only endpoints" do
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
-      { "notes" => ["nested/child.md", "root.md"] }
+      {"notes" => ["nested/child.md", "root.md"]}
     )
   end
 

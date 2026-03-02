@@ -127,7 +127,7 @@ RSpec.describe PatchApplier do
 
   def git!(*args)
     stdout, stderr, status = Open3.capture3("git", *args, chdir: @notes_root)
-    raise "git command failed: git #{args.join(' ')}\n#{stderr}" unless status.success?
+    raise "git command failed: git #{args.join(" ")}\n#{stderr}" unless status.success?
 
     stdout
   end

@@ -32,6 +32,30 @@ RSpec.describe Mcp::ActionPolicy do
       expect { policy.enforce!(described_class::ACTION_INDEX_INVALIDATE) }
         .to raise_error(described_class::DeniedError, "action index.invalidate is denied in read_only mode")
     end
+
+    it "preserves allow_all behavior when identity context is provided" do
+      policy = described_class.new(mode: described_class::MODE_ALLOW_ALL)
+      identity_context = Mcp::IdentityContext.new(actor: "runtime_agent", source: "http_api")
+
+      expect do
+        policy.enforce!(
+          described_class::ACTION_PATCH_APPLY,
+          identity_context: identity_context
+        )
+      end.not_to raise_error
+    end
+
+    it "preserves read_only denial behavior when identity context is provided" do
+      policy = described_class.new(mode: described_class::MODE_READ_ONLY)
+      identity_context = Mcp::IdentityContext.new(actor: "runtime_agent", source: "http_api")
+
+      expect do
+        policy.enforce!(
+          described_class::ACTION_PATCH_APPLY,
+          identity_context: identity_context
+        )
+      end.to raise_error(described_class::DeniedError, "action patch.apply is denied in read_only mode")
+    end
   end
 
   describe "mode validation" do
