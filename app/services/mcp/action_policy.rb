@@ -55,13 +55,14 @@ module Mcp
       raise InvalidModeError, normalized
     end
 
-    def initialize(mode: MODE_ALLOW_ALL, identity_context: IdentityContext.runtime_agent)
+    def initialize(mode: MODE_ALLOW_ALL, identity_context: nil)
       @mode = self.class.normalize_mode(mode)
-      @identity_context = identity_context
+      @default_identity_context = identity_context
     end
 
-    def enforce!(action, identity_context: @identity_context)
-      raise DeniedError.new(action: action, mode: @mode) unless allowed?(action, identity_context: identity_context)
+    def enforce!(action, identity_context: nil)
+      resolved_identity_context = identity_context || @default_identity_context || IdentityContext.runtime_agent
+      raise DeniedError.new(action: action, mode: @mode) unless allowed?(action, identity_context: resolved_identity_context)
     end
 
     private
