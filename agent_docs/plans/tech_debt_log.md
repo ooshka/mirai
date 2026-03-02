@@ -352,3 +352,15 @@
 - Debt paid down next: isolate fallback decision logic into a dedicated seam so retriever remains orchestration-focused.
 - Debt potentially added: one additional retrieval abstraction layer that must stay intentionally narrow.
 - Refactor signal: if fallback conditions expand beyond `UnavailableError`, introduce an explicit retrieval error taxonomy/policy contract to avoid ad hoc rescues.
+
+## 2026-03-02 (action policy identity-context contract planning pass)
+
+### Observed signals
+- `Mcp::ActionPolicy` currently retains default identity context and also accepts call-time identity input, but enforcement decisions are still mode-only.
+- The policy implementation contains identity-context plumbing that can read as placeholder behavior, increasing ambiguity in a safety-sensitive seam.
+- Existing request-level plumbing specs already assert identity context reaches policy enforcement, so this is a low-risk clarity refactor with strong regression coverage.
+
+### Debt posture for next slice
+- Debt paid down next: make identity-context ownership explicit in `ActionPolicy` and remove ambiguous unused state patterns.
+- Debt potentially added: temporary backward-compatibility handling may retain a small dual-input path until all callers are explicit.
+- Refactor signal: if identity-aware authorization rules are added, split decision predicates by action family to prevent policy branching sprawl.

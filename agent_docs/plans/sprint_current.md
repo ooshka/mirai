@@ -1,4 +1,4 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+CASE_action_policy_identity_context_explicit_contract

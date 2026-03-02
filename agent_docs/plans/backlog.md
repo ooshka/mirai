@@ -2,23 +2,27 @@
 
 ## Next 3 Candidate Slices
 
-1. Action Policy Identity Context Storage Clarity
-- Value: clarifies whether policy identity context is truly needed as stored state and reduces ambiguity in policy behavior ownership.
-- Scope cue: make identity context handling explicit in `ActionPolicy` without changing current enforcement behavior.
+1. ActionPolicy Identity Context Explicit Contract
+- Value: removes ambiguity in a core policy seam and derisks future identity-aware authorization work.
+- Scope cue: clarify identity-context ownership in `Mcp::ActionPolicy` while preserving allow/deny behavior.
 - Size: ~0.5 day.
 
-2. Index Lifecycle Locking Spec LockSpy Namespace
-- Value: tightens locking-spec reliability by avoiding broad `any_instance` stubbing and making lock-observation scope explicit.
-- Scope cue: update locking tests to use targeted spies/fakes with stable namespace ownership.
+2. Policy Action Inventory Centralization
+- Value: keeps action constants and read-only allowlist ownership explicit as MCP endpoints continue to grow.
+- Scope cue: reduce policy drift risk by codifying a single action inventory contract in policy specs.
 - Size: ~0.5 day.
 
-3. Policy Identity Plumbing Spec Reduce `any_instance` Usage
-- Value: keeps policy-plumbing specs more deterministic and maintainable by replacing broad stubs with local collaborators.
-- Scope cue: narrow test doubles around identity context flow while preserving current API contracts.
-- Size: ~0.5 day.
+3. MCP Helper-Level Policy Wiring Contract Hardening
+- Value: strengthens route-helper policy plumbing confidence without expanding runtime behavior.
+- Scope cue: add focused request-level assertions that each guarded endpoint maps to the intended policy action.
+- Size: ~0.5-1 day.
 
 ## Additional queued slices
 
 1. Runtime Config Surface Parity + Boolean Parsing Contract (follow-up only)
 - Value: reopen only if semantic config diagnostics/parsing regress after retrieval policy refactors.
 - Size: ~0.5 day, conditional.
+
+2. Planning Artifact Hygiene: reconcile superseded open Cases
+- Value: reduces planner/implementor confusion by closing or archiving stale Cases whose intent is already satisfied.
+- Size: ~0.5 day.
