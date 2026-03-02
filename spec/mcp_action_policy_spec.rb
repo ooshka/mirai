@@ -56,6 +56,49 @@ RSpec.describe Mcp::ActionPolicy do
         )
       end.to raise_error(described_class::DeniedError, "action patch.apply is denied in read_only mode")
     end
+
+    it "uses provided identity context before defaults" do
+      provided_identity_context = Mcp::IdentityContext.new(actor: "provided", source: "spec")
+      default_identity_context = Mcp::IdentityContext.new(actor: "default", source: "spec")
+      policy = described_class.new(
+        mode: described_class::MODE_ALLOW_ALL,
+        identity_context: default_identity_context
+      )
+
+      expect(Mcp::IdentityContext).not_to receive(:runtime_agent)
+
+      expect do
+        policy.enforce!(
+          described_class::ACTION_NOTES_LIST,
+          identity_context: provided_identity_context
+        )
+      end.not_to raise_error
+    end
+
+    it "uses initializer identity context when per-call context is not provided" do
+      default_identity_context = Mcp::IdentityContext.new(actor: "default", source: "spec")
+      policy = described_class.new(
+        mode: described_class::MODE_ALLOW_ALL,
+        identity_context: default_identity_context
+      )
+
+      expect(Mcp::IdentityContext).not_to receive(:runtime_agent)
+
+      expect do
+        policy.enforce!(described_class::ACTION_NOTES_LIST)
+      end.not_to raise_error
+    end
+
+    it "falls back to runtime agent identity context when none is provided" do
+      policy = described_class.new(mode: described_class::MODE_ALLOW_ALL)
+      runtime_identity_context = Mcp::IdentityContext.new(actor: "runtime_agent", source: "http_api")
+
+      expect(Mcp::IdentityContext).to receive(:runtime_agent).and_return(runtime_identity_context)
+
+      expect do
+        policy.enforce!(described_class::ACTION_NOTES_LIST)
+      end.not_to raise_error
+    end
   end
 
   describe "mode validation" do
