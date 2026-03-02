@@ -25,30 +25,26 @@
 
 ## Current Focus (Next Slice)
 
-6. Patch + index concurrency guardrails
-- Introduce a bounded lock seam for patch apply and index lifecycle mutation paths
-- Ensure deterministic artifact lifecycle behavior under concurrent patch/rebuild/invalidate traffic
-
-## Near-Term Follow-ons
-
-7. Symlink listing policy contract alignment
+6. Symlink listing policy contract alignment
 - Align `/mcp/notes` listing behavior with `/mcp/notes/read` containment policy for symlinked markdown paths
 - Preserve strict `NOTES_ROOT` safety guarantees while removing list/read contract ambiguity
 
-8. Runtime config surface parity + boolean parsing contract
+## Near-Term Follow-ons
+
+7. Runtime config surface parity + boolean parsing contract
 - Centralize semantic-provider boolean env parsing ownership
 - Expose effective semantic-provider diagnostics in `/config` to reduce operator drift
 
-9. Runtime-agent policy identity extension seam
+8. Runtime-agent policy identity extension seam
 - Prepare a narrow config/policy boundary for future identity-aware controls without introducing auth yet
 - Keep current mode-based enforcement as the only active policy behavior
 
-10. Retrieval storage lifecycle controls (phase 2)
+9. Retrieval storage lifecycle controls (phase 2)
 - Add bounded retention/cleanup controls for retrieval artifacts after telemetry baseline lands
 - Preserve current artifact schema while introducing explicit lifecycle operations
 
 ## Later (After Contracts Stabilize)
 
-11. Retrieval fallback policy extraction
+10. Retrieval fallback policy extraction
 - If semantic/lexical fallback rules expand, extract fallback policy from retriever orchestration
 - Preserve query endpoint contract while reducing service branching complexity

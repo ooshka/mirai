@@ -304,3 +304,15 @@
 - Debt paid down next: introduce a small lock seam around lifecycle mutation paths so artifact state transitions are deterministic.
 - Debt potentially added: serialized mutation operations may reduce parallel throughput until higher-scale coordination strategy is introduced.
 - Refactor signal: if additional mutation endpoints are added, centralize lock + post-mutation lifecycle orchestration in one coordinator to avoid duplicated action-level synchronization logic.
+
+## 2026-03-02 (symlink listing policy contract alignment planning pass)
+
+### Observed signals
+- `SafeNotesPath#list_markdown_files` enumerates markdown paths by glob/file checks, while `resolve` applies stricter containment checks (including realpath-based symlink escape protection).
+- This can surface paths from `/mcp/notes` that fail `/mcp/notes/read`, creating a contract mismatch for runtime-agent/tool flows that treat list output as read candidates.
+- Existing safety posture is strong on read-path enforcement, so the primary gap is policy consistency at discovery time.
+
+### Debt posture for next slice
+- Debt paid down next: align listing semantics with read containment so notes discovery is read-safe by construction.
+- Debt potentially added: tighter listing filters may hide some edge-case symlink setups until explicit allowlist policy exists.
+- Refactor signal: if discovery rules continue to expand (symlink handling, hidden files, ignores), split file-discovery policy from path-resolution responsibilities in `SafeNotesPath`.
