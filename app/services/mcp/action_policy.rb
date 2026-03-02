@@ -25,11 +25,12 @@ module Mcp
     ].freeze
 
     class DeniedError < StandardError
-      attr_reader :action, :mode
+      attr_reader :action, :mode, :identity_context
 
-      def initialize(action:, mode:)
+      def initialize(action:, mode:, identity_context: nil)
         @action = action
         @mode = mode
+        @identity_context = identity_context
         super("action #{action} is denied in #{mode} mode")
       end
     end
@@ -57,24 +58,32 @@ module Mcp
 
     def initialize(mode: MODE_ALLOW_ALL, identity_context: nil)
       @mode = self.class.normalize_mode(mode)
-      @default_identity_context = identity_context
+      @identity_context = identity_context
     end
 
     def enforce!(action, identity_context: nil)
-      resolved_identity_context = identity_context || @default_identity_context || IdentityContext.runtime_agent
-      raise DeniedError.new(action: action, mode: @mode) unless allowed?(action, identity_context: resolved_identity_context)
+      resolved_identity_context = resolve_identity_context(identity_context)
+
+      raise DeniedError.new(
+        action: action,
+        mode: @mode,
+        identity_context: resolved_identity_context
+      ) unless allowed?(action, identity_context: resolved_identity_context)
     end
 
     private
 
-    def allowed?(action, identity_context:)
-      _identity_context = identity_context
+    def allowed?(action, identity_context: _identity_context)
       case @mode
       when MODE_ALLOW_ALL
         true
       when MODE_READ_ONLY
         READ_ONLY_ALLOWED_ACTIONS.include?(action)
       end
+    end
+
+    def resolve_identity_context(identity_context)
+      identity_context || @identity_context || IdentityContext.runtime_agent
     end
   end
 end

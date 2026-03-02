@@ -56,6 +56,54 @@ RSpec.describe Mcp::ActionPolicy do
         )
       end.to raise_error(described_class::DeniedError, "action patch.apply is denied in read_only mode")
     end
+
+    it "uses provided identity context before defaults when raising denied error" do
+      provided_identity_context = Mcp::IdentityContext.new(actor: "provided", source: "spec")
+      default_identity_context = Mcp::IdentityContext.new(actor: "default", source: "spec")
+      policy = described_class.new(
+        mode: described_class::MODE_READ_ONLY,
+        identity_context: default_identity_context
+      )
+
+      expect do
+        policy.enforce!(
+          described_class::ACTION_PATCH_APPLY,
+          identity_context: provided_identity_context
+        )
+      end.to raise_error do |error|
+        expect(error).to be_a(described_class::DeniedError)
+        expect(error.identity_context).to eq(provided_identity_context)
+      end
+    end
+
+    it "uses initializer identity context when per-call context is not provided" do
+      default_identity_context = Mcp::IdentityContext.new(actor: "default", source: "spec")
+      policy = described_class.new(
+        mode: described_class::MODE_READ_ONLY,
+        identity_context: default_identity_context
+      )
+
+      expect do
+        policy.enforce!(described_class::ACTION_PATCH_APPLY)
+      end.to raise_error do |error|
+        expect(error).to be_a(described_class::DeniedError)
+        expect(error.identity_context).to eq(default_identity_context)
+      end
+    end
+
+    it "falls back to runtime agent identity context when no explicit context is configured" do
+      policy = described_class.new(mode: described_class::MODE_READ_ONLY)
+      runtime_identity_context = Mcp::IdentityContext.new(actor: "runtime_agent", source: "http_api")
+
+      allow(Mcp::IdentityContext).to receive(:runtime_agent).and_return(runtime_identity_context)
+
+      expect do
+        policy.enforce!(described_class::ACTION_PATCH_APPLY)
+      end.to raise_error do |error|
+        expect(error).to be_a(described_class::DeniedError)
+        expect(error.identity_context).to eq(runtime_identity_context)
+      end
+    end
   end
 
   describe "mode validation" do
