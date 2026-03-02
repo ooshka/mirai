@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_runtime_config_semantic_flag_contract_hardening.md`
+No active case.
 
 ## Sprint Goal
 Harden runtime config diagnostics and parsing consistency:

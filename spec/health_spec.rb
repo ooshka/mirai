@@ -18,5 +18,6 @@ RSpec.describe "Health" do
     expect(body.fetch("mcp_policy_modes_supported")).to eq(Mcp::ActionPolicy.supported_modes)
     expect(body.fetch("mcp_retrieval_mode")).to eq(App.settings.mcp_retrieval_mode)
     expect(body.fetch("mcp_retrieval_modes_supported")).to eq(Mcp::RetrievalMode.supported_modes)
+    expect(body.fetch("mcp_semantic_provider_enabled")).to eq(App.settings.mcp_semantic_provider_enabled)
   end
 end

@@ -15,7 +15,8 @@ module Routes
           mcp_policy_mode: settings.mcp_policy_mode,
           mcp_policy_modes_supported: ::Mcp::ActionPolicy.supported_modes,
           mcp_retrieval_mode: settings.mcp_retrieval_mode,
-          mcp_retrieval_modes_supported: ::Mcp::RetrievalMode.supported_modes
+          mcp_retrieval_modes_supported: ::Mcp::RetrievalMode.supported_modes,
+          mcp_semantic_provider_enabled: settings.mcp_semantic_provider_enabled
         }.to_json
       end
     end

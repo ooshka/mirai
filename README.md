@@ -59,7 +59,7 @@ Default container config:
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"] }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false }` (values depend on environment)
 
 ### Notes read APIs
 

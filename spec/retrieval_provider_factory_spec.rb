@@ -50,4 +50,34 @@ RSpec.describe RetrievalProviderFactory do
       ).build
     end.to raise_error(described_class::InvalidModeError, "invalid MCP retrieval mode: unknown-mode")
   end
+
+  it "normalizes semantic provider enabled true-like values" do
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+
+    expect(SemanticRetrievalProvider).to receive(:new).with(
+      enabled: true,
+      lexical_provider: lexical_provider
+    ).and_return(semantic_provider)
+
+    described_class.new(
+      semantic_provider_enabled: " TRUE ",
+      lexical_provider: lexical_provider
+    ).build
+  end
+
+  it "normalizes semantic provider enabled false-like values" do
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+
+    expect(SemanticRetrievalProvider).to receive(:new).with(
+      enabled: false,
+      lexical_provider: lexical_provider
+    ).and_return(semantic_provider)
+
+    described_class.new(
+      semantic_provider_enabled: "",
+      lexical_provider: lexical_provider
+    ).build
+  end
 end

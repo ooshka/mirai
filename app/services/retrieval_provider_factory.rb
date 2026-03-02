@@ -2,6 +2,7 @@
 
 require_relative "lexical_retrieval_provider"
 require_relative "semantic_retrieval_provider"
+require_relative "mcp/boolean_flag"
 require_relative "mcp/retrieval_mode"
 
 class RetrievalProviderFactory
@@ -25,7 +26,7 @@ class RetrievalProviderFactory
     semantic_provider: nil
   )
     @mode = self.class.normalize_mode!(mode)
-    @semantic_provider_enabled = truthy?(semantic_provider_enabled)
+    @semantic_provider_enabled = Mcp::BooleanFlag.enabled?(semantic_provider_enabled)
     @lexical_provider = lexical_provider
     @semantic_provider = semantic_provider
   end
@@ -43,11 +44,5 @@ class RetrievalProviderFactory
     end
 
     {primary_provider: primary_provider, fallback_provider: @lexical_provider}
-  end
-
-  private
-
-  def truthy?(value)
-    value.to_s.strip.downcase == "true"
   end
 end
