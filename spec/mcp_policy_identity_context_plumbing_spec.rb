@@ -21,13 +21,16 @@ RSpec.describe "MCP policy identity context plumbing" do
 
   it "passes identity context through helper policy enforcement for allowed actions" do
     File.write(File.join(@notes_root, "root.md"), "root")
+    policy = instance_double(Mcp::ActionPolicy)
 
-    expect_any_instance_of(Mcp::ActionPolicy).to receive(:enforce!)
+    allow(Mcp::ActionPolicy).to receive(:new).and_return(policy)
+
+    expect(policy).to receive(:enforce!)
       .with(
         Mcp::ActionPolicy::ACTION_NOTES_LIST,
         identity_context: instance_of(Mcp::IdentityContext)
       )
-      .and_call_original
+      .and_return(nil)
 
     get "/mcp/notes"
 
@@ -37,6 +40,7 @@ RSpec.describe "MCP policy identity context plumbing" do
 
   it "passes identity context through helper policy enforcement for denied actions" do
     App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
+    policy = instance_double(Mcp::ActionPolicy)
     patch = <<~PATCH
       --- a/notes/today.md
       +++ b/notes/today.md
@@ -45,12 +49,19 @@ RSpec.describe "MCP policy identity context plumbing" do
       +world
     PATCH
 
-    expect_any_instance_of(Mcp::ActionPolicy).to receive(:enforce!)
+    allow(Mcp::ActionPolicy).to receive(:new).and_return(policy)
+
+    expect(policy).to receive(:enforce!)
       .with(
         Mcp::ActionPolicy::ACTION_PATCH_PROPOSE,
         identity_context: instance_of(Mcp::IdentityContext)
       )
-      .and_call_original
+      .and_raise(
+        Mcp::ActionPolicy::DeniedError.new(
+          action: Mcp::ActionPolicy::ACTION_PATCH_PROPOSE,
+          mode: Mcp::ActionPolicy::MODE_READ_ONLY
+        )
+      )
 
     post "/mcp/patch/propose", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
 
