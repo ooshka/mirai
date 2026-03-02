@@ -56,4 +56,27 @@ RSpec.describe SafeNotesPath do
         .to raise_error(SafeNotesPath::InvalidPathError, "path escapes notes root")
     end
   end
+
+  it "includes symlinked markdown files that resolve inside notes root" do
+    FileUtils.mkdir_p(File.join(@notes_root, "nested"))
+    File.write(File.join(@notes_root, "nested/child.md"), "child")
+    File.symlink(
+      File.join(@notes_root, "nested/child.md"),
+      File.join(@notes_root, "child-link.md")
+    )
+
+    expect(safe_path.list_markdown_files).to eq(["child-link.md", "nested/child.md"])
+  end
+
+  it "excludes symlinked markdown files that resolve outside notes root from listing" do
+    Dir.mktmpdir("outside-notes-root") do |outside_root|
+      outside_file = File.join(outside_root, "secret.md")
+      File.write(outside_file, "secret")
+
+      File.write(File.join(@notes_root, "inside.md"), "inside")
+      File.symlink(outside_file, File.join(@notes_root, "escaped.md"))
+
+      expect(safe_path.list_markdown_files).to eq(["inside.md"])
+    end
+  end
 end

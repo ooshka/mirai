@@ -124,6 +124,38 @@ RSpec.describe "MCP notes read-only endpoints" do
     )
   end
 
+  it "excludes symlinked markdown files that escape notes root from notes listing" do
+    Dir.mktmpdir("outside-notes-root") do |outside_root|
+      outside_file = File.join(outside_root, "secret.md")
+      File.write(outside_file, "secret")
+      File.write(File.join(@notes_root, "inside.md"), "inside")
+      File.symlink(outside_file, File.join(@notes_root, "escaped.md"))
+
+      get "/mcp/notes"
+    end
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {"notes" => ["inside.md"]}
+    )
+  end
+
+  it "includes symlinked markdown files that resolve inside notes root in notes listing" do
+    FileUtils.mkdir_p(File.join(@notes_root, "nested"))
+    File.write(File.join(@notes_root, "nested/child.md"), "child")
+    File.symlink(
+      File.join(@notes_root, "nested/child.md"),
+      File.join(@notes_root, "child-link.md")
+    )
+
+    get "/mcp/notes"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {"notes" => ["child-link.md", "nested/child.md"]}
+    )
+  end
+
   it "allows notes read endpoints in read_only policy mode" do
     App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
     File.write(File.join(@notes_root, "root.md"), "root")

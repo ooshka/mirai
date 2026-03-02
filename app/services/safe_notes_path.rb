@@ -28,6 +28,7 @@ class SafeNotesPath
   def list_markdown_files
     Dir.glob(File.join(@notes_root, "**", "*.md")).sort.filter_map do |absolute_path|
       next unless File.file?(absolute_path)
+      next unless contained?(absolute_path)
 
       Pathname.new(absolute_path).relative_path_from(Pathname.new(@notes_root)).to_s
     end
