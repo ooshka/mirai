@@ -1,7 +1,7 @@
 # Current Sprint
 
 ## Active Case
-`agent_docs/cases/CASE_patch_index_concurrency_guardrails.md`
+No active case.
 
 ## Sprint Goal
 Harden runtime mutation/index lifecycle determinism under concurrent traffic:
