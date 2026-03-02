@@ -25,15 +25,15 @@
 
 ## Current Focus (Next Slice)
 
-6. Runtime config surface parity + boolean parsing contract
-- Centralize semantic-provider boolean parsing ownership to remove duplicated env normalization
-- Expose effective semantic-provider diagnostics in `/config` to reduce operator drift
+6. Runtime-agent policy identity extension seam
+- Add a narrow identity-context contract for policy evaluation without introducing auth yet
+- Preserve existing mode-based enforcement while preparing future identity-aware controls
 
 ## Near-Term Follow-ons
 
-7. Runtime-agent policy identity extension seam
-- Prepare a narrow config/policy boundary for future identity-aware controls without introducing auth yet
-- Keep current mode-based enforcement as the only active policy behavior
+7. Runtime config surface parity + boolean parsing contract follow-up
+- Keep semantic-provider diagnostics/parsing contracts aligned if parity regressions appear
+- Preserve current retrieval behavior while maintaining single-owner config parsing
 
 8. Retrieval storage lifecycle controls (phase 2)
 - Add bounded retention/cleanup controls for retrieval artifacts after telemetry baseline lands

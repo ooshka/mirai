@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_runtime_agent_policy_identity_extension_seam.md`
 
 ## Sprint Goal
-Harden runtime config diagnostics and parsing consistency:
-- centralize semantic-provider boolean parsing in one shared contract
-- expose effective `mcp_semantic_provider_enabled` state via `/config`
-- preserve existing retrieval behavior while reducing config drift risk
+Create an identity-ready policy seam without changing behavior:
+- add a small identity-context contract for policy evaluation inputs
+- thread identity context through one shared MCP policy helper path
+- preserve existing mode-based allow/deny behavior and request contracts

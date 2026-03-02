@@ -328,3 +328,15 @@
 - Debt paid down next: centralize semantic-flag boolean normalization and expose deterministic diagnostics in `/config`.
 - Debt potentially added: introducing a helper seam adds one more config abstraction to keep aligned with runtime defaults.
 - Refactor signal: if additional runtime flags are introduced, consolidate mode + boolean parsing under one typed runtime-config contract.
+
+## 2026-03-02 (runtime-agent policy identity extension seam planning pass)
+
+### Observed signals
+- Action policy mode handling is centralized, but policy inputs are still implicit and request-context-free, which limits safe extension toward identity-aware controls.
+- Current route/helper wiring can enforce mode gates, but there is no explicit actor-context contract for future rules to consume.
+- As autonomy constraints evolve, adding identity checks directly in routes/actions would increase coupling and duplication risk.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a narrow identity-context seam so policy extension remains service-first and testable.
+- Debt potentially added: context attributes will start minimal and may need a later adapter when transport/auth layers exist.
+- Refactor signal: if context construction logic begins branching by endpoint/source, extract a dedicated context builder separate from route helpers.
