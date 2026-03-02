@@ -292,3 +292,15 @@
 - Debt paid down next: centralize runtime mode parsing/validation in one config boundary and expose deterministic diagnostics for both policy and retrieval modes.
 - Debt potentially added: introducing a config object adds one more indirection layer that must remain synchronized with mode constants.
 - Refactor signal: if additional runtime toggles continue to grow, consolidate environment parsing into a typed app-config module rather than service-local env reads.
+
+## 2026-03-02 (patch/index concurrency guardrails planning pass)
+
+### Observed signals
+- `PatchApplyAction` commits note mutations and then invalidates index artifacts, while rebuild/invalidate actions can run independently with no shared synchronization boundary.
+- Index lifecycle correctness is currently contract-tested for single-request flows, but concurrent mutation/rebuild ordering is not explicitly constrained.
+- As runtime-agent mutation traffic grows, lifecycle races become harder to reason about and can produce stale-read windows that are not visible in normal happy-path tests.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a small lock seam around lifecycle mutation paths so artifact state transitions are deterministic.
+- Debt potentially added: serialized mutation operations may reduce parallel throughput until higher-scale coordination strategy is introduced.
+- Refactor signal: if additional mutation endpoints are added, centralize lock + post-mutation lifecycle orchestration in one coordinator to avoid duplicated action-level synchronization logic.
