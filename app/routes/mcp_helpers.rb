@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../services/mcp/identity_context"
+
 module Routes
   module McpHelpers
     def render_error(status, code, message)
@@ -26,11 +28,15 @@ module Routes
     end
 
     def enforce_mcp_action!(action)
-      mcp_action_policy.enforce!(action)
+      mcp_action_policy.enforce!(action, identity_context: mcp_identity_context)
     end
 
     def mcp_action_policy
       @mcp_action_policy ||= ::Mcp::ActionPolicy.new(mode: settings.mcp_policy_mode)
+    end
+
+    def mcp_identity_context
+      @mcp_identity_context ||= ::Mcp::IdentityContext.runtime_agent
     end
   end
 end
