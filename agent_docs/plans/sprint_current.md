@@ -1,10 +1,10 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+`agent_docs/cases/CASE_runtime_config_semantic_flag_contract_hardening.md`
 
 ## Sprint Goal
-Align notes discovery and read safety contracts:
-- enforce one deterministic symlink policy across `/mcp/notes` and `/mcp/notes/read`
-- prevent listing of paths that violate read-time containment guarantees
-- preserve existing endpoint response/error shapes while tightening safety consistency
+Harden runtime config diagnostics and parsing consistency:
+- centralize semantic-provider boolean parsing in one shared contract
+- expose effective `mcp_semantic_provider_enabled` state via `/config`
+- preserve existing retrieval behavior while reducing config drift risk

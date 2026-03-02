@@ -25,21 +25,17 @@
 
 ## Current Focus (Next Slice)
 
-6. Symlink listing policy contract alignment
-- Align `/mcp/notes` listing behavior with `/mcp/notes/read` containment policy for symlinked markdown paths
-- Preserve strict `NOTES_ROOT` safety guarantees while removing list/read contract ambiguity
+6. Runtime config surface parity + boolean parsing contract
+- Centralize semantic-provider boolean parsing ownership to remove duplicated env normalization
+- Expose effective semantic-provider diagnostics in `/config` to reduce operator drift
 
 ## Near-Term Follow-ons
 
-7. Runtime config surface parity + boolean parsing contract
-- Centralize semantic-provider boolean env parsing ownership
-- Expose effective semantic-provider diagnostics in `/config` to reduce operator drift
-
-8. Runtime-agent policy identity extension seam
+7. Runtime-agent policy identity extension seam
 - Prepare a narrow config/policy boundary for future identity-aware controls without introducing auth yet
 - Keep current mode-based enforcement as the only active policy behavior
 
-9. Retrieval storage lifecycle controls (phase 2)
+8. Retrieval storage lifecycle controls (phase 2)
 - Add bounded retention/cleanup controls for retrieval artifacts after telemetry baseline lands
 - Preserve current artifact schema while introducing explicit lifecycle operations
 

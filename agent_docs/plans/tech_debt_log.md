@@ -316,3 +316,15 @@
 - Debt paid down next: align listing semantics with read containment so notes discovery is read-safe by construction.
 - Debt potentially added: tighter listing filters may hide some edge-case symlink setups until explicit allowlist policy exists.
 - Refactor signal: if discovery rules continue to expand (symlink handling, hidden files, ignores), split file-discovery policy from path-resolution responsibilities in `SafeNotesPath`.
+
+## 2026-03-02 (runtime config semantic-flag contract planning pass)
+
+### Observed signals
+- `RuntimeConfig` and `RetrievalProviderFactory` both implement local `truthy?` parsing for `MCP_SEMANTIC_PROVIDER_ENABLED`, creating duplicated behavior ownership.
+- `/config` currently exposes policy/retrieval mode diagnostics but not the effective semantic-provider enabled value, limiting operator visibility.
+- Retrieval/provider behavior is now configuration-rich enough that parsing drift can silently change runtime behavior between boot and query flows.
+
+### Debt posture for next slice
+- Debt paid down next: centralize semantic-flag boolean normalization and expose deterministic diagnostics in `/config`.
+- Debt potentially added: introducing a helper seam adds one more config abstraction to keep aligned with runtime defaults.
+- Refactor signal: if additional runtime flags are introduced, consolidate mode + boolean parsing under one typed runtime-config contract.
