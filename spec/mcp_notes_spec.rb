@@ -48,6 +48,74 @@ RSpec.describe "MCP notes read-only endpoints" do
     )
   end
 
+  it "reads multiple markdown notes in request order" do
+    File.write(File.join(@notes_root, "one.md"), "one")
+    File.write(File.join(@notes_root, "two.md"), "two")
+
+    post "/mcp/notes/read_batch",
+      {paths: ["two.md", "one.md"]}.to_json,
+      "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "notes" => [
+          {"path" => "two.md", "content" => "two"},
+          {"path" => "one.md", "content" => "one"}
+        ]
+      }
+    )
+  end
+
+  it "returns invalid_path for invalid read_batch payload shape" do
+    post "/mcp/notes/read_batch", "[]", "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_path",
+          "message" => "paths must be an array"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_path for oversized read_batch payload" do
+    oversized_paths = (1..(Mcp::NotesBatchReadAction::MAX_BATCH_SIZE + 1)).map { |n| "note-#{n}.md" }
+    expected_message = "paths exceeds max batch size of #{Mcp::NotesBatchReadAction::MAX_BATCH_SIZE}"
+
+    post "/mcp/notes/read_batch",
+      {paths: oversized_paths}.to_json,
+      "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_path",
+          "message" => expected_message
+        }
+      }
+    )
+  end
+
+  it "returns invalid_path for unsafe read_batch paths" do
+    post "/mcp/notes/read_batch",
+      {paths: ["../secret.md"]}.to_json,
+      "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_path",
+          "message" => "path escapes notes root"
+        }
+      }
+    )
+  end
+
   it "returns 400 for traversal paths" do
     get "/mcp/notes/read", path: "../secret.md"
 

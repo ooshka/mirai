@@ -4,18 +4,26 @@ require_relative "../services/mcp/identity_context"
 
 module Routes
   module McpHelpers
+    def parsed_json_payload(error_code:, error_message:)
+      request.body.rewind
+      payload = JSON.parse(request.body.read)
+      render_error(400, error_code, error_message) unless payload.is_a?(Hash)
+
+      payload
+    rescue JSON::ParserError
+      render_error(400, error_code, error_message)
+    end
+
     def render_error(status, code, message)
       halt status, {error: {code: code, message: message}}.to_json
     end
 
     def parsed_patch_payload
-      request.body.rewind
-      payload = JSON.parse(request.body.read)
-      render_error(400, "invalid_patch", "patch is required") unless payload.is_a?(Hash)
+      parsed_json_payload(error_code: "invalid_patch", error_message: "patch is required")
+    end
 
-      payload
-    rescue JSON::ParserError
-      render_error(400, "invalid_patch", "patch is required")
+    def parsed_notes_batch_read_payload
+      parsed_json_payload(error_code: "invalid_path", error_message: "paths must be an array")
     end
 
     def with_mcp_error_handling

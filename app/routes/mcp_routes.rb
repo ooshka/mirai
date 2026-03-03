@@ -17,6 +17,14 @@ module Routes
         end
       end
 
+      app.post "/mcp/notes/read_batch" do
+        with_mcp_error_handling do
+          enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_NOTES_READ)
+          payload = parsed_notes_batch_read_payload
+          ::Mcp::NotesBatchReadAction.new(notes_root: settings.notes_root).call(paths: payload["paths"]).to_json
+        end
+      end
+
       app.post "/mcp/patch/propose" do
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_PATCH_PROPOSE)
