@@ -30,8 +30,8 @@ class NotesRetriever
     end
   end
 
-  def query(text:, limit: DEFAULT_LIMIT)
-    chunks = chunks_for_query
+  def query(text:, limit: DEFAULT_LIMIT, path_prefix: nil)
+    chunks = chunks_for_query(path_prefix: path_prefix)
     @fallback_policy.rank(
       primary_provider: @provider,
       fallback_provider: @fallback_provider,
@@ -43,10 +43,16 @@ class NotesRetriever
 
   private
 
-  def chunks_for_query
+  def chunks_for_query(path_prefix:)
     stored_index = @index_store.read
-    return stored_index.fetch(:chunks, []) if stored_index
+    chunks = if stored_index
+      stored_index.fetch(:chunks, [])
+    else
+      @indexer.index.fetch(:chunks, [])
+    end
 
-    @indexer.index.fetch(:chunks, [])
+    return chunks if path_prefix.nil?
+
+    chunks.select { |chunk| chunk.fetch(:path, "").start_with?(path_prefix) }
   end
 end

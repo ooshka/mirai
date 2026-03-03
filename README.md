@@ -113,11 +113,13 @@ Default container config:
     - `artifact_byte_size: null`
     - `chunks_content_bytes_total: null`
 
-- `GET /mcp/index/query?q=<text>&limit=<n>`
+- `GET /mcp/index/query?q=<text>&limit=<n>&path_prefix=<relative/path>`
   - Queries ranked chunks from persisted artifact when present; falls back to on-demand indexing if artifact is missing.
   - Retrieval mode:
     - `lexical` (default): lexical ranking provider.
     - `semantic`: semantic provider adapter path; falls back to lexical ranking if semantic provider is unavailable.
+  - Optional `path_prefix` scopes candidate chunks to paths that start with the normalized relative prefix (for example, `nested/`).
+  - `path_prefix` must be a string relative to `NOTES_ROOT`; absolute or traversal values return `invalid_query`.
   - Response: `{ "query": "alpha", "limit": 5, "chunks": [...] }`
   - Default limit: `5`, max limit: `50`.
 
