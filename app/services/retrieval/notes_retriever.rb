@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "notes_indexer"
-require_relative "index_store"
+require_relative "../indexing/notes_indexer"
+require_relative "../indexing/index_store"
 require_relative "retrieval_provider_factory"
 require_relative "retrieval_fallback_policy"
 

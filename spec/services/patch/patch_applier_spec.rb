@@ -3,7 +3,7 @@
 require "fileutils"
 require "tmpdir"
 require "open3"
-require_relative "../app/services/patch_applier"
+require_relative "../../../app/services/patch/patch_applier"
 
 RSpec.describe PatchApplier do
   around do |example|

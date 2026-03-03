@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../app/services/lexical_chunk_scorer"
+require_relative "../../../app/services/retrieval/lexical_chunk_scorer"
 
 RSpec.describe LexicalChunkScorer do
   it "counts how many query tokens are present in content tokens" do

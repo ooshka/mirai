@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../app/services/retrieval_provider_factory"
+require_relative "../../../app/services/retrieval/retrieval_provider_factory"
 
 RSpec.describe RetrievalProviderFactory do
   it "selects lexical provider by default" do

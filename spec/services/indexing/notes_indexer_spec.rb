@@ -2,8 +2,8 @@
 
 require "fileutils"
 require "tmpdir"
-require_relative "../app/services/notes_indexer"
-require_relative "../app/services/notes_chunker"
+require_relative "../../../app/services/indexing/notes_indexer"
+require_relative "../../../app/services/notes/notes_chunker"
 
 RSpec.describe NotesIndexer do
   around do |example|

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../app/services/patch_parser"
+require_relative "../../../app/services/patch/patch_parser"
 
 RSpec.describe PatchParser do
   let(:parser) { described_class.new }

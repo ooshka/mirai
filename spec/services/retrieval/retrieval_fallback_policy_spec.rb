@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "../app/services/retrieval_fallback_policy"
-require_relative "../app/services/semantic_retrieval_provider"
+require_relative "../../../app/services/retrieval/retrieval_fallback_policy"
+require_relative "../../../app/services/retrieval/semantic_retrieval_provider"
 
 RSpec.describe RetrievalFallbackPolicy do
   it "returns primary provider results when primary succeeds" do

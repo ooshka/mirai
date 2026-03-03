@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "notes_reader"
-require_relative "notes_chunker"
+require_relative "../notes/notes_reader"
+require_relative "../notes/notes_chunker"
 
 class NotesIndexer
   def initialize(notes_root:, chunker: NotesChunker.new)

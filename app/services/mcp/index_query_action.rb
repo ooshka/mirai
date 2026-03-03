@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require "pathname"
-require_relative "../notes_retriever"
-require_relative "../retrieval_provider_factory"
+require_relative "../retrieval/notes_retriever"
+require_relative "../retrieval/retrieval_provider_factory"
 
 module Mcp
   class IndexQueryAction

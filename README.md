@@ -16,6 +16,12 @@ The runtime model is treated as untrusted and can only mutate notes through cons
 - RSpec (`rack-test`) for request/service coverage
 - Docker Compose for reproducible local runtime
 
+## Service/spec layout
+
+- `app/services/mcp/` keeps MCP action/policy adapters.
+- `app/services/notes/`, `app/services/patch/`, `app/services/indexing/`, and `app/services/retrieval/` group core domain services.
+- `spec/services/<domain>/` mirrors those domain folders for unit-level service tests.
+
 ## Local development
 
 Start the app:
