@@ -364,3 +364,15 @@
 - Debt paid down next: make identity-context ownership explicit in `ActionPolicy` and remove ambiguous unused state patterns.
 - Debt potentially added: temporary backward-compatibility handling may retain a small dual-input path until all callers are explicit.
 - Refactor signal: if identity-aware authorization rules are added, split decision predicates by action family to prevent policy branching sprawl.
+
+## 2026-03-03 (feature-balance planning pass: retrieval path-scope filtering)
+
+### Observed signals
+- Recent planning/completion cadence is heavily concentrated on hardening and must-fix follow-ups, with minimal net-new user-visible capability progression.
+- Retrieval contracts are stable and deterministic, making query-shape extensions lower risk than additional policy/internal hardening.
+- Current query API has no first-class path/folder scoping, forcing clients to over-fetch and post-filter in multi-domain note repositories.
+
+### Debt posture for next slice
+- Debt paid down next: reduce feature-delivery drift by shipping a bounded user-visible query capability while preserving existing defaults.
+- Debt potentially added: query parameter surface will grow (`path_prefix`), which may require later normalization/validation centralization if more filters are added.
+- Refactor signal: if query filters expand beyond one or two options, extract a dedicated query-options parser/validator object to avoid retriever/service argument sprawl.

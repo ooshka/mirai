@@ -25,19 +25,19 @@
 
 ## Current Focus (Next Slice)
 
-6. Retrieval fallback policy extraction
-- Extract semantic-to-lexical fallback handling from retriever orchestration into a dedicated policy seam
-- Preserve existing `GET /mcp/index/query` behavior while reducing retrieval branching complexity
+6. Retrieval query path prefix filter
+- Add optional folder/path scoping to `GET /mcp/index/query` while preserving current default query behavior
+- Improve retrieval relevance for multi-domain note trees without requiring client-side post-filtering
 
 ## Near-Term Follow-ons
 
-7. Retrieval storage lifecycle controls (phase 2)
-- Add bounded retention/cleanup controls for retrieval artifacts after telemetry baseline lands
-- Preserve current artifact schema while introducing explicit lifecycle operations
+7. Notes batch-read capability
+- Add a bounded batch note read endpoint for known paths to reduce per-note request overhead in tool/runtime flows
+- Keep existing single-note read contract unchanged
 
-8. Runtime config surface parity + boolean parsing contract follow-up
-- Keep semantic-provider diagnostics/parsing contracts aligned if parity regressions appear
-- Preserve current retrieval behavior while maintaining single-owner config parsing
+8. Retrieval query response quality enhancements
+- Add optional snippet-location metadata to query results for better grounding and downstream UX
+- Preserve deterministic sorting and existing query contract defaults
 
 ## Later (After Contracts Stabilize)
 

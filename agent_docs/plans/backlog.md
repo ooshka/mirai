@@ -1,28 +1,42 @@
 # Backlog
 
-## Next 3 Candidate Slices
+## Now
 
-1. ActionPolicy Identity Context Explicit Contract
-- Value: removes ambiguity in a core policy seam and derisks future identity-aware authorization work.
-- Scope cue: clarify identity-context ownership in `Mcp::ActionPolicy` while preserving allow/deny behavior.
-- Size: ~0.5 day.
-
-2. Policy Action Inventory Centralization
-- Value: keeps action constants and read-only allowlist ownership explicit as MCP endpoints continue to grow.
-- Scope cue: reduce policy drift risk by codifying a single action inventory contract in policy specs.
-- Size: ~0.5 day.
-
-3. MCP Helper-Level Policy Wiring Contract Hardening
-- Value: strengthens route-helper policy plumbing confidence without expanding runtime behavior.
-- Scope cue: add focused request-level assertions that each guarded endpoint maps to the intended policy action.
+1. Retrieval Query Path Prefix Filter
+- Type: `feature`
+- Value: lets clients scope retrieval to a folder/domain, improving relevance without changing existing default behavior.
 - Size: ~0.5-1 day.
 
-## Additional queued slices
+2. Notes Batch Read Endpoint
+- Type: `feature`
+- Value: reduces request round-trips for runtime workflows that need multiple known notes.
+- Size: ~1 day.
 
-1. Runtime Config Surface Parity + Boolean Parsing Contract (follow-up only)
-- Value: reopen only if semantic config diagnostics/parsing regress after retrieval policy refactors.
-- Size: ~0.5 day, conditional.
+## Next
 
-2. Planning Artifact Hygiene: reconcile superseded open Cases
-- Value: reduces planner/implementor confusion by closing or archiving stale Cases whose intent is already satisfied.
+1. Retrieval Query Result Snippet Offsets
+- Type: `feature`
+- Value: returns lightweight match location hints so callers can ground responses in note context faster.
+- Size: ~1 day.
+
+2. Planning Artifact Hygiene: Reconcile Superseded Open Cases
+- Type: `docs`
+- Value: reduces planner/implementor confusion by resolving stale open case files.
+- Size: ~0.5 day.
+
+## Later
+
+1. ActionPolicy Identity Context Storage Clarity
+- Type: `hardening`
+- Value: removes ambiguity in policy identity-context ownership before identity-aware rules expand.
+- Size: ~0.5 day.
+
+2. Policy Identity Plumbing Spec Without `any_instance`
+- Type: `hardening`
+- Value: reduces brittle request-spec behavior and keeps policy plumbing tests reliable.
+- Size: ~0.5 day.
+
+3. LockSpy Namespacing In Index Lifecycle Locking Spec
+- Type: `hardening`
+- Value: avoids global spec constant collisions as suite surface grows.
 - Size: ~0.5 day.
