@@ -19,6 +19,14 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps invalid batch read paths errors" do
+    error = Mcp::NotesBatchReadAction::InvalidPathsError.new("paths must be an array")
+
+    expect(described_class.map(error)).to eq(
+      {status: 400, code: "invalid_path", message: "paths must be an array"}
+    )
+  end
+
   it "maps invalid extension errors" do
     error = SafeNotesPath::InvalidExtensionError.new("only .md files are allowed")
 

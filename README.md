@@ -71,6 +71,15 @@ Default container config:
   - Reads one markdown note.
   - Response: `{ "path": "relative/path.md", "content": "..." }`
 
+- `POST /mcp/notes/read_batch`
+  - Reads multiple markdown notes in request order (fail-fast on first invalid/missing path).
+  - Request: `{ "paths": ["one.md", "nested/two.md"] }`
+  - Response: `{ "notes": [{ "path": "one.md", "content": "..." }, { "path": "nested/two.md", "content": "..." }] }`
+  - Validation constraints:
+    - `paths` must be a non-empty JSON array.
+    - Maximum batch size: `20` paths.
+    - Each path must be a non-empty string.
+
 ### Patch APIs
 
 - `POST /mcp/patch/propose`

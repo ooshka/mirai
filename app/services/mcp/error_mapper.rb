@@ -6,6 +6,7 @@ require_relative "../patch_applier"
 require_relative "../index_store"
 require_relative "action_policy"
 require_relative "index_query_action"
+require_relative "notes_batch_read_action"
 
 module Mcp
   class ErrorMapper
@@ -14,6 +15,8 @@ module Mcp
       when PatchValidator::InvalidPatchError
         {status: 400, code: "invalid_patch", message: error.message}
       when SafeNotesPath::InvalidPathError
+        {status: 400, code: "invalid_path", message: error.message}
+      when Mcp::NotesBatchReadAction::InvalidPathsError
         {status: 400, code: "invalid_path", message: error.message}
       when SafeNotesPath::InvalidExtensionError
         {status: 400, code: "invalid_extension", message: error.message}
