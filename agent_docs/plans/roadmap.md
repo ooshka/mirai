@@ -25,19 +25,19 @@
 
 ## Current Focus (Next Slice)
 
-6. Retrieval query path prefix filter
-- Add optional folder/path scoping to `GET /mcp/index/query` while preserving current default query behavior
-- Improve retrieval relevance for multi-domain note trees without requiring client-side post-filtering
-
-## Near-Term Follow-ons
-
-7. Notes batch-read capability
+6. Notes batch-read capability
 - Add a bounded batch note read endpoint for known paths to reduce per-note request overhead in tool/runtime flows
 - Keep existing single-note read contract unchanged
 
-8. Retrieval query response quality enhancements
+## Near-Term Follow-ons
+
+7. Retrieval query response quality enhancements
 - Add optional snippet-location metadata to query results for better grounding and downstream UX
 - Preserve deterministic sorting and existing query contract defaults
+
+8. Planning artifact hygiene
+- Reconcile superseded/open planning case artifacts to keep execution context unambiguous
+- Preserve lightweight backlog cadence without expanding implementation scope
 
 ## Later (After Contracts Stabilize)
 

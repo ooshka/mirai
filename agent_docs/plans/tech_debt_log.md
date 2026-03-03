@@ -376,3 +376,15 @@
 - Debt paid down next: reduce feature-delivery drift by shipping a bounded user-visible query capability while preserving existing defaults.
 - Debt potentially added: query parameter surface will grow (`path_prefix`), which may require later normalization/validation centralization if more filters are added.
 - Refactor signal: if query filters expand beyond one or two options, extract a dedicated query-options parser/validator object to avoid retriever/service argument sprawl.
+
+## 2026-03-03 (feature-balance planning pass: notes batch read endpoint)
+
+### Observed signals
+- Retrieval query feature delivery resumed with `path_prefix`, but read workflows still require one HTTP call per known note.
+- Existing read safety/error contracts are strong and reusable, making batch read a low-risk capability expansion.
+- Route-layer JSON payload parsing currently exists for patch endpoints only; adding more payload endpoints can increase parser duplication if not contained.
+
+### Debt posture for next slice
+- Debt paid down next: deliver a user-visible throughput improvement without changing core mutation/indexing internals.
+- Debt potentially added: another endpoint-specific payload-validation path in routes/actions.
+- Refactor signal: if more JSON read/query endpoints are introduced, extract a small MCP request-schema helper to avoid repeated payload-shape checks.
