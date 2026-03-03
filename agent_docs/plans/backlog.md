@@ -2,12 +2,7 @@
 
 ## Now
 
-1. Notes Batch Read Endpoint
-- Type: `feature`
-- Value: reduces request round-trips for runtime workflows that need multiple known notes.
-- Size: ~1 day.
-
-2. Retrieval Query Result Snippet Offsets
+1. Retrieval Query Result Snippet Offsets
 - Type: `feature`
 - Value: returns lightweight match location hints so callers can ground responses in note context faster.
 - Size: ~1 day.
