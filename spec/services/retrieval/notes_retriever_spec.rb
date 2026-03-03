@@ -3,10 +3,10 @@
 require "fileutils"
 require "tmpdir"
 require "time"
-require_relative "../app/services/notes_retriever"
-require_relative "../app/services/notes_chunker"
-require_relative "../app/services/index_store"
-require_relative "../app/services/semantic_retrieval_provider"
+require_relative "../../../app/services/retrieval/notes_retriever"
+require_relative "../../../app/services/notes/notes_chunker"
+require_relative "../../../app/services/indexing/index_store"
+require_relative "../../../app/services/retrieval/semantic_retrieval_provider"
 
 RSpec.describe NotesRetriever do
   around do |example|

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "../index_store"
-require_relative "../notes_operation_lock"
+require_relative "../indexing/index_store"
+require_relative "../notes/notes_operation_lock"
 
 module Mcp
   class IndexInvalidateAction

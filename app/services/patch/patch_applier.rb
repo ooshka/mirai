@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "patch_validator"
-require_relative "notes_git_committer"
+require_relative "../notes/notes_git_committer"
 
 class PatchApplier
   class ConflictError < StandardError; end

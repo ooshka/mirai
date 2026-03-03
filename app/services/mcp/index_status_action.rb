@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../index_store"
+require_relative "../indexing/index_store"
 
 module Mcp
   class IndexStatusAction

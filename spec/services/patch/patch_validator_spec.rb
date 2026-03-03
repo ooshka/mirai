@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "tmpdir"
-require_relative "../app/services/patch_validator"
+require_relative "../../../app/services/patch/patch_validator"
 
 RSpec.describe PatchValidator do
   around do |example|

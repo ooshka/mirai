@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "../safe_notes_path"
-require_relative "../patch_validator"
-require_relative "../patch_applier"
-require_relative "../index_store"
+require_relative "../notes/safe_notes_path"
+require_relative "../patch/patch_validator"
+require_relative "../patch/patch_applier"
+require_relative "../indexing/index_store"
 require_relative "action_policy"
 require_relative "index_query_action"
 require_relative "notes_batch_read_action"

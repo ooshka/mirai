@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../notes_reader"
+require_relative "../notes/notes_reader"
 
 module Mcp
   class NotesBatchReadAction

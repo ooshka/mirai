@@ -2,8 +2,8 @@
 
 require_relative "lexical_retrieval_provider"
 require_relative "semantic_retrieval_provider"
-require_relative "mcp/boolean_flag"
-require_relative "mcp/retrieval_mode"
+require_relative "../mcp/boolean_flag"
+require_relative "../mcp/retrieval_mode"
 
 class RetrievalProviderFactory
   MODE_LEXICAL = Mcp::RetrievalMode::MODE_LEXICAL

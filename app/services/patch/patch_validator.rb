@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "safe_notes_path"
+require_relative "../notes/safe_notes_path"
 require_relative "patch_parser"
 
 class PatchValidator

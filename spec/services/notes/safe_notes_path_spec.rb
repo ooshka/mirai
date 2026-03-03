@@ -2,7 +2,7 @@
 
 require "fileutils"
 require "tmpdir"
-require_relative "../app/services/safe_notes_path"
+require_relative "../../../app/services/notes/safe_notes_path"
 
 RSpec.describe SafeNotesPath do
   around do |example|

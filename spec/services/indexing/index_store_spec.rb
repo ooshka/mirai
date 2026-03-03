@@ -4,7 +4,7 @@ require "tmpdir"
 require "json"
 require "time"
 require "fileutils"
-require_relative "../app/services/index_store"
+require_relative "../../../app/services/indexing/index_store"
 
 RSpec.describe IndexStore do
   around do |example|
