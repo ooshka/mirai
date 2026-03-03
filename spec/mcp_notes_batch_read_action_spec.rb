@@ -2,7 +2,7 @@
 
 require "tmpdir"
 require "fileutils"
-require_relative "../../../app/services/mcp/notes_batch_read_action"
+require_relative "../app/services/mcp/notes_batch_read_action"
 
 RSpec.describe Mcp::NotesBatchReadAction do
   around do |example|
