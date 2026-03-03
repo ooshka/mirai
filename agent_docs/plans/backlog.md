@@ -2,19 +2,29 @@
 
 ## Now
 
-1. Retrieval Query Result Snippet Offsets
+1. Service/Spec Intermediate Structure Readability
+- Type: `refactor`
+- Value: improves at-a-glance navigation across growing service and spec surfaces with no contract changes.
+- Size: ~1 day.
+
+2. Retrieval Query Result Snippet Offsets
 - Type: `feature`
 - Value: returns lightweight match location hints so callers can ground responses in note context faster.
 - Size: ~1 day.
 
 ## Next
 
-1. Planning Artifact Hygiene: Reconcile Superseded Open Cases
+1. Retrieval Query Path Metadata Echo
+- Type: `feature`
+- Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
+- Size: ~0.5-1 day.
+
+2. Planning Artifact Hygiene: Reconcile Superseded Open Cases
 - Type: `docs`
 - Value: reduces planner/implementor confusion by resolving stale open case files.
 - Size: ~0.5 day.
 
-2. ActionPolicy Identity Context Storage Clarity
+3. ActionPolicy Identity Context Storage Clarity
 - Type: `hardening`
 - Value: removes ambiguity in policy identity-context ownership before identity-aware rules expand.
 - Size: ~0.5 day.

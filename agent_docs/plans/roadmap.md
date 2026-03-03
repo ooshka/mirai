@@ -25,9 +25,9 @@
 
 ## Current Focus (Next Slice)
 
-6. Notes batch-read capability
-- Add a bounded batch note read endpoint for known paths to reduce per-note request overhead in tool/runtime flows
-- Keep existing single-note read contract unchanged
+6. Service/spec structure readability refactor
+- Add intermediate service/spec directories for major domains to improve at-a-glance navigation and review ergonomics
+- Keep runtime behavior and MCP endpoint contracts unchanged
 
 ## Near-Term Follow-ons
 

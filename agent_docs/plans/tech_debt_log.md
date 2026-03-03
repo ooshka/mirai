@@ -388,3 +388,15 @@
 - Debt paid down next: deliver a user-visible throughput improvement without changing core mutation/indexing internals.
 - Debt potentially added: another endpoint-specific payload-validation path in routes/actions.
 - Refactor signal: if more JSON read/query endpoints are introduced, extract a small MCP request-schema helper to avoid repeated payload-shape checks.
+
+## 2026-03-03 (user-directed planning pass: service/spec intermediate structure readability)
+
+### Observed signals
+- `app/services/` and top-level `spec/` now contain enough files that related concerns are harder to locate quickly during review and implementation.
+- Earlier slices optimized for velocity with a flat layout, but current breadth (retrieval, indexing, patch, notes, policy) makes domain boundaries less legible at a glance.
+- Ongoing feature delivery will keep adding files; leaving structure flat increases navigation overhead and merge-churn concentration.
+
+### Debt posture for next slice
+- Debt paid down next: introduce bounded intermediate directory structure to restore clear domain grouping and reduce scanning friction.
+- Debt potentially added: file-move churn and require-path updates can create short-term load-path regressions if not validated with full suite execution.
+- Refactor signal: if structural conventions are not documented and enforced, future additions may drift back to flat placement.
