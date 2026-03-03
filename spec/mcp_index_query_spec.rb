@@ -62,6 +62,27 @@ RSpec.describe "MCP index query endpoint" do
     )
   end
 
+  it "filters results by path_prefix when provided" do
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    FileUtils.mkdir_p(File.join(@notes_root, "nested"))
+    File.write(File.join(@notes_root, "nested/child.md"), "alpha\n")
+    File.write(File.join(@notes_root, "nested/second.md"), "alpha\n")
+
+    get "/mcp/index/query", q: "alpha", path_prefix: "nested/"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 5,
+        "chunks" => [
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1},
+          {"path" => "nested/second.md", "chunk_index" => 0, "content" => "alpha", "score" => 1}
+        ]
+      }
+    )
+  end
+
   it "uses persisted artifact chunks when available" do
     FileUtils.mkdir_p(File.join(@notes_root, ".mirai"))
     File.write(
@@ -116,6 +137,48 @@ RSpec.describe "MCP index query endpoint" do
         "error" => {
           "code" => "invalid_query",
           "message" => "query is required"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_query when path_prefix is absolute" do
+    get "/mcp/index/query", q: "alpha", path_prefix: "/nested"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_query",
+          "message" => "absolute paths are not allowed"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_query when path_prefix escapes notes root" do
+    get "/mcp/index/query", q: "alpha", path_prefix: "../nested"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_query",
+          "message" => "path_prefix escapes notes root"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_query when path_prefix is not a string" do
+    get "/mcp/index/query", q: "alpha", "path_prefix[]" => "nested"
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_query",
+          "message" => "path_prefix must be a string"
         }
       }
     )

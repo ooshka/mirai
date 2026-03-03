@@ -62,7 +62,7 @@ module Routes
             retrieval_mode: settings.mcp_retrieval_mode,
             semantic_provider_enabled: settings.mcp_semantic_provider_enabled
           )
-            .call(query: params["q"], limit: params["limit"])
+            .call(query: params["q"], limit: params["limit"], path_prefix: params["path_prefix"])
             .to_json
         end
       end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "pathname"
 require_relative "../notes_retriever"
 require_relative "../retrieval_provider_factory"
 
@@ -14,6 +15,7 @@ module Mcp
       semantic_provider_enabled: false,
       retriever: nil
     )
+      @notes_root = File.expand_path(notes_root)
       @retriever = retriever || NotesRetriever.new(
         notes_root: notes_root,
         provider_factory: RetrievalProviderFactory.new(
@@ -23,14 +25,19 @@ module Mcp
       )
     end
 
-    def call(query:, limit: nil)
+    def call(query:, limit: nil, path_prefix: nil)
       validated_query = validate_query(query)
       validated_limit = validate_limit(limit)
+      validated_path_prefix = validate_path_prefix(path_prefix)
 
       {
         query: validated_query,
         limit: validated_limit,
-        chunks: @retriever.query(text: validated_query, limit: validated_limit)
+        chunks: @retriever.query(
+          text: validated_query,
+          limit: validated_limit,
+          path_prefix: validated_path_prefix
+        )
       }
     end
 
@@ -54,6 +61,27 @@ module Mcp
       parsed
     rescue ArgumentError, TypeError
       raise InvalidLimitError, "limit must be an integer"
+    end
+
+    def validate_path_prefix(path_prefix)
+      return nil if path_prefix.nil?
+      raise InvalidQueryError, "path_prefix must be a string" unless path_prefix.is_a?(String)
+
+      normalized = path_prefix.strip
+      raise InvalidQueryError, "path_prefix must be a non-empty string" if normalized.empty?
+      raise InvalidQueryError, "absolute paths are not allowed" if Pathname.new(normalized).absolute?
+
+      absolute_prefix = File.expand_path(normalized, @notes_root)
+      raise InvalidQueryError, "path_prefix escapes notes root" unless contained?(absolute_prefix)
+
+      relative_prefix = Pathname.new(absolute_prefix).relative_path_from(Pathname.new(@notes_root)).to_s
+      return nil if relative_prefix == "."
+
+      relative_prefix.sub(%r{/\z}, "")
+    end
+
+    def contained?(absolute_path)
+      absolute_path == @notes_root || absolute_path.start_with?("#{@notes_root}/")
     end
   end
 end

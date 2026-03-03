@@ -95,6 +95,44 @@ RSpec.describe NotesRetriever do
     )
   end
 
+  it "filters chunks by path_prefix before ranking" do
+    provider = instance_double("LexicalRetrievalProvider")
+    fallback_policy = instance_double("RetrievalFallbackPolicy")
+    indexer = instance_double(NotesIndexer)
+    allow(indexer).to receive(:index).and_return(
+      {
+        notes_indexed: 3,
+        chunks_indexed: 3,
+        chunks: [
+          {path: "root.md", chunk_index: 0, content: "alpha"},
+          {path: "nested/child.md", chunk_index: 0, content: "alpha"},
+          {path: "nested/second.md", chunk_index: 0, content: "alpha"}
+        ]
+      }
+    )
+    allow(fallback_policy).to receive(:rank).and_return([])
+
+    retriever = described_class.new(
+      notes_root: @notes_root,
+      indexer: indexer,
+      provider: provider,
+      fallback_policy: fallback_policy
+    )
+
+    retriever.query(text: "alpha", limit: 2, path_prefix: "nested")
+
+    expect(fallback_policy).to have_received(:rank).with(
+      primary_provider: provider,
+      fallback_provider: provider,
+      query_text: "alpha",
+      chunks: [
+        {path: "nested/child.md", chunk_index: 0, content: "alpha"},
+        {path: "nested/second.md", chunk_index: 0, content: "alpha"}
+      ],
+      limit: 2
+    )
+  end
+
   it "uses the injected scorer and de-duplicates repeated query tokens" do
     scorer = instance_double("LexicalChunkScorer")
     allow(scorer).to receive(:tokenize).with("alpha alpha").and_return(%w[alpha alpha])
