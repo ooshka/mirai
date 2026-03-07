@@ -16,7 +16,11 @@ module Routes
           mcp_policy_modes_supported: ::Mcp::ActionPolicy.supported_modes,
           mcp_retrieval_mode: settings.mcp_retrieval_mode,
           mcp_retrieval_modes_supported: ::Mcp::RetrievalMode.supported_modes,
-          mcp_semantic_provider_enabled: settings.mcp_semantic_provider_enabled
+          mcp_semantic_provider_enabled: settings.mcp_semantic_provider_enabled,
+          mcp_semantic_provider: settings.mcp_semantic_provider,
+          mcp_openai_embedding_model: settings.mcp_openai_embedding_model,
+          mcp_openai_vector_store_id: settings.mcp_openai_vector_store_id,
+          mcp_openai_configured: settings.mcp_openai_configured
         }.to_json
       end
     end

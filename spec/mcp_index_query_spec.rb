@@ -9,6 +9,10 @@ RSpec.describe "MCP index query endpoint" do
     original_mcp_policy_mode = App.settings.mcp_policy_mode
     original_mcp_retrieval_mode = App.settings.mcp_retrieval_mode
     original_semantic_enabled = App.settings.mcp_semantic_provider_enabled
+    original_semantic_provider = App.settings.mcp_semantic_provider
+    original_openai_embedding_model = App.settings.mcp_openai_embedding_model
+    original_openai_vector_store_id = App.settings.mcp_openai_vector_store_id
+    original_openai_configured = App.settings.mcp_openai_configured
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
@@ -16,6 +20,10 @@ RSpec.describe "MCP index query endpoint" do
       App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
       App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_LEXICAL
       App.set :mcp_semantic_provider_enabled, false
+      App.set :mcp_semantic_provider, "openai"
+      App.set :mcp_openai_embedding_model, OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL
+      App.set :mcp_openai_vector_store_id, nil
+      App.set :mcp_openai_configured, false
       example.run
     end
   ensure
@@ -23,6 +31,10 @@ RSpec.describe "MCP index query endpoint" do
     App.set :mcp_policy_mode, original_mcp_policy_mode
     App.set :mcp_retrieval_mode, original_mcp_retrieval_mode
     App.set :mcp_semantic_provider_enabled, original_semantic_enabled
+    App.set :mcp_semantic_provider, original_semantic_provider
+    App.set :mcp_openai_embedding_model, original_openai_embedding_model
+    App.set :mcp_openai_vector_store_id, original_openai_vector_store_id
+    App.set :mcp_openai_configured, original_openai_configured
   end
 
   it "returns ranked chunks for a query with an explicit limit" do
@@ -280,6 +292,16 @@ RSpec.describe "MCP index query endpoint" do
   it "preserves query contract when semantic mode is enabled" do
     App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
     App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_openai_vector_store_id, "vs_123"
+    App.set :mcp_openai_configured, true
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_return("sk-test")
+    allow(OpenAiSemanticClient).to receive(:new).and_return(
+      instance_double(
+        "OpenAiSemanticClient",
+        search: [{"path" => "root.md", "chunk_index" => 0, "content" => "provider content", "score" => 0.95}]
+      )
+    )
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
 
     get "/mcp/index/query", q: "alpha", limit: "2"
@@ -290,7 +312,41 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 1}
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95}
+        ]
+      }
+    )
+  end
+
+  it "keeps semantic results within path_prefix-scoped local chunks" do
+    App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
+    App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_openai_vector_store_id, "vs_123"
+    App.set :mcp_openai_configured, true
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_return("sk-test")
+    allow(OpenAiSemanticClient).to receive(:new).and_return(
+      instance_double(
+        "OpenAiSemanticClient",
+        search: [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "outside scope", "score" => 0.99},
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "provider nested", "score" => 0.80}
+        ]
+      )
+    )
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    FileUtils.mkdir_p(File.join(@notes_root, "nested"))
+    File.write(File.join(@notes_root, "nested/child.md"), "nested alpha\n")
+
+    get "/mcp/index/query", q: "alpha", path_prefix: "nested/", limit: "5"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 5,
+        "chunks" => [
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "nested alpha", "score" => 0.8}
         ]
       }
     )
@@ -298,7 +354,14 @@ RSpec.describe "MCP index query endpoint" do
 
   it "falls back to lexical retrieval when semantic provider is unavailable" do
     App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
-    App.set :mcp_semantic_provider_enabled, false
+    App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_openai_vector_store_id, "vs_123"
+    App.set :mcp_openai_configured, true
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_return("sk-test")
+    failing_client = instance_double("OpenAiSemanticClient")
+    allow(failing_client).to receive(:search).and_raise(OpenAiSemanticClient::RequestError, "timeout")
+    allow(OpenAiSemanticClient).to receive(:new).and_return(failing_client)
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
 
     get "/mcp/index/query", q: "alpha", limit: "2"

@@ -59,13 +59,17 @@ Default container config:
 - `MCP_RETRIEVAL_MODE=lexical` (`semantic` enables semantic provider path with lexical fallback)
   - Mode is validated at startup; invalid values fail boot with `invalid MCP retrieval mode: <value>`.
 - `MCP_SEMANTIC_PROVIDER_ENABLED=false` (semantic mode falls back to lexical when unavailable)
+- `MCP_SEMANTIC_PROVIDER=openai` (semantic adapter selection; currently `openai`)
+- `MCP_OPENAI_EMBEDDING_MODEL=text-embedding-3-small`
+- `MCP_OPENAI_VECTOR_STORE_ID=<vector-store-id>` (required for OpenAI semantic retrieval)
+- `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval; never exposed by `/config`)
 
 ## HTTP endpoints
 
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false }` (values depend on environment)
 
 ### Notes read APIs
 
@@ -132,7 +136,7 @@ Default container config:
   - Queries ranked chunks from persisted artifact when present; falls back to on-demand indexing if artifact is missing.
   - Retrieval mode:
     - `lexical` (default): lexical ranking provider.
-    - `semantic`: semantic provider adapter path; falls back to lexical ranking if semantic provider is unavailable.
+    - `semantic`: OpenAI semantic adapter (embedding + vector search) path; falls back to lexical ranking if provider/config is unavailable.
   - Optional `path_prefix` scopes candidate chunks to paths that start with the normalized relative prefix (for example, `nested/`).
   - `path_prefix` must be a string relative to `NOTES_ROOT`; absolute or traversal values return `invalid_query`.
   - Response: `{ "query": "alpha", "limit": 5, "chunks": [...] }`

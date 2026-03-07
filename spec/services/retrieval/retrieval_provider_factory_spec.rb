@@ -54,10 +54,19 @@ RSpec.describe RetrievalProviderFactory do
   it "normalizes semantic provider enabled true-like values" do
     lexical_provider = instance_double("LexicalRetrievalProvider")
     semantic_provider = instance_double("SemanticRetrievalProvider")
+    openai_client = instance_double("OpenAiSemanticClient")
+
+    expect(OpenAiSemanticClient).to receive(:new).with(
+      api_key: nil,
+      embedding_model: OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL,
+      vector_store_id: nil,
+      base_url: OpenAiSemanticClient::DEFAULT_BASE_URL
+    ).and_return(openai_client)
 
     expect(SemanticRetrievalProvider).to receive(:new).with(
       enabled: true,
-      lexical_provider: lexical_provider
+      lexical_provider: lexical_provider,
+      openai_client: openai_client
     ).and_return(semantic_provider)
 
     described_class.new(
@@ -69,14 +78,51 @@ RSpec.describe RetrievalProviderFactory do
   it "normalizes semantic provider enabled false-like values" do
     lexical_provider = instance_double("LexicalRetrievalProvider")
     semantic_provider = instance_double("SemanticRetrievalProvider")
+    openai_client = instance_double("OpenAiSemanticClient")
+
+    expect(OpenAiSemanticClient).to receive(:new).with(
+      api_key: nil,
+      embedding_model: OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL,
+      vector_store_id: nil,
+      base_url: OpenAiSemanticClient::DEFAULT_BASE_URL
+    ).and_return(openai_client)
 
     expect(SemanticRetrievalProvider).to receive(:new).with(
       enabled: false,
-      lexical_provider: lexical_provider
+      lexical_provider: lexical_provider,
+      openai_client: openai_client
     ).and_return(semantic_provider)
 
     described_class.new(
       semantic_provider_enabled: "",
+      lexical_provider: lexical_provider
+    ).build
+  end
+
+  it "passes openai retrieval config through to the semantic client" do
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+    openai_client = instance_double("OpenAiSemanticClient")
+
+    expect(OpenAiSemanticClient).to receive(:new).with(
+      api_key: "sk-test",
+      embedding_model: "text-embedding-3-large",
+      vector_store_id: "vs_123",
+      base_url: "https://example.test"
+    ).and_return(openai_client)
+    expect(SemanticRetrievalProvider).to receive(:new).with(
+      enabled: true,
+      lexical_provider: lexical_provider,
+      openai_client: openai_client
+    ).and_return(semantic_provider)
+
+    described_class.new(
+      mode: described_class::MODE_SEMANTIC,
+      semantic_provider_enabled: true,
+      openai_api_key: "sk-test",
+      openai_embedding_model: "text-embedding-3-large",
+      openai_vector_store_id: "vs_123",
+      openai_base_url: "https://example.test",
       lexical_provider: lexical_provider
     ).build
   end

@@ -13,6 +13,10 @@ module Mcp
       notes_root:,
       retrieval_mode: RetrievalProviderFactory::MODE_LEXICAL,
       semantic_provider_enabled: false,
+      openai_api_key: nil,
+      openai_embedding_model: OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL,
+      openai_vector_store_id: nil,
+      openai_base_url: OpenAiSemanticClient::DEFAULT_BASE_URL,
       retriever: nil
     )
       @notes_root = File.expand_path(notes_root)
@@ -20,7 +24,11 @@ module Mcp
         notes_root: notes_root,
         provider_factory: RetrievalProviderFactory.new(
           mode: retrieval_mode,
-          semantic_provider_enabled: semantic_provider_enabled
+          semantic_provider_enabled: semantic_provider_enabled,
+          openai_api_key: openai_api_key,
+          openai_embedding_model: openai_embedding_model,
+          openai_vector_store_id: openai_vector_store_id,
+          openai_base_url: openai_base_url
         )
       )
     end
