@@ -28,4 +28,9 @@ RUN mkdir -p /home/dev/.bundle && chown -R dev:dev /home/dev
 
 RUN gem update --system && gem install bundler
 
+COPY docker/dev-entrypoint.sh /usr/local/bin/dev-entrypoint
+RUN chmod +x /usr/local/bin/dev-entrypoint
+
 USER dev
+
+ENTRYPOINT ["/usr/local/bin/dev-entrypoint"]
