@@ -56,7 +56,9 @@ class SemanticRetrievalProvider
     chunk_index = extract_chunk_index(candidate, metadata)
     key = [path, chunk_index]
     fallback_chunk = chunk_lookup[key]
-    content = extract_content(candidate, fallback_chunk)
+    return nil if fallback_chunk.nil?
+
+    content = extract_content(fallback_chunk)
     score = extract_score(candidate)
 
     {path: path, chunk_index: chunk_index, content: content, score: score.to_f}
@@ -78,8 +80,8 @@ class SemanticRetrievalProvider
     raise MalformedResultError, "semantic candidate chunk_index is invalid"
   end
 
-  def extract_content(candidate, fallback_chunk)
-    content = candidate["content"] || fallback_chunk&.fetch(:content, nil)
+  def extract_content(fallback_chunk)
+    content = fallback_chunk.fetch(:content, nil)
     raise MalformedResultError, "semantic candidate content is missing" unless content.is_a?(String)
 
     content

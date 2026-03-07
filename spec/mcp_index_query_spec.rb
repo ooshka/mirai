@@ -299,7 +299,7 @@ RSpec.describe "MCP index query endpoint" do
     allow(OpenAiSemanticClient).to receive(:new).and_return(
       instance_double(
         "OpenAiSemanticClient",
-        search: [{"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95}]
+        search: [{"path" => "root.md", "chunk_index" => 0, "content" => "provider content", "score" => 0.95}]
       )
     )
     File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
@@ -313,6 +313,40 @@ RSpec.describe "MCP index query endpoint" do
         "limit" => 2,
         "chunks" => [
           {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95}
+        ]
+      }
+    )
+  end
+
+  it "keeps semantic results within path_prefix-scoped local chunks" do
+    App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
+    App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_openai_vector_store_id, "vs_123"
+    App.set :mcp_openai_configured, true
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_return("sk-test")
+    allow(OpenAiSemanticClient).to receive(:new).and_return(
+      instance_double(
+        "OpenAiSemanticClient",
+        search: [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "outside scope", "score" => 0.99},
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "provider nested", "score" => 0.80}
+        ]
+      )
+    )
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+    FileUtils.mkdir_p(File.join(@notes_root, "nested"))
+    File.write(File.join(@notes_root, "nested/child.md"), "nested alpha\n")
+
+    get "/mcp/index/query", q: "alpha", path_prefix: "nested/", limit: "5"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 5,
+        "chunks" => [
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "nested alpha", "score" => 0.8}
         ]
       }
     )

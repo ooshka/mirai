@@ -36,6 +36,29 @@ RSpec.describe SemanticRetrievalProvider do
     expect(openai_client).to have_received(:search).with(query_text: "alpha", limit: 2)
   end
 
+  it "drops semantic candidates that are not present in local fallback chunks" do
+    openai_client = instance_double("OpenAiSemanticClient")
+    allow(openai_client).to receive(:search).and_return(
+      [
+        {"path" => "outside.md", "chunk_index" => 0, "content" => "outside", "score" => 0.99},
+        {"path" => "a.md", "chunk_index" => 0, "content" => "provider alpha", "score" => 0.80}
+      ]
+    )
+    provider = described_class.new(enabled: true, openai_client: openai_client)
+
+    result = provider.rank(
+      query_text: "alpha",
+      chunks: [{path: "a.md", chunk_index: 0, content: "canonical alpha"}],
+      limit: 5
+    )
+
+    expect(result).to eq(
+      [
+        {path: "a.md", chunk_index: 0, content: "canonical alpha", score: 0.8}
+      ]
+    )
+  end
+
   it "maps openai request failures to unavailable for lexical fallback" do
     openai_client = instance_double("OpenAiSemanticClient")
     allow(openai_client).to receive(:search).and_raise(OpenAiSemanticClient::RequestError, "timeout")
