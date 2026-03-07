@@ -14,6 +14,7 @@ require_relative "app/services/notes/notes_git_committer"
 require_relative "app/services/notes/notes_operation_lock"
 require_relative "app/services/retrieval/lexical_chunk_scorer"
 require_relative "app/services/retrieval/lexical_retrieval_provider"
+require_relative "app/services/retrieval/openai_semantic_client"
 require_relative "app/services/retrieval/semantic_retrieval_provider"
 require_relative "app/services/retrieval/retrieval_provider_factory"
 require_relative "app/services/retrieval/retrieval_fallback_policy"
@@ -44,6 +45,10 @@ class App < Sinatra::Base
     set :mcp_policy_mode, runtime_config.mcp_policy_mode
     set :mcp_retrieval_mode, runtime_config.mcp_retrieval_mode
     set :mcp_semantic_provider_enabled, runtime_config.mcp_semantic_provider_enabled
+    set :mcp_semantic_provider, runtime_config.mcp_semantic_provider
+    set :mcp_openai_embedding_model, runtime_config.mcp_openai_embedding_model
+    set :mcp_openai_vector_store_id, runtime_config.mcp_openai_vector_store_id
+    set :mcp_openai_configured, runtime_config.mcp_openai_configured
   end
 
   before do

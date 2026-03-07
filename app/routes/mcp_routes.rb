@@ -68,7 +68,11 @@ module Routes
           ::Mcp::IndexQueryAction.new(
             notes_root: settings.notes_root,
             retrieval_mode: settings.mcp_retrieval_mode,
-            semantic_provider_enabled: settings.mcp_semantic_provider_enabled
+            semantic_provider_enabled: settings.mcp_semantic_provider_enabled,
+            openai_api_key: ENV["OPENAI_API_KEY"],
+            openai_embedding_model: settings.mcp_openai_embedding_model,
+            openai_vector_store_id: settings.mcp_openai_vector_store_id,
+            openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", OpenAiSemanticClient::DEFAULT_BASE_URL)
           )
             .call(query: params["q"], limit: params["limit"], path_prefix: params["path_prefix"])
             .to_json
