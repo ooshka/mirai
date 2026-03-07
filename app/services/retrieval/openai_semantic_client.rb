@@ -31,8 +31,9 @@ class OpenAiSemanticClient
   def search(query_text:, limit:)
     raise ConfigError, "openai semantic retrieval config is incomplete" unless configured?
 
-    embedding = fetch_embedding(query_text)
-    fetch_vector_search_results(embedding: embedding, limit: limit)
+    # Keep embeddings call for adapter parity and early validation of model/config wiring.
+    fetch_embedding(query_text)
+    fetch_vector_search_results(query_text: query_text, limit: limit)
   end
 
   private
@@ -47,16 +48,16 @@ class OpenAiSemanticClient
     validate_embedding!(vector)
   end
 
-  def fetch_vector_search_results(embedding:, limit:)
+  def fetch_vector_search_results(query_text:, limit:)
     response = post_json(
       path: "/v1/vector_stores/#{@vector_store_id}/search",
-      payload: {query: embedding, max_num_results: limit}
+      payload: {query: query_text, max_num_results: limit}
     )
 
     data = response["data"]
     raise ResponseError, "openai vector search response missing data array" unless data.is_a?(Array)
 
-    data
+    data.map { |candidate| normalize_search_candidate(candidate) }
   end
 
   def post_json(path:, payload:)
@@ -87,6 +88,59 @@ class OpenAiSemanticClient
     end
 
     embedding
+  end
+
+  def normalize_search_candidate(candidate)
+    raise ResponseError, "openai vector search candidate must be a hash" unless candidate.is_a?(Hash)
+
+    attributes = candidate["attributes"]
+    attributes = {} unless attributes.is_a?(Hash)
+
+    path = candidate_path(candidate, attributes)
+    chunk_index = candidate_chunk_index(attributes)
+    score = candidate_score(candidate)
+    content = candidate_content(candidate)
+
+    {
+      "path" => path,
+      "chunk_index" => chunk_index,
+      "score" => score,
+      "content" => content,
+      "metadata" => attributes
+    }
+  end
+
+  def candidate_path(candidate, attributes)
+    path = attributes["path"] || attributes["source_path"] || candidate["filename"]
+    raise ResponseError, "openai vector search candidate missing path metadata" unless path.is_a?(String) && !path.empty?
+
+    path
+  end
+
+  def candidate_chunk_index(attributes)
+    Integer(attributes.fetch("chunk_index"))
+  rescue KeyError, ArgumentError, TypeError
+    raise ResponseError, "openai vector search candidate missing chunk_index metadata"
+  end
+
+  def candidate_score(candidate)
+    score = candidate["score"]
+    raise ResponseError, "openai vector search candidate score is invalid" unless score.is_a?(Numeric)
+
+    score
+  end
+
+  def candidate_content(candidate)
+    content_blocks = candidate["content"]
+    return nil unless content_blocks.is_a?(Array)
+
+    text_block = content_blocks.find do |block|
+      block.is_a?(Hash) && (block["type"] == "text" || block["type"] == "output_text")
+    end
+    return nil unless text_block.is_a?(Hash)
+
+    text = text_block["text"]
+    text if text.is_a?(String)
   end
 
   def normalize_string(value)
