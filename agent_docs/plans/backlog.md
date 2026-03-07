@@ -2,12 +2,7 @@
 
 ## Now
 
-1. OpenAI Semantic Retrieval Adapter V1
-- Type: `feature`
-- Value: delivers real semantic retrieval quality via OpenAI while preserving MCP query contract + lexical fallback.
-- Size: ~1-2 days.
-
-2. Retrieval Query Result Snippet Offsets
+1. Retrieval Query Result Snippet Offsets
 - Type: `feature`
 - Value: returns lightweight match location hints so callers can ground responses in note context faster.
 - Size: ~1 day.
