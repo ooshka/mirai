@@ -1,33 +1,36 @@
 # Roadmap (Lightweight)
 
-## Current State (Completed)
+## Project Summary (North Star + Boundaries)
 
-1. Read safety + read-only MCP tooling
-- Safe markdown path resolution under `NOTES_ROOT`
-- `GET /mcp/notes` and `GET /mcp/notes/read` contracts with error mapping
+This project is building a deterministic, safety-first notes MCP service that supports trustworthy local knowledge workflows. The end goal is a stable platform where read, write, index, and retrieval operations are predictable, auditable, and safe by default, so higher-level agent behavior can rely on consistent contracts instead of best-effort behavior.
 
-2. Patch mutation safety flow
-- Patch propose/validate/apply endpoints with constrained unified-diff support
-- Conflict handling and rollback on commit failure
+High-level goal:
+- Deliver a production-ready MCP notes backend with strict safety guarantees, deterministic outputs, and explicit API contracts that can support sprinted feature delivery without regressions in trust or reproducibility.
 
-3. Git-backed mutation auditability
-- Required git commit on accepted patch apply
-- Deterministic patch-apply commit metadata
+Plan at a glance:
+1. Establish safe core note operations (read, mutation, audit trail) with constrained and testable behavior.
+2. Build deterministic indexing and retrieval primitives as a reliable baseline before quality tuning.
+3. Ship model-backed v1 using OpenAI (LLM API + embedding API + managed vector store) behind provider abstractions to accelerate delivery and evaluation.
+4. Add self-hosted model backends (local LLM + local embedding model + self-managed vector index) with parity contract tests and runtime provider switching.
+5. Improve maintainability and planning hygiene so ongoing slices stay reviewable and execution context remains unambiguous.
+6. Layer retrieval quality and policy controls only after contract and ownership boundaries are stable.
 
-4. Deterministic indexing foundation
-- `POST /mcp/index/rebuild` summary contract (`notes_indexed`, `chunks_indexed`)
-- Local deterministic note chunking service layer
+Model and retrieval implementation strategy:
+- Phase 1 (OpenAI-first): use OpenAI LLM + embeddings + managed vector store to validate retrieval quality, note-update workflows, and MCP management flows under real usage.
+- Phase 2 (abstraction hardening): keep MCP retrieval/update/management contracts provider-agnostic; isolate LLM, embedding, and vector index operations behind service interfaces and shared fixtures.
+- Phase 3 (self-hosted transition): integrate a local/self-hosted LLM, embedding model, and vector index; validate quality, latency, and behavior parity against Phase 1 baselines before changing defaults.
+- Phase 4 (hybrid/fallback): support controlled fallback between OpenAI and self-hosted providers with explicit policy configuration once ownership and operational constraints are defined.
 
-5. Retrieval query contract (non-embedding baseline)
-- Deterministic `GET /mcp/index/query` endpoint over local chunk data
-- Explicit query/limit validation with bounded result contract
-- Simple lexical scoring + stable tie-break ordering
+Long-term product goal (hosted web frontend):
+- Deliver a web interface for directing MCP-backed LLM behavior once backend contracts are stable.
+- Support guided capture of new knowledge (including dictated input), question answering over existing notes, statistics/metadata views, and explicit edit/apply workflows.
+- Treat this as a later-phase product surface that builds on mature retrieval/update/management APIs rather than driving early contract changes.
 
-## Current Focus (Next Slice)
-
-6. Service/spec structure readability refactor
-- Add intermediate service/spec directories for major domains to improve at-a-glance navigation and review ergonomics
-- Keep runtime behavior and MCP endpoint contracts unchanged
+Project boundaries:
+- Prioritize contract clarity, deterministic behavior, and auditability over rapid feature breadth.
+- Favor incremental slices that preserve existing endpoint behavior unless explicitly planned.
+- Require retrieval, update, and notes-management flows to preserve MCP contract compatibility across OpenAI and self-hosted backends.
+- Defer advanced ranking/policy complexity until fallback/policy ownership is explicit.
 
 ## Near-Term Follow-ons
 
@@ -44,3 +47,8 @@
 10. Retrieval quality and policy extensions
 - Add richer ranking/selection controls only after fallback policy ownership is explicit
 - Preserve deterministic request contracts while evolving retrieval internals
+
+11. Hosted web frontend for operator workflows
+- Build a web UI to direct retrieval, note updates, and management actions through MCP-backed services
+- Include flows for dictated knowledge capture, knowledge Q&A, repository statistics/metadata inspection, and explicit edit application
+- Roll out after model-provider abstractions and backend contracts are stable enough to avoid frontend churn

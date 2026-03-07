@@ -1,4 +1,4 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+CASE_openai_semantic_retrieval_adapter_v1

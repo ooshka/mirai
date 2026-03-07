@@ -2,10 +2,10 @@
 
 ## Now
 
-1. Service/Spec Intermediate Structure Readability
-- Type: `refactor`
-- Value: improves at-a-glance navigation across growing service and spec surfaces with no contract changes.
-- Size: ~1 day.
+1. OpenAI Semantic Retrieval Adapter V1
+- Type: `feature`
+- Value: delivers real semantic retrieval quality via OpenAI while preserving MCP query contract + lexical fallback.
+- Size: ~1-2 days.
 
 2. Retrieval Query Result Snippet Offsets
 - Type: `feature`
@@ -19,14 +19,14 @@
 - Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
 - Size: ~0.5-1 day.
 
-2. Planning Artifact Hygiene: Reconcile Superseded Open Cases
+2. OpenAI LLM Workflow Seam For MCP Update/Management Actions
+- Type: `feature`
+- Value: starts Phase 1 non-retrieval model integration for note-update and repo-management flows behind provider-safe service boundaries.
+- Size: ~1-2 days.
+
+3. Planning Artifact Hygiene: Reconcile Superseded Open Cases
 - Type: `docs`
 - Value: reduces planner/implementor confusion by resolving stale open case files.
-- Size: ~0.5 day.
-
-3. ActionPolicy Identity Context Storage Clarity
-- Type: `hardening`
-- Value: removes ambiguity in policy identity-context ownership before identity-aware rules expand.
 - Size: ~0.5 day.
 
 ## Later

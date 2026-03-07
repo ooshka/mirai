@@ -400,3 +400,15 @@
 - Debt paid down next: introduce bounded intermediate directory structure to restore clear domain grouping and reduce scanning friction.
 - Debt potentially added: file-move churn and require-path updates can create short-term load-path regressions if not validated with full suite execution.
 - Refactor signal: if structural conventions are not documented and enforced, future additions may drift back to flat placement.
+
+## 2026-03-07 (user-directed planning pass: OpenAI semantic retrieval adapter v1)
+
+### Observed signals
+- Roadmap now commits to an OpenAI-first model phase, but semantic mode remains a placeholder lexical adapter with no true semantic lift.
+- Retrieval contracts and fallback seams are already stable (`RetrievalProviderFactory` + `RetrievalFallbackPolicy`), making this a low-risk integration point.
+- Planning artifacts were recently decoupled (roadmap direction vs backlog execution), so next slice should be concrete, feature-forward, and directly roadmap-aligned.
+
+### Debt posture for next slice
+- Debt paid down next: replace placeholder semantic behavior with a real provider-backed retrieval path while preserving deterministic contract behavior.
+- Debt potentially added: provider-specific OpenAI wiring may temporarily concentrate config/error handling before broader model-provider abstractions are shared with update/management flows.
+- Refactor signal: if OpenAI integration introduces duplicated embed/search wiring or error mapping, extract a unified model-provider client boundary before adding additional model operations.
