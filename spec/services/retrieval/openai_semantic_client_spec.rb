@@ -10,14 +10,13 @@ RSpec.describe OpenAiSemanticClient do
     response
   end
 
-  it "uses query text for vector search payload and normalizes documented response fields" do
+  it "uses only vector search query payload and normalizes documented response fields" do
     client = described_class.new(
       api_key: "sk-test",
       embedding_model: "text-embedding-3-small",
       vector_store_id: "vs_123"
     )
     requests = []
-    embedding_response = ok_response("data" => [{"embedding" => [0.1, 0.2]}])
     search_response = ok_response(
       "data" => [
         {
@@ -33,7 +32,7 @@ RSpec.describe OpenAiSemanticClient do
       fake_http = double("http")
       allow(fake_http).to receive(:request) do |request|
         requests << JSON.parse(request.body)
-        requests.length == 1 ? embedding_response : search_response
+        search_response
       end
       block.call(fake_http)
     end
@@ -42,7 +41,6 @@ RSpec.describe OpenAiSemanticClient do
 
     expect(requests).to eq(
       [
-        {"model" => "text-embedding-3-small", "input" => "alpha"},
         {"query" => "alpha", "max_num_results" => 3}
       ]
     )
@@ -65,18 +63,13 @@ RSpec.describe OpenAiSemanticClient do
       embedding_model: "text-embedding-3-small",
       vector_store_id: "vs_123"
     )
-    embedding_response = ok_response("data" => [{"embedding" => [0.1, 0.2]}])
     search_response = ok_response(
       "data" => [{"filename" => "root.md", "score" => 0.4, "attributes" => {"path" => "root.md"}}]
     )
-    call_count = 0
     allow(Net::HTTP).to receive(:start) do |_host, _port, use_ssl:, &block|
       expect(use_ssl).to eq(true)
       fake_http = double("http")
-      allow(fake_http).to receive(:request) do |_request|
-        call_count += 1
-        call_count == 1 ? embedding_response : search_response
-      end
+      allow(fake_http).to receive(:request).and_return(search_response)
       block.call(fake_http)
     end
 

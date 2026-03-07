@@ -31,22 +31,10 @@ class OpenAiSemanticClient
   def search(query_text:, limit:)
     raise ConfigError, "openai semantic retrieval config is incomplete" unless configured?
 
-    # Keep embeddings call for adapter parity and early validation of model/config wiring.
-    fetch_embedding(query_text)
     fetch_vector_search_results(query_text: query_text, limit: limit)
   end
 
   private
-
-  def fetch_embedding(query_text)
-    response = post_json(
-      path: "/v1/embeddings",
-      payload: {model: @embedding_model, input: query_text}
-    )
-
-    vector = response.dig("data", 0, "embedding")
-    validate_embedding!(vector)
-  end
 
   def fetch_vector_search_results(query_text:, limit:)
     response = post_json(
@@ -80,14 +68,6 @@ class OpenAiSemanticClient
     raise ResponseError, "openai response was not valid json: #{e.message}"
   rescue Timeout::Error, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError => e
     raise RequestError, "openai request error: #{e.message}"
-  end
-
-  def validate_embedding!(embedding)
-    unless embedding.is_a?(Array) && embedding.all? { |value| value.is_a?(Numeric) }
-      raise ResponseError, "openai embedding response is malformed"
-    end
-
-    embedding
   end
 
   def normalize_search_candidate(candidate)
