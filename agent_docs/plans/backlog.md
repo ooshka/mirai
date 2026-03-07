@@ -9,17 +9,22 @@
 
 ## Next
 
-1. Retrieval Query Path Metadata Echo
+1. Async Note Re-Embedding Pipeline (Provider-Agnostic)
+- Type: `feature`
+- Value: keeps remote semantic index fresh on note changes by enqueueing background re-embedding/upsert jobs instead of coupling writes to query-time retrieval.
+- Size: ~1-2 days.
+
+2. Retrieval Query Path Metadata Echo
 - Type: `feature`
 - Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
 - Size: ~0.5-1 day.
 
-2. OpenAI LLM Workflow Seam For MCP Update/Management Actions
+3. OpenAI LLM Workflow Seam For MCP Update/Management Actions
 - Type: `feature`
 - Value: starts Phase 1 non-retrieval model integration for note-update and repo-management flows behind provider-safe service boundaries.
 - Size: ~1-2 days.
 
-3. Planning Artifact Hygiene: Reconcile Superseded Open Cases
+4. Planning Artifact Hygiene: Reconcile Superseded Open Cases
 - Type: `docs`
 - Value: reduces planner/implementor confusion by resolving stale open case files.
 - Size: ~0.5 day.
