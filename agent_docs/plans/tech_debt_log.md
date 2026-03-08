@@ -412,3 +412,15 @@
 - Debt paid down next: replace placeholder semantic behavior with a real provider-backed retrieval path while preserving deterministic contract behavior.
 - Debt potentially added: provider-specific OpenAI wiring may temporarily concentrate config/error handling before broader model-provider abstractions are shared with update/management flows.
 - Refactor signal: if OpenAI integration introduces duplicated embed/search wiring or error mapping, extract a unified model-provider client boundary before adding additional model operations.
+
+## 2026-03-08 (exploratory planning pass: async note re-embedding pipeline)
+
+### Observed signals
+- OpenAI semantic retrieval is now validated end to end, but vector-store freshness still depends on manual chunk upload workflows.
+- Current mutation path (`patch/apply`) invalidates local lexical artifact state, yet there is no parallel mechanism to keep remote semantic index state aligned.
+- Retrieval/provider seams are stable enough that ingestion orchestration can be introduced without route contract churn.
+
+### Debt posture for next slice
+- Debt paid down next: remove recurring operational debt from manual re-embedding and establish deterministic post-mutation semantic ingestion ownership.
+- Debt potentially added: first iteration will likely use an in-process async queue with limited crash durability and retry semantics.
+- Refactor signal: if ingestion logic starts mixing queue lifecycle, provider calls, and mutation orchestration, extract a dedicated ingestion coordinator + queue adapter boundary.
