@@ -75,6 +75,22 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps invalid workflow intent errors" do
+    error = Mcp::WorkflowPlanAction::InvalidIntentError.new("intent is required")
+
+    expect(described_class.map(error)).to eq(
+      {status: 400, code: "invalid_workflow_intent", message: "intent is required"}
+    )
+  end
+
+  it "maps workflow planner unavailable errors" do
+    error = Llm::WorkflowPlanner::UnavailableError.new("workflow planner is unavailable")
+
+    expect(described_class.map(error)).to eq(
+      {status: 503, code: "planner_unavailable", message: "workflow planner is unavailable"}
+    )
+  end
+
   it "maps invalid index artifact errors" do
     error = IndexStore::InvalidArtifactError.new("index artifact is invalid")
 

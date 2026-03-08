@@ -49,5 +49,27 @@ RSpec.describe RuntimeConfig do
       expect(config.mcp_openai_vector_store_id).to eq("vs_123")
       expect(config.mcp_openai_configured).to eq(true)
     end
+
+    it "exposes workflow planner diagnostics without leaking secrets" do
+      config = described_class.from_env(
+        "NOTES_ROOT" => "/notes",
+        "MCP_POLICY_MODE" => "allow_all",
+        "MCP_RETRIEVAL_MODE" => "semantic",
+        "MCP_SEMANTIC_PROVIDER_ENABLED" => "true",
+        "MCP_SEMANTIC_PROVIDER" => "openai",
+        "MCP_SEMANTIC_INGESTION_ENABLED" => "false",
+        "MCP_OPENAI_EMBEDDING_MODEL" => "text-embedding-3-small",
+        "MCP_OPENAI_VECTOR_STORE_ID" => "vs_123",
+        "MCP_WORKFLOW_PLANNER_ENABLED" => "true",
+        "MCP_WORKFLOW_PLANNER_PROVIDER" => "openai",
+        "MCP_OPENAI_WORKFLOW_MODEL" => "gpt-4.1-mini",
+        "OPENAI_API_KEY" => "sk-secret"
+      )
+
+      expect(config.mcp_workflow_planner_enabled).to eq(true)
+      expect(config.mcp_workflow_planner_provider).to eq("openai")
+      expect(config.mcp_openai_workflow_model).to eq("gpt-4.1-mini")
+      expect(config.mcp_openai_workflow_configured).to eq(true)
+    end
   end
 end

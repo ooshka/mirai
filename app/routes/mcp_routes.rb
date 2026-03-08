@@ -81,6 +81,27 @@ module Routes
             .to_json
         end
       end
+
+      app.post "/mcp/workflow/plan" do
+        with_mcp_error_handling do
+          enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_PLAN)
+          payload = parsed_workflow_plan_payload
+          planner = Llm::WorkflowPlanner.new(
+            enabled: settings.mcp_workflow_planner_enabled,
+            provider: settings.mcp_workflow_planner_provider,
+            openai_client: Llm::OpenAiWorkflowPlannerClient.new(
+              api_key: ENV["OPENAI_API_KEY"],
+              model: settings.mcp_openai_workflow_model,
+              base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL)
+            )
+          )
+
+          ::Mcp::WorkflowPlanAction.new(planner: planner).call(
+            intent: payload["intent"],
+            context: payload["context"]
+          ).to_json
+        end
+      end
     end
   end
 end
