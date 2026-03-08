@@ -26,4 +26,13 @@ RSpec.describe LexicalChunkScorer do
 
     expect(tokens).to eq(%w[alpha beta 1])
   end
+
+  it "matches tokens using the same lexical boundaries as tokenization" do
+    scorer = described_class.new
+
+    match = scorer.token_match(text: "MALPHA alpha", token: "alpha")
+
+    expect(match.begin(0)).to eq(7)
+    expect(match.end(0)).to eq(12)
+  end
 end
