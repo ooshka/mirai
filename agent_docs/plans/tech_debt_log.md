@@ -448,3 +448,15 @@
 - Debt paid down next: establish a provider-safe LLM planning seam so non-retrieval model workflows can evolve without route-level coupling.
 - Debt potentially added: first pass remains OpenAI-specific and may encode prompt/response assumptions that require abstraction hardening later.
 - Refactor signal: if planner input/output schema grows (context blocks, tool constraints, policy modes), extract dedicated workflow schema validation/policy objects instead of expanding action classes.
+
+## 2026-03-08 (exploratory planning pass: instruction-to-patch draft endpoint, openai dry-run)
+
+### Observed signals
+- Planning-only workflow endpoint now returns structured action plans, but there is no model-generated draft artifact that can flow into existing patch safety paths.
+- Patch proposal/validation contracts are already stable and provide a natural guardrail for model-generated diffs.
+- Current workflow value remains limited without a bridge from intent planning to concrete patch draft output.
+
+### Debt posture for next slice
+- Debt paid down next: connect workflow intent to actionable, validation-ready patch drafts while preserving non-mutating safety boundaries.
+- Debt potentially added: first pass will likely encode OpenAI prompt assumptions and single-file drafting limits.
+- Refactor signal: if draft generation needs richer constraints (multi-file, template policies, diff styles), extract dedicated draft-schema/prompt policy objects from endpoint orchestration.
