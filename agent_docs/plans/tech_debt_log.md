@@ -424,3 +424,15 @@
 - Debt paid down next: remove recurring operational debt from manual re-embedding and establish deterministic post-mutation semantic ingestion ownership.
 - Debt potentially added: first iteration will likely use an in-process async queue with limited crash durability and retry semantics.
 - Refactor signal: if ingestion logic starts mixing queue lifecycle, provider calls, and mutation orchestration, extract a dedicated ingestion coordinator + queue adapter boundary.
+
+## 2026-03-08 (exploratory planning pass: retrieval query snippet offsets)
+
+### Observed signals
+- `/mcp/index/query` currently returns ranked chunks but no match-location metadata, forcing each client to rescan chunk text for grounding highlights.
+- Retrieval seams are now stable (`RetrievalProviderFactory`, semantic fallback policy, async ingestion), creating a low-risk point for additive response enrichment.
+- Ranking and tokenization concerns are already separated enough that snippet extraction can be introduced as a post-ranking annotation boundary.
+
+### Debt posture for next slice
+- Debt paid down next: remove repeated client-side snippet parsing and centralize deterministic offset semantics in one retrieval-owned contract.
+- Debt potentially added: first iteration will likely expose a single span per chunk, with richer multi-span behavior deferred.
+- Refactor signal: if snippet policy complexity grows (multi-span, excerpt generation, provider-specific hints), extract an explicit snippet policy object instead of expanding retriever orchestration.
