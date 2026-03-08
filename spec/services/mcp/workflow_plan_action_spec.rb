@@ -9,11 +9,16 @@ RSpec.describe Mcp::WorkflowPlanAction do
 
     action = described_class.new(planner: planner, context_builder: context_builder)
 
-    input_context = {"path" => "notes/today.md", "scope" => "daily"}
-    enriched_context = {input: input_context, hints: {path: "notes/today.md"}}
+    input_context = {path: "notes/today.md", scope: "daily", filters: [{kind: "tag", value: "work"}]}
+    normalized_context = {
+      "path" => "notes/today.md",
+      "scope" => "daily",
+      "filters" => [{"kind" => "tag", "value" => "work"}]
+    }
+    enriched_context = {input: normalized_context, hints: {path: "notes/today.md"}}
 
     expect(context_builder).to receive(:build).with(
-      input_context: input_context,
+      input_context: normalized_context,
       path_hint: "notes/today.md"
     ).and_return(enriched_context)
     expect(planner).to receive(:plan).with(
@@ -46,5 +51,29 @@ RSpec.describe Mcp::WorkflowPlanAction do
     expect do
       action.call(intent: "update", context: {"path" => 123})
     end.to raise_error(described_class::InvalidIntentError, "context.path must be a string")
+  end
+
+  it "rejects context values with unsupported types" do
+    action = described_class.new(
+      planner: instance_double(Llm::WorkflowPlanner),
+      context_builder: double("workflow_plan_context_builder")
+    )
+
+    expect do
+      action.call(intent: "update", context: {"obj" => Object.new})
+    end.to raise_error(described_class::InvalidIntentError, "context contains unsupported value type")
+  end
+
+  it "rejects oversized context payloads" do
+    action = described_class.new(
+      planner: instance_double(Llm::WorkflowPlanner),
+      context_builder: double("workflow_plan_context_builder")
+    )
+
+    oversized = "a" * (described_class::MAX_CONTEXT_BYTES + 1)
+
+    expect do
+      action.call(intent: "update", context: {"blob" => oversized})
+    end.to raise_error(described_class::InvalidIntentError, "context is too large")
   end
 end

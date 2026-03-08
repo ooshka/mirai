@@ -140,6 +140,21 @@ RSpec.describe "MCP workflow plan endpoint" do
     )
   end
 
+  it "returns invalid_workflow_intent when context payload is too large" do
+    oversized = "a" * (Mcp::WorkflowPlanAction::MAX_CONTEXT_BYTES + 1)
+    post "/mcp/workflow/plan", JSON.generate({intent: "update", context: {blob: oversized}})
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_intent",
+          "message" => "context is too large"
+        }
+      }
+    )
+  end
+
   it "returns not_found when hinted note path does not exist" do
     post "/mcp/workflow/plan", JSON.generate({intent: "update", context: {path: "notes/missing.md"}})
 
