@@ -259,6 +259,18 @@
 
 ## 2026-03-01 (runtime-agent policy mode hardening follow-up planning pass)
 
+## 2026-03-08 (workflow-plan context enrichment planning pass)
+
+### Observed signals
+- `/mcp/workflow/plan` currently depends mostly on user-supplied `intent`/`context`, so planner output can be generic when repository state is relevant.
+- Read-safe signals (note content, index freshness/status, semantic readiness) exist in separate seams but are not assembled for planner use.
+- Without a bounded context builder, action/route layers risk accumulating ad hoc context assembly logic and inconsistent prompt payloads.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a deterministic planner context snapshot seam so planning quality improves without execute-layer coupling.
+- Debt potentially added: first pass context enrichment will likely be single-path and excerpt-limited.
+- Refactor signal: if context sources expand, split builder output into typed sections with explicit size/ownership policies.
+
 ### Observed signals
 - The action policy layer is functionally in place, but policy mode validity still primarily surfaces during request execution.
 - Operator visibility is limited because `/config` does not currently expose policy mode diagnostics.

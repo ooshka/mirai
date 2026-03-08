@@ -2,21 +2,21 @@
 
 ## Now
 
-1. Instruction-to-Patch Draft Endpoint (OpenAI, Dry-Run)
+1. Workflow Plan Context Enrichment (Notes/Status Snapshot)
 - Type: `feature`
-- Value: turns natural-language edit intent into patch proposals that still flow through existing validation/apply safety gates.
-- Size: ~1 day.
+- Value: improves plan quality by grounding planner output with bounded note/status context instead of caller-only free-form hints.
+- Size: ~0.5-1 day.
 
-2. Workflow Plan Context Enrichment (Notes/Status Snapshot)
+2. Retrieval Query Path Metadata Echo
 - Type: `feature`
-- Value: improves plan quality by providing bounded repository context summaries without enabling execution.
+- Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
 - Size: ~0.5-1 day.
 
 ## Next
 
-1. Retrieval Query Path Metadata Echo
+1. Planner-to-Draft Handoff Payload Contract
 - Type: `feature`
-- Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
+- Value: aligns `/mcp/workflow/plan` output with `/mcp/workflow/draft_patch` input shape for low-friction operator/tool workflows.
 - Size: ~0.5-1 day.
 
 2. Planning Artifact Hygiene: Reconcile Superseded Open Cases

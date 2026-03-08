@@ -1,4 +1,4 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+- `CASE_workflow_plan_context_enrichment_notes_status_snapshot`
