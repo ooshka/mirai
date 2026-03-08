@@ -77,4 +77,51 @@ RSpec.describe OpenAiSemanticClient do
       client.search(query_text: "alpha", limit: 3)
     end.to raise_error(OpenAiSemanticClient::ResponseError, "openai vector search candidate missing chunk_index metadata")
   end
+
+  it "upserts path chunks by deleting prior path files and attaching uploaded chunk metadata" do
+    client = described_class.new(
+      api_key: "sk-test",
+      embedding_model: "text-embedding-3-small",
+      vector_store_id: "vs_123"
+    )
+    requests = []
+
+    list_response = ok_response(
+      "data" => [
+        {"id" => "vsf_keep", "attributes" => {"path" => "notes/other.md"}},
+        {"id" => "vsf_drop", "attributes" => {"path" => "notes/today.md"}}
+      ]
+    )
+    delete_response = ok_response({"id" => "vsf_drop", "deleted" => true})
+    upload_response = ok_response({"id" => "file_123"})
+    attach_response = ok_response({"id" => "vsf_new"})
+    responses = [list_response, delete_response, upload_response, attach_response]
+
+    allow(Net::HTTP).to receive(:start) do |_host, _port, use_ssl:, &block|
+      expect(use_ssl).to eq(true)
+      fake_http = double("http")
+      allow(fake_http).to receive(:request) do |request|
+        requests << request
+        responses.shift
+      end
+      block.call(fake_http)
+    end
+
+    client.upsert_path_chunks(
+      path: "notes/today.md",
+      chunks: [{chunk_index: 0, content: "hello"}]
+    )
+
+    expect(requests.map { |request| request.method }).to eq(%w[GET DELETE POST POST])
+    expect(requests[0].uri.path).to eq("/v1/vector_stores/vs_123/files")
+    expect(requests[1].uri.path).to eq("/v1/vector_stores/vs_123/files/vsf_drop")
+    expect(requests[2].uri.path).to eq("/v1/files")
+    expect(requests[3].uri.path).to eq("/v1/vector_stores/vs_123/files")
+    expect(JSON.parse(requests[3].body)).to eq(
+      {
+        "file_id" => "file_123",
+        "attributes" => {"path" => "notes/today.md", "chunk_index" => 0}
+      }
+    )
+  end
 end
