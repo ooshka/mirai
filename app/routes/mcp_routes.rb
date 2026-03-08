@@ -102,6 +102,31 @@ module Routes
           ).to_json
         end
       end
+
+      app.post "/mcp/workflow/draft_patch" do
+        with_mcp_error_handling do
+          enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH)
+          payload = parsed_workflow_draft_patch_payload
+          drafter = Llm::WorkflowPatchDrafter.new(
+            enabled: settings.mcp_workflow_planner_enabled,
+            provider: settings.mcp_workflow_planner_provider,
+            openai_client: Llm::OpenAiWorkflowPatchClient.new(
+              api_key: ENV["OPENAI_API_KEY"],
+              model: settings.mcp_openai_workflow_model,
+              base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL)
+            )
+          )
+
+          ::Mcp::WorkflowDraftPatchAction.new(
+            notes_root: settings.notes_root,
+            drafter: drafter
+          ).call(
+            instruction: payload["instruction"],
+            path: payload["path"],
+            context: payload["context"]
+          ).to_json
+        end
+      end
     end
   end
 end

@@ -17,13 +17,15 @@ module Mcp
     ACTION_INDEX_INVALIDATE = "index.invalidate"
     ACTION_INDEX_QUERY = "index.query"
     ACTION_WORKFLOW_PLAN = "workflow.plan"
+    ACTION_WORKFLOW_DRAFT_PATCH = "workflow.draft_patch"
 
     READ_ONLY_ALLOWED_ACTIONS = [
       ACTION_NOTES_LIST,
       ACTION_NOTES_READ,
       ACTION_INDEX_STATUS,
       ACTION_INDEX_QUERY,
-      ACTION_WORKFLOW_PLAN
+      ACTION_WORKFLOW_PLAN,
+      ACTION_WORKFLOW_DRAFT_PATCH
     ].freeze
 
     class DeniedError < StandardError

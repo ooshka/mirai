@@ -19,6 +19,7 @@ RSpec.describe Mcp::ActionPolicy do
       expect { policy.enforce!(described_class::ACTION_INDEX_STATUS) }.not_to raise_error
       expect { policy.enforce!(described_class::ACTION_INDEX_QUERY) }.not_to raise_error
       expect { policy.enforce!(described_class::ACTION_WORKFLOW_PLAN) }.not_to raise_error
+      expect { policy.enforce!(described_class::ACTION_WORKFLOW_DRAFT_PATCH) }.not_to raise_error
     end
 
     it "denies mutation actions in read_only mode" do
