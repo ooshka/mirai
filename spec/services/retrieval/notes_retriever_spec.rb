@@ -30,9 +30,9 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        {path: "nested/child.md", chunk_index: 0, content: "apple", score: 1},
-        {path: "root.md", chunk_index: 0, content: "apple", score: 1},
-        {path: "root.md", chunk_index: 1, content: "apple", score: 1}
+        {path: "nested/child.md", chunk_index: 0, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}},
+        {path: "root.md", chunk_index: 0, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}},
+        {path: "root.md", chunk_index: 1, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}}
       ]
     )
   end
@@ -46,7 +46,7 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        {path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 2}
+        {path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 2, snippet_offset: {start: 0, end: 5}}
       ]
     )
   end
@@ -70,7 +70,7 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        {path: "cached.md", chunk_index: 0, content: "alpha beta", score: 1}
+        {path: "cached.md", chunk_index: 0, content: "alpha beta", score: 1, snippet_offset: {start: 0, end: 5}}
       ]
     )
   end
@@ -90,7 +90,7 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        {path: "fallback.md", chunk_index: 0, content: "alpha", score: 1}
+        {path: "fallback.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {start: 0, end: 5}}
       ]
     )
   end
@@ -157,8 +157,8 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        {path: "b.md", chunk_index: 0, content: "two", score: 2},
-        {path: "a.md", chunk_index: 0, content: "one", score: 1}
+        {path: "b.md", chunk_index: 0, content: "two", score: 2, snippet_offset: nil},
+        {path: "a.md", chunk_index: 0, content: "one", score: 1, snippet_offset: nil}
       ]
     )
   end
@@ -186,7 +186,7 @@ RSpec.describe NotesRetriever do
       limit: 3
     )
     expect(result).to eq(
-      [{path: "fallback.md", chunk_index: 0, content: "alpha", score: 9}]
+      [{path: "fallback.md", chunk_index: 0, content: "alpha", score: 9, snippet_offset: {start: 0, end: 5}}]
     )
   end
 
@@ -219,7 +219,7 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "alpha", limit: 2)
 
     expect(result).to eq(
-      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 7}]
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 7, snippet_offset: {start: 0, end: 5}}]
     )
     expect(semantic_provider).to have_received(:rank).with(
       query_text: "alpha",
@@ -258,7 +258,9 @@ RSpec.describe NotesRetriever do
 
     result = retriever.query(text: "alpha", limit: 2)
 
-    expect(result).to eq(ranked_chunks)
+    expect(result).to eq(
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 3, snippet_offset: {start: 0, end: 5}}]
+    )
     expect(fallback_policy).to have_received(:rank).with(
       primary_provider: semantic_provider,
       fallback_provider: lexical_provider,
@@ -299,13 +301,46 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "alpha", limit: 2)
 
     expect(result).to eq(
-      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 1}]
+      [{path: "mode.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {start: 0, end: 5}}]
     )
     expect(semantic_provider).to have_received(:rank)
     expect(lexical_provider).to have_received(:rank).with(
       query_text: "alpha",
       chunks: [{path: "mode.md", chunk_index: 0, content: "alpha"}],
       limit: 2
+    )
+  end
+
+  it "returns nil snippet_offset for semantic hits without lexical overlap" do
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    indexer = instance_double(NotesIndexer)
+    allow(indexer).to receive(:index).and_return(
+      {
+        notes_indexed: 1,
+        chunks_indexed: 1,
+        chunks: [{path: "mode.md", chunk_index: 0, content: "tiger"}]
+      }
+    )
+    allow(semantic_provider).to receive(:rank).and_return(
+      [{path: "mode.md", chunk_index: 0, content: "tiger", score: 0.92}]
+    )
+    allow(lexical_provider).to receive(:rank)
+
+    retriever = described_class.new(
+      notes_root: @notes_root,
+      indexer: indexer,
+      provider_factory: RetrievalProviderFactory.new(
+        mode: RetrievalProviderFactory::MODE_SEMANTIC,
+        lexical_provider: lexical_provider,
+        semantic_provider: semantic_provider
+      )
+    )
+
+    result = retriever.query(text: "lion", limit: 2)
+
+    expect(result).to eq(
+      [{path: "mode.md", chunk_index: 0, content: "tiger", score: 0.92, snippet_offset: nil}]
     )
   end
 end

@@ -163,7 +163,8 @@ Default container config:
     - `semantic`: OpenAI semantic adapter (embedding + vector search) path; falls back to lexical ranking if provider/config is unavailable.
   - Optional `path_prefix` scopes candidate chunks to paths that start with the normalized relative prefix (for example, `nested/`).
   - `path_prefix` must be a string relative to `NOTES_ROOT`; absolute or traversal values return `invalid_query`.
-  - Response: `{ "query": "alpha", "limit": 5, "chunks": [...] }`
+  - Response: `{ "query": "alpha", "limit": 5, "chunks": [{"path":"root.md","chunk_index":0,"content":"alpha beta","score":1,"snippet_offset":{"start":0,"end":5}}] }`
+  - `snippet_offset` is additive metadata for grounding hints. `start` is a zero-based inclusive character index and `end` is an exclusive character index (Ruby slice style: `content[start...end]`). It is `null` when no lexical token overlap is found in a returned chunk (for example, semantic hit with non-overlapping text).
   - Default limit: `5`, max limit: `50`.
 
 ## Safety and error contracts

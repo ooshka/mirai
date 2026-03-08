@@ -2,6 +2,7 @@
 
 require_relative "../indexing/notes_indexer"
 require_relative "../indexing/index_store"
+require_relative "query_snippet_annotator"
 require_relative "retrieval_provider_factory"
 require_relative "retrieval_fallback_policy"
 
@@ -14,11 +15,13 @@ class NotesRetriever
     indexer: NotesIndexer.new(notes_root: notes_root),
     index_store: IndexStore.new(notes_root: notes_root),
     provider: nil,
+    snippet_annotator: QuerySnippetAnnotator.new,
     provider_factory: RetrievalProviderFactory.new,
     fallback_policy: RetrievalFallbackPolicy.new
   )
     @indexer = indexer
     @index_store = index_store
+    @snippet_annotator = snippet_annotator
     @fallback_policy = fallback_policy
     if provider
       @provider = provider
@@ -32,13 +35,15 @@ class NotesRetriever
 
   def query(text:, limit: DEFAULT_LIMIT, path_prefix: nil)
     chunks = chunks_for_query(path_prefix: path_prefix)
-    @fallback_policy.rank(
+    ranked_chunks = @fallback_policy.rank(
       primary_provider: @provider,
       fallback_provider: @fallback_provider,
       query_text: text,
       chunks: chunks,
       limit: limit
     )
+
+    @snippet_annotator.annotate(query_text: text, chunks: ranked_chunks)
   end
 
   private
