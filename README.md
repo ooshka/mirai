@@ -50,6 +50,28 @@ Optional host command:
 BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
 ```
 
+Upload notes chunks to an OpenAI vector store (for semantic E2E tests):
+
+```bash
+OPENAI_API_KEY=sk-... \
+MCP_OPENAI_VECTOR_STORE_ID=vs_... \
+ruby scripts/upload_openai_vector_store_chunks.rb --dry-run
+```
+
+Then run the real upload:
+
+```bash
+OPENAI_API_KEY=sk-... \
+MCP_OPENAI_VECTOR_STORE_ID=vs_... \
+ruby scripts/upload_openai_vector_store_chunks.rb
+```
+
+Useful flags:
+- `--notes-root <path>` (defaults to `../notes_repo/notes` outside Docker)
+- `--path-prefix animals/` (scope upload to a subtree)
+- `--max-chunks 20` (limit upload size for quick tests)
+- `--manifest <path>` (write upload mapping for cleanup/audit)
+
 Default container config:
 
 - `NOTES_ROOT=/notes_repo/notes`
