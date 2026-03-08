@@ -18,7 +18,9 @@ class AsyncSemanticIngestionService
     @processor = processor
     @logger = logger
     @queue = queue
-    @enqueued_paths = {}
+    @queued_paths = {}
+    @processing_paths = {}
+    @rerun_paths = {}
     @mutex = Mutex.new
     start_worker if @enabled && autostart
   end
@@ -31,10 +33,14 @@ class AsyncSemanticIngestionService
 
     @mutex.synchronize do
       normalized_paths.each do |path|
-        next if @enqueued_paths[path]
-
-        @enqueued_paths[path] = true
-        @queue << path
+        if @queued_paths[path]
+          next
+        elsif @processing_paths[path]
+          @rerun_paths[path] = true
+        else
+          @queued_paths[path] = true
+          @queue << path
+        end
       end
     end
 
@@ -48,6 +54,7 @@ class AsyncSemanticIngestionService
     return false unless @enabled
 
     path = @queue.pop(true)
+    mark_processing(path)
     @processor.process(paths: [path])
     true
   rescue ThreadError
@@ -56,10 +63,32 @@ class AsyncSemanticIngestionService
     log_warn("semantic ingestion processing failed: #{e.class}: #{e.message}")
     true
   ensure
-    @mutex.synchronize { @enqueued_paths.delete(path) } if defined?(path) && !path.nil?
+    complete_processing(path) if defined?(path) && !path.nil?
   end
 
   private
+
+  def mark_processing(path)
+    @mutex.synchronize do
+      @queued_paths.delete(path)
+      @processing_paths[path] = true
+    end
+  end
+
+  def complete_processing(path)
+    requeue = false
+
+    @mutex.synchronize do
+      @processing_paths.delete(path)
+
+      if @rerun_paths.delete(path) && !@queued_paths[path]
+        @queued_paths[path] = true
+        requeue = true
+      end
+    end
+
+    @queue << path if requeue
+  end
 
   def start_worker
     Thread.new do

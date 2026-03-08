@@ -144,14 +144,30 @@ class OpenAiSemanticClient
   end
 
   def vector_store_files_for_path(path:)
-    response = get_json(path: "/v1/vector_stores/#{@vector_store_id}/files?limit=100")
-    data = response["data"]
-    raise ResponseError, "openai vector store file list response missing data array" unless data.is_a?(Array)
+    request_path = "/v1/vector_stores/#{@vector_store_id}/files?limit=100"
+    matching = []
 
-    data.select do |vector_store_file|
-      attributes = vector_store_file["attributes"]
-      attributes.is_a?(Hash) && attributes["path"] == path
+    loop do
+      response = get_json(path: request_path)
+      data = response["data"]
+      raise ResponseError, "openai vector store file list response missing data array" unless data.is_a?(Array)
+
+      matching.concat(data.select do |vector_store_file|
+        attributes = vector_store_file["attributes"]
+        attributes.is_a?(Hash) && attributes["path"] == path
+      end)
+
+      break unless response["has_more"] == true
+
+      last_id = response["last_id"]
+      unless last_id.is_a?(String) && !last_id.empty?
+        raise ResponseError, "openai vector store file list response missing last_id for pagination"
+      end
+
+      request_path = "/v1/vector_stores/#{@vector_store_id}/files?limit=100&after=#{URI.encode_www_form_component(last_id)}"
     end
+
+    matching
   end
 
   def normalize_search_candidate(candidate)
