@@ -96,7 +96,16 @@ module Routes
             )
           )
 
-          ::Mcp::WorkflowPlanAction.new(planner: planner).call(
+          context_builder = ::Mcp::WorkflowPlanContextBuilder.new(
+            notes_root: settings.notes_root,
+            retrieval_mode: settings.mcp_retrieval_mode,
+            semantic_provider_enabled: settings.mcp_semantic_provider_enabled,
+            semantic_provider: settings.mcp_semantic_provider,
+            semantic_ingestion_enabled: settings.mcp_semantic_ingestion_enabled,
+            semantic_configured: settings.mcp_openai_configured
+          )
+
+          ::Mcp::WorkflowPlanAction.new(planner: planner, context_builder: context_builder).call(
             intent: payload["intent"],
             context: payload["context"]
           ).to_json

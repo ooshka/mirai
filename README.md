@@ -175,6 +175,7 @@ Default container config:
 - `POST /mcp/workflow/plan`
   - Produces a planning-only MCP action sequence for a natural-language intent.
   - Request: `{ "intent": "update today's note", "context": { ...optional object... } }`
+  - Optional context hint: `context.path` (`.md` relative path) asks the server to include a bounded note preview and retrieval/index status snapshot in planner context.
   - Response: `{ "intent": "...", "provider": "openai", "rationale": "...", "actions": [{"action":"notes.read","reason":"...","params":{...}}] }`
   - Safety note: this endpoint does not execute actions; it returns proposed steps only.
 
