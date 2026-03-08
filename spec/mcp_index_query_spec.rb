@@ -50,8 +50,8 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha beta",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 2},
-          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1}
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 2, "snippet_offset" => {"start" => 0, "end" => 5}},
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
         ]
       }
     )
@@ -88,8 +88,8 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1},
-          {"path" => "nested/second.md", "chunk_index" => 0, "content" => "alpha", "score" => 1}
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}},
+          {"path" => "nested/second.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
         ]
       }
     )
@@ -120,7 +120,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta", "score" => 1}
+          {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
         ]
       }
     )
@@ -183,7 +183,7 @@ RSpec.describe "MCP index query endpoint" do
   end
 
   it "returns invalid_query when path_prefix is not a string" do
-    get "/mcp/index/query", q: "alpha", "path_prefix[]" => "nested"
+    get "/mcp/index/query", {"q" => "alpha", "path_prefix[]" => "nested"}
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -283,7 +283,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha", "score" => 1}
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
         ]
       }
     )
@@ -312,7 +312,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95}
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95, "snippet_offset" => {"start" => 0, "end" => 5}}
         ]
       }
     )
@@ -346,7 +346,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "nested alpha", "score" => 0.8}
+          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "nested alpha", "score" => 0.8, "snippet_offset" => {"start" => 7, "end" => 12}}
         ]
       }
     )
@@ -372,7 +372,36 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 1}
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
+        ]
+      }
+    )
+  end
+
+  it "returns nil snippet_offset when semantic result has no lexical overlap with query" do
+    App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
+    App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_openai_vector_store_id, "vs_123"
+    App.set :mcp_openai_configured, true
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
+    allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_return("sk-test")
+    allow(OpenAiSemanticClient).to receive(:new).and_return(
+      instance_double(
+        "OpenAiSemanticClient",
+        search: [{"path" => "root.md", "chunk_index" => 0, "content" => "provider content", "score" => 0.95}]
+      )
+    )
+    File.write(File.join(@notes_root, "root.md"), "tiger\n")
+
+    get "/mcp/index/query", q: "lion", limit: "2"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "lion",
+        "limit" => 2,
+        "chunks" => [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "tiger", "score" => 0.95, "snippet_offset" => nil}
         ]
       }
     )
