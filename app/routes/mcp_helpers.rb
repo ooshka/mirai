@@ -26,6 +26,10 @@ module Routes
       parsed_json_payload(error_code: "invalid_path", error_message: "paths must be an array")
     end
 
+    def parsed_workflow_plan_payload
+      parsed_json_payload(error_code: "invalid_workflow_intent", error_message: "intent is required")
+    end
+
     def with_mcp_error_handling
       yield
     rescue => e

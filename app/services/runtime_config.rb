@@ -3,6 +3,7 @@
 require_relative "mcp/action_policy"
 require_relative "mcp/boolean_flag"
 require_relative "mcp/retrieval_mode"
+require_relative "llm/workflow_planner"
 require_relative "retrieval/openai_semantic_client"
 
 class RuntimeConfig
@@ -10,7 +11,8 @@ class RuntimeConfig
 
   attr_reader :notes_root, :mcp_policy_mode, :mcp_retrieval_mode, :mcp_semantic_provider_enabled,
     :mcp_semantic_provider, :mcp_semantic_ingestion_enabled, :mcp_openai_embedding_model, :mcp_openai_vector_store_id,
-    :mcp_openai_configured
+    :mcp_openai_configured, :mcp_workflow_planner_enabled, :mcp_workflow_planner_provider, :mcp_openai_workflow_model,
+    :mcp_openai_workflow_configured
 
   def self.from_env(env = ENV)
     new(
@@ -22,6 +24,9 @@ class RuntimeConfig
       mcp_semantic_ingestion_enabled: env.fetch("MCP_SEMANTIC_INGESTION_ENABLED", "false"),
       mcp_openai_embedding_model: env.fetch("MCP_OPENAI_EMBEDDING_MODEL", OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL),
       mcp_openai_vector_store_id: env["MCP_OPENAI_VECTOR_STORE_ID"],
+      mcp_workflow_planner_enabled: env.fetch("MCP_WORKFLOW_PLANNER_ENABLED", "false"),
+      mcp_workflow_planner_provider: env.fetch("MCP_WORKFLOW_PLANNER_PROVIDER", Llm::WorkflowPlanner::DEFAULT_PROVIDER),
+      mcp_openai_workflow_model: env.fetch("MCP_OPENAI_WORKFLOW_MODEL", Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL),
       openai_api_key: env["OPENAI_API_KEY"]
     )
   end
@@ -35,6 +40,9 @@ class RuntimeConfig
     mcp_semantic_ingestion_enabled:,
     mcp_openai_embedding_model:,
     mcp_openai_vector_store_id:,
+    mcp_workflow_planner_enabled:,
+    mcp_workflow_planner_provider:,
+    mcp_openai_workflow_model:,
     openai_api_key:
   )
     @notes_root = notes_root
@@ -45,7 +53,11 @@ class RuntimeConfig
     @mcp_semantic_ingestion_enabled = Mcp::BooleanFlag.enabled?(mcp_semantic_ingestion_enabled)
     @mcp_openai_embedding_model = normalize_string(mcp_openai_embedding_model) || OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL
     @mcp_openai_vector_store_id = normalize_string(mcp_openai_vector_store_id)
+    @mcp_workflow_planner_enabled = Mcp::BooleanFlag.enabled?(mcp_workflow_planner_enabled)
+    @mcp_workflow_planner_provider = normalize_string(mcp_workflow_planner_provider) || Llm::WorkflowPlanner::DEFAULT_PROVIDER
+    @mcp_openai_workflow_model = normalize_string(mcp_openai_workflow_model) || Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
     @mcp_openai_configured = !normalize_string(openai_api_key).nil? && !@mcp_openai_vector_store_id.nil?
+    @mcp_openai_workflow_configured = !normalize_string(openai_api_key).nil? && !@mcp_openai_workflow_model.nil?
   end
 
   private

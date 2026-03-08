@@ -16,12 +16,14 @@ module Mcp
     ACTION_INDEX_STATUS = "index.status"
     ACTION_INDEX_INVALIDATE = "index.invalidate"
     ACTION_INDEX_QUERY = "index.query"
+    ACTION_WORKFLOW_PLAN = "workflow.plan"
 
     READ_ONLY_ALLOWED_ACTIONS = [
       ACTION_NOTES_LIST,
       ACTION_NOTES_READ,
       ACTION_INDEX_STATUS,
-      ACTION_INDEX_QUERY
+      ACTION_INDEX_QUERY,
+      ACTION_WORKFLOW_PLAN
     ].freeze
 
     class DeniedError < StandardError
@@ -64,11 +66,13 @@ module Mcp
     def enforce!(action, identity_context: nil)
       resolved_identity_context = resolve_identity_context(identity_context)
 
+      return if allowed?(action, identity_context: resolved_identity_context)
+
       raise DeniedError.new(
         action: action,
         mode: @mode,
         identity_context: resolved_identity_context
-      ) unless allowed?(action, identity_context: resolved_identity_context)
+      )
     end
 
     private

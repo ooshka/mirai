@@ -22,6 +22,8 @@ require_relative "app/services/retrieval/retrieval_fallback_policy"
 require_relative "app/services/retrieval/notes_retriever"
 require_relative "app/services/retrieval/semantic_ingestion_service"
 require_relative "app/services/retrieval/openai_semantic_ingestion_processor"
+require_relative "app/services/llm/openai_workflow_planner_client"
+require_relative "app/services/llm/workflow_planner"
 require_relative "app/services/patch/patch_parser"
 require_relative "app/services/mcp/action_policy"
 require_relative "app/services/mcp/error_mapper"
@@ -34,6 +36,7 @@ require_relative "app/services/mcp/index_rebuild_action"
 require_relative "app/services/mcp/index_query_action"
 require_relative "app/services/mcp/index_status_action"
 require_relative "app/services/mcp/index_invalidate_action"
+require_relative "app/services/mcp/workflow_plan_action"
 require_relative "app/routes/core_routes"
 require_relative "app/routes/mcp_routes"
 require_relative "app/routes/mcp_helpers"
@@ -53,6 +56,10 @@ class App < Sinatra::Base
     set :mcp_openai_embedding_model, runtime_config.mcp_openai_embedding_model
     set :mcp_openai_vector_store_id, runtime_config.mcp_openai_vector_store_id
     set :mcp_openai_configured, runtime_config.mcp_openai_configured
+    set :mcp_workflow_planner_enabled, runtime_config.mcp_workflow_planner_enabled
+    set :mcp_workflow_planner_provider, runtime_config.mcp_workflow_planner_provider
+    set :mcp_openai_workflow_model, runtime_config.mcp_openai_workflow_model
+    set :mcp_openai_workflow_configured, runtime_config.mcp_openai_workflow_configured
 
     semantic_ingestion_service = NullSemanticIngestionService.new
     if runtime_config.mcp_semantic_ingestion_enabled

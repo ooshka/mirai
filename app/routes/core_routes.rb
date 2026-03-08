@@ -21,7 +21,11 @@ module Routes
           mcp_semantic_ingestion_enabled: settings.mcp_semantic_ingestion_enabled,
           mcp_openai_embedding_model: settings.mcp_openai_embedding_model,
           mcp_openai_vector_store_id: settings.mcp_openai_vector_store_id,
-          mcp_openai_configured: settings.mcp_openai_configured
+          mcp_openai_configured: settings.mcp_openai_configured,
+          mcp_workflow_planner_enabled: settings.mcp_workflow_planner_enabled,
+          mcp_workflow_planner_provider: settings.mcp_workflow_planner_provider,
+          mcp_openai_workflow_model: settings.mcp_openai_workflow_model,
+          mcp_openai_workflow_configured: settings.mcp_openai_workflow_configured
         }.to_json
       end
     end

@@ -24,5 +24,9 @@ RSpec.describe "Health" do
     expect(body.fetch("mcp_openai_embedding_model")).to eq(App.settings.mcp_openai_embedding_model)
     expect(body.fetch("mcp_openai_vector_store_id")).to eq(App.settings.mcp_openai_vector_store_id)
     expect(body.fetch("mcp_openai_configured")).to eq(App.settings.mcp_openai_configured)
+    expect(body.fetch("mcp_workflow_planner_enabled")).to eq(App.settings.mcp_workflow_planner_enabled)
+    expect(body.fetch("mcp_workflow_planner_provider")).to eq(App.settings.mcp_workflow_planner_provider)
+    expect(body.fetch("mcp_openai_workflow_model")).to eq(App.settings.mcp_openai_workflow_model)
+    expect(body.fetch("mcp_openai_workflow_configured")).to eq(App.settings.mcp_openai_workflow_configured)
   end
 end

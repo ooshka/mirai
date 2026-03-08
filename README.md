@@ -19,7 +19,7 @@ The runtime model is treated as untrusted and can only mutate notes through cons
 ## Service/spec layout
 
 - `app/services/mcp/` keeps MCP action/policy adapters.
-- `app/services/notes/`, `app/services/patch/`, `app/services/indexing/`, and `app/services/retrieval/` group core domain services.
+- `app/services/notes/`, `app/services/patch/`, `app/services/indexing/`, `app/services/retrieval/`, and `app/services/llm/` group core domain services.
 - `spec/services/<domain>/` mirrors those domain folders for unit-level service tests.
 
 ## Local development
@@ -85,14 +85,17 @@ Default container config:
 - `MCP_SEMANTIC_INGESTION_ENABLED=false` (when true, successful patch/apply requests enqueue async OpenAI chunk upserts)
 - `MCP_OPENAI_EMBEDDING_MODEL=text-embedding-3-small`
 - `MCP_OPENAI_VECTOR_STORE_ID=<vector-store-id>` (required for OpenAI semantic retrieval)
-- `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval; never exposed by `/config`)
+- `MCP_WORKFLOW_PLANNER_ENABLED=false` (when true, enables planning-only LLM workflow endpoint)
+- `MCP_WORKFLOW_PLANNER_PROVIDER=openai` (planner adapter selection; currently `openai`)
+- `MCP_OPENAI_WORKFLOW_MODEL=gpt-4.1-mini`
+- `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval/workflow planning; never exposed by `/config`)
 
 ## HTTP endpoints
 
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false, "mcp_workflow_planner_enabled": false, "mcp_workflow_planner_provider": "openai", "mcp_openai_workflow_model": "gpt-4.1-mini", "mcp_openai_workflow_configured": false }` (values depend on environment)
 
 ### Notes read APIs
 
@@ -167,6 +170,14 @@ Default container config:
   - `snippet_offset` is additive metadata for grounding hints. `start` is a zero-based inclusive character index and `end` is an exclusive character index (Ruby slice style: `content[start...end]`). It is `null` when no lexical token overlap is found in a returned chunk (for example, semantic hit with non-overlapping text).
   - Default limit: `5`, max limit: `50`.
 
+### Workflow Planning API
+
+- `POST /mcp/workflow/plan`
+  - Produces a planning-only MCP action sequence for a natural-language intent.
+  - Request: `{ "intent": "update today's note", "context": { ...optional object... } }`
+  - Response: `{ "intent": "...", "provider": "openai", "rationale": "...", "actions": [{"action":"notes.read","reason":"...","params":{...}}] }`
+  - Safety note: this endpoint does not execute actions; it returns proposed steps only.
+
 ## Safety and error contracts
 
 Filesystem/path safety:
@@ -198,6 +209,8 @@ Important error codes:
 - `invalid_patch` (400)
 - `invalid_query` (400)
 - `invalid_limit` (400)
+- `invalid_workflow_intent` (400)
+- `planner_unavailable` (503)
 - `not_found` (404)
 - `conflict` (409)
 - `git_error` (500)
