@@ -8,7 +8,9 @@ require_relative "action_policy"
 require_relative "index_query_action"
 require_relative "notes_batch_read_action"
 require_relative "workflow_plan_action"
+require_relative "workflow_draft_patch_action"
 require_relative "../llm/workflow_planner"
+require_relative "../llm/workflow_patch_drafter"
 
 module Mcp
   class ErrorMapper
@@ -34,8 +36,12 @@ module Mcp
         {status: 400, code: "invalid_limit", message: error.message}
       when Mcp::WorkflowPlanAction::InvalidIntentError
         {status: 400, code: "invalid_workflow_intent", message: error.message}
+      when Mcp::WorkflowDraftPatchAction::InvalidDraftRequestError
+        {status: 400, code: "invalid_workflow_draft", message: error.message}
       when Llm::WorkflowPlanner::UnavailableError
         {status: 503, code: "planner_unavailable", message: error.message}
+      when Llm::WorkflowPatchDrafter::UnavailableError
+        {status: 503, code: "draft_unavailable", message: error.message}
       when IndexStore::InvalidArtifactError
         {status: 500, code: "invalid_index_artifact", message: error.message}
       when Mcp::ActionPolicy::DeniedError

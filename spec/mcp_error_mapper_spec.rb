@@ -91,6 +91,22 @@ RSpec.describe Mcp::ErrorMapper do
     )
   end
 
+  it "maps invalid workflow draft request errors" do
+    error = Mcp::WorkflowDraftPatchAction::InvalidDraftRequestError.new("instruction is required")
+
+    expect(described_class.map(error)).to eq(
+      {status: 400, code: "invalid_workflow_draft", message: "instruction is required"}
+    )
+  end
+
+  it "maps workflow patch drafter unavailable errors" do
+    error = Llm::WorkflowPatchDrafter::UnavailableError.new("workflow patch drafter is unavailable")
+
+    expect(described_class.map(error)).to eq(
+      {status: 503, code: "draft_unavailable", message: "workflow patch drafter is unavailable"}
+    )
+  end
+
   it "maps invalid index artifact errors" do
     error = IndexStore::InvalidArtifactError.new("index artifact is invalid")
 
