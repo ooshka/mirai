@@ -436,3 +436,15 @@
 - Debt paid down next: remove repeated client-side snippet parsing and centralize deterministic offset semantics in one retrieval-owned contract.
 - Debt potentially added: first iteration will likely expose a single span per chunk, with richer multi-span behavior deferred.
 - Refactor signal: if snippet policy complexity grows (multi-span, excerpt generation, provider-specific hints), extract an explicit snippet policy object instead of expanding retriever orchestration.
+
+## 2026-03-08 (exploratory planning pass: OpenAI LLM workflow seam for update/management actions)
+
+### Observed signals
+- OpenAI integration is currently retrieval-only; there is no model-assisted planning path for note-update or repository-management workflows.
+- MCP mutation and lifecycle actions are already explicit and test-backed, making them suitable targets for a planning-only orchestration layer.
+- Current backlog still includes a completed snippet slice and one stale retrieval item, indicating planning artifacts need to shift to the next roadmap phase.
+
+### Debt posture for next slice
+- Debt paid down next: establish a provider-safe LLM planning seam so non-retrieval model workflows can evolve without route-level coupling.
+- Debt potentially added: first pass remains OpenAI-specific and may encode prompt/response assumptions that require abstraction hardening later.
+- Refactor signal: if planner input/output schema grows (context blocks, tool constraints, policy modes), extract dedicated workflow schema validation/policy objects instead of expanding action classes.
