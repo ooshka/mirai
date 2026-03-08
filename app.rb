@@ -2,6 +2,7 @@
 
 require "sinatra/base"
 require "json"
+require "logger"
 require_relative "app/services/notes/notes_reader"
 require_relative "app/services/notes/safe_notes_path"
 require_relative "app/services/patch/patch_validator"
@@ -19,6 +20,8 @@ require_relative "app/services/retrieval/semantic_retrieval_provider"
 require_relative "app/services/retrieval/retrieval_provider_factory"
 require_relative "app/services/retrieval/retrieval_fallback_policy"
 require_relative "app/services/retrieval/notes_retriever"
+require_relative "app/services/retrieval/semantic_ingestion_service"
+require_relative "app/services/retrieval/openai_semantic_ingestion_processor"
 require_relative "app/services/patch/patch_parser"
 require_relative "app/services/mcp/action_policy"
 require_relative "app/services/mcp/error_mapper"
@@ -46,9 +49,30 @@ class App < Sinatra::Base
     set :mcp_retrieval_mode, runtime_config.mcp_retrieval_mode
     set :mcp_semantic_provider_enabled, runtime_config.mcp_semantic_provider_enabled
     set :mcp_semantic_provider, runtime_config.mcp_semantic_provider
+    set :mcp_semantic_ingestion_enabled, runtime_config.mcp_semantic_ingestion_enabled
     set :mcp_openai_embedding_model, runtime_config.mcp_openai_embedding_model
     set :mcp_openai_vector_store_id, runtime_config.mcp_openai_vector_store_id
     set :mcp_openai_configured, runtime_config.mcp_openai_configured
+
+    semantic_ingestion_service = NullSemanticIngestionService.new
+    if runtime_config.mcp_semantic_ingestion_enabled
+      openai_client = OpenAiSemanticClient.new(
+        api_key: ENV["OPENAI_API_KEY"],
+        embedding_model: runtime_config.mcp_openai_embedding_model,
+        vector_store_id: runtime_config.mcp_openai_vector_store_id,
+        base_url: ENV.fetch("MCP_OPENAI_BASE_URL", OpenAiSemanticClient::DEFAULT_BASE_URL)
+      )
+      processor = OpenAiSemanticIngestionProcessor.new(
+        notes_root: runtime_config.notes_root,
+        openai_client: openai_client
+      )
+      semantic_ingestion_service = AsyncSemanticIngestionService.new(
+        enabled: true,
+        processor: processor,
+        logger: Logger.new($stdout)
+      )
+    end
+    set :semantic_ingestion_service, semantic_ingestion_service
   end
 
   before do

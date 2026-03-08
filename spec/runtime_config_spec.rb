@@ -9,10 +9,12 @@ RSpec.describe RuntimeConfig do
         "NOTES_ROOT" => "/notes",
         "MCP_POLICY_MODE" => "allow_all",
         "MCP_RETRIEVAL_MODE" => "lexical",
-        "MCP_SEMANTIC_PROVIDER_ENABLED" => " TRUE "
+        "MCP_SEMANTIC_PROVIDER_ENABLED" => " TRUE ",
+        "MCP_SEMANTIC_INGESTION_ENABLED" => "true"
       )
 
       expect(config.mcp_semantic_provider_enabled).to eq(true)
+      expect(config.mcp_semantic_ingestion_enabled).to eq(true)
     end
 
     it "normalizes semantic provider enabled to false for non-true input" do
@@ -20,10 +22,12 @@ RSpec.describe RuntimeConfig do
         "NOTES_ROOT" => "/notes",
         "MCP_POLICY_MODE" => "allow_all",
         "MCP_RETRIEVAL_MODE" => "lexical",
-        "MCP_SEMANTIC_PROVIDER_ENABLED" => "false"
+        "MCP_SEMANTIC_PROVIDER_ENABLED" => "false",
+        "MCP_SEMANTIC_INGESTION_ENABLED" => "false"
       )
 
       expect(config.mcp_semantic_provider_enabled).to eq(false)
+      expect(config.mcp_semantic_ingestion_enabled).to eq(false)
     end
 
     it "exposes openai semantic diagnostics without leaking secrets" do
@@ -33,12 +37,14 @@ RSpec.describe RuntimeConfig do
         "MCP_RETRIEVAL_MODE" => "semantic",
         "MCP_SEMANTIC_PROVIDER_ENABLED" => "true",
         "MCP_SEMANTIC_PROVIDER" => "openai",
+        "MCP_SEMANTIC_INGESTION_ENABLED" => "true",
         "MCP_OPENAI_EMBEDDING_MODEL" => "text-embedding-3-large",
         "MCP_OPENAI_VECTOR_STORE_ID" => "vs_123",
         "OPENAI_API_KEY" => "sk-secret"
       )
 
       expect(config.mcp_semantic_provider).to eq("openai")
+      expect(config.mcp_semantic_ingestion_enabled).to eq(true)
       expect(config.mcp_openai_embedding_model).to eq("text-embedding-3-large")
       expect(config.mcp_openai_vector_store_id).to eq("vs_123")
       expect(config.mcp_openai_configured).to eq(true)

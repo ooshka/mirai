@@ -37,7 +37,10 @@ module Routes
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_PATCH_APPLY)
           payload = parsed_patch_payload
-          ::Mcp::PatchApplyAction.new(notes_root: settings.notes_root).call(patch: payload["patch"]).to_json
+          ::Mcp::PatchApplyAction.new(
+            notes_root: settings.notes_root,
+            semantic_ingestion_service: settings.semantic_ingestion_service
+          ).call(patch: payload["patch"]).to_json
         end
       end
 

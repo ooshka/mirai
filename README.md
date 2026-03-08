@@ -82,6 +82,7 @@ Default container config:
   - Mode is validated at startup; invalid values fail boot with `invalid MCP retrieval mode: <value>`.
 - `MCP_SEMANTIC_PROVIDER_ENABLED=false` (semantic mode falls back to lexical when unavailable)
 - `MCP_SEMANTIC_PROVIDER=openai` (semantic adapter selection; currently `openai`)
+- `MCP_SEMANTIC_INGESTION_ENABLED=false` (when true, successful patch/apply requests enqueue async OpenAI chunk upserts)
 - `MCP_OPENAI_EMBEDDING_MODEL=text-embedding-3-small`
 - `MCP_OPENAI_VECTOR_STORE_ID=<vector-store-id>` (required for OpenAI semantic retrieval)
 - `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval; never exposed by `/config`)
@@ -91,7 +92,7 @@ Default container config:
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false }` (values depend on environment)
 
 ### Notes read APIs
 
@@ -121,6 +122,7 @@ Default container config:
 
 - `POST /mcp/patch/apply`
   - Validates, applies patch, and commits note changes in the notes git repo.
+  - When `MCP_SEMANTIC_INGESTION_ENABLED=true`, successful applies enqueue async semantic chunk upserts for the changed note path.
   - Request: `{ "patch": "..." }`
   - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1 }`
   - Commit message format: `mcp.patch_apply: <relative-path>`

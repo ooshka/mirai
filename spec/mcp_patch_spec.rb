@@ -8,17 +8,20 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
   around do |example|
     original_notes_root = App.settings.notes_root
     original_mcp_policy_mode = App.settings.mcp_policy_mode
+    original_semantic_ingestion_service = App.settings.semantic_ingestion_service
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
       init_git_repo
       App.set :notes_root, notes_root
       App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_ALLOW_ALL
+      App.set :semantic_ingestion_service, NullSemanticIngestionService.new
       example.run
     end
   ensure
     App.set :notes_root, original_notes_root
     App.set :mcp_policy_mode, original_mcp_policy_mode
+    App.set :semantic_ingestion_service, original_semantic_ingestion_service
   end
 
   it "proposes a valid patch with summary details" do
@@ -202,6 +205,55 @@ RSpec.describe "MCP patch proposal/apply endpoints" do
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
     expect(git!("log", "--format=%s", "-n", "1", "--", "notes/today.md").strip)
       .to eq("mcp.patch_apply: notes/today.md")
+  end
+
+  it "enqueues semantic ingestion after successful apply" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    ingestion_service = instance_double(NullSemanticIngestionService)
+    expect(ingestion_service).to receive(:enqueue_for_paths).with(paths: ["notes/today.md"]).and_return(true)
+    App.set :semantic_ingestion_service, ingestion_service
+
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1,2 @@
+       alpha
+      +beta
+    PATCH
+
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+  end
+
+  it "keeps apply successful when semantic ingestion enqueue raises" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    ingestion_service = instance_double(NullSemanticIngestionService)
+    allow(ingestion_service).to receive(:enqueue_for_paths).and_raise(StandardError, "ingestion failed")
+    App.set :semantic_ingestion_service, ingestion_service
+
+    patch = <<~PATCH
+      --- a/notes/today.md
+      +++ b/notes/today.md
+      @@ -1 +1,2 @@
+       alpha
+      +beta
+    PATCH
+
+    post "/mcp/patch/apply", {patch: patch}.to_json, "CONTENT_TYPE" => "application/json"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to include("path" => "notes/today.md")
   end
 
   it "invalidates index artifact after successful apply when artifact exists" do
