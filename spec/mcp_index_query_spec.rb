@@ -45,7 +45,8 @@ RSpec.describe "MCP index query endpoint" do
     get "/mcp/index/query", q: "alpha beta", limit: "2"
 
     expect(last_response.status).to eq(200)
-    expect(JSON.parse(last_response.body)).to eq(
+    body = JSON.parse(last_response.body)
+    expect(body).to eq(
       {
         "query" => "alpha beta",
         "limit" => 2,
@@ -55,6 +56,9 @@ RSpec.describe "MCP index query endpoint" do
         ]
       }
     )
+    offset = body.fetch("chunks").first.fetch("snippet_offset")
+    content = body.fetch("chunks").first.fetch("content")
+    expect(content[offset.fetch("start")...offset.fetch("end")]).to eq("alpha")
   end
 
   it "uses default limit when limit is omitted" do
