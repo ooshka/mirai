@@ -472,3 +472,14 @@
 - Debt paid down next: connect workflow intent to actionable, validation-ready patch drafts while preserving non-mutating safety boundaries.
 - Debt potentially added: first pass will likely encode OpenAI prompt assumptions and single-file drafting limits.
 - Refactor signal: if draft generation needs richer constraints (multi-file, template policies, diff styles), extract dedicated draft-schema/prompt policy objects from endpoint orchestration.
+## 2026-03-10 (user-directed planning pass: GitHub Actions branch CI foundation)
+
+### Observed signals
+- Local verification discipline is documented and reasonably strong, but merge confidence still depends on implementor/reviewer agents running the right commands on the current machine.
+- The spec suite already isolates note roots with temporary directories, so core verification does not require the external notes bind mount used by local Docker Compose.
+- Deployment interest is increasing, but the project still lacks a minimal independent CI gate that can catch environment drift before deploy automation is introduced.
+
+### Debt posture for next slice
+- Debt paid down next: add an external, repeatable branch verification gate for full-suite and lint checks before manual merge.
+- Debt potentially added: CI may initially run in native GitHub Ruby instead of the local Docker runtime, leaving a small environment-parity gap by design.
+- Refactor signal: if CI responsibilities expand beyond test/lint (smoke, image packaging, deploy), split workflow concerns early to avoid one oversized pipeline file.
