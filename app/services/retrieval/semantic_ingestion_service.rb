@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-
 class NullSemanticIngestionService
   def enqueue_for_paths(paths:)
     false
@@ -45,7 +43,7 @@ class AsyncSemanticIngestionService
     end
 
     true
-  rescue StandardError => e
+  rescue => e
     log_warn("semantic ingestion enqueue failed: #{e.class}: #{e.message}")
     false
   end
@@ -59,7 +57,7 @@ class AsyncSemanticIngestionService
     true
   rescue ThreadError
     false
-  rescue StandardError => e
+  rescue => e
     log_warn("semantic ingestion processing failed: #{e.class}: #{e.message}")
     true
   ensure

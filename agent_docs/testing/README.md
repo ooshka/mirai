@@ -43,6 +43,10 @@ Avoid broad approvals when possible; prefer the smallest prefix that still allow
 
 Run from repository root.
 
+Branch CI note:
+- GitHub Actions runs `bundle exec rspec` and `bundle exec standardrb` on every branch push and via `workflow_dispatch`.
+- Treat CI as the independent hosted verification signal before merge; local Docker Compose commands remain the canonical developer workflow.
+
 ### Recommended (containerized, reproducible)
 
 ```bash
