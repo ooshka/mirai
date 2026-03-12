@@ -47,6 +47,91 @@ Branch CI note:
 - GitHub Actions runs `bundle exec rspec` and `bundle exec standardrb` on every branch push and via `workflow_dispatch`.
 - Treat CI as the independent hosted verification signal before merge; local Docker Compose commands remain the canonical developer workflow.
 
+## GitHub Actions CI Verification
+
+When on a feature branch, push the feature branch and ensure it has an upstream before checking GitHub Actions status with `gh`.
+
+Prerequisites:
+- `gh` is installed and authenticated for the repository host.
+- Network access to `api.github.com` is available.
+- The current branch has been pushed at least once, for example:
+
+```bash
+git push -u origin "$(git branch --show-current)"
+```
+
+If the branch has not been pushed yet, the commands below may return no runs.
+
+### List recent runs for the current branch
+
+```bash
+gh run list --branch "$(git branch --show-current)" --limit 10
+```
+
+Use this to find the latest run `STATUS`, `CONCLUSION`, and run ID for the branch you just pushed.
+
+If this returns no rows, trigger a run by pushing the branch or manually starting the workflow:
+
+```bash
+gh workflow run CI --ref "$(git branch --show-current)"
+```
+
+Then re-run `gh run list` until a run appears.
+
+### Get the latest run ID safely
+
+```bash
+RUN_ID="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json databaseId --jq '.[0].databaseId')"
+test -n "$RUN_ID"
+```
+
+This exits non-zero if there is still no latest run for the branch.
+
+### Watch the latest run to completion
+
+```bash
+RUN_ID="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json databaseId --jq '.[0].databaseId')" &&
+test -n "$RUN_ID" &&
+gh run watch "$RUN_ID"
+```
+
+This blocks until the latest branch run finishes and exits non-zero if the watched run fails.
+
+### View run details for the latest branch run
+
+```bash
+RUN_ID="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json databaseId --jq '.[0].databaseId')" &&
+test -n "$RUN_ID" &&
+gh run view "$RUN_ID"
+```
+
+Use this for a human-readable summary of jobs, steps, and the final conclusion.
+
+### Check only the final conclusion programmatically
+
+```bash
+gh run list --branch "$(git branch --show-current)" --limit 1 --json conclusion,status --jq '.[0]'
+```
+
+Expected green result:
+- `status` is `completed`
+- `conclusion` is `success`
+
+If the command prints nothing, there is no branch run yet.
+
+### Fail fast in a script unless the latest branch run is green
+
+```bash
+RUN_JSON="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json conclusion,status --jq '.[0]')" &&
+test -n "$RUN_JSON" &&
+test "$(printf '%s' "$RUN_JSON" | jq -r '.status')" = "completed" &&
+test "$(printf '%s' "$RUN_JSON" | jq -r '.conclusion')" = "success"
+```
+
+Use this pattern when an agent or local script needs a simple pass/fail gate before merge.
+
+## Local Verification
+
 ### Recommended (containerized, reproducible)
 
 ```bash
@@ -70,6 +155,8 @@ docker compose run --rm dev bundle exec rspec spec/health_spec.rb:4
 ```bash
 docker compose run --rm dev bundle exec standardrb
 ```
+
+## Local Smoke Test
 
 ### Optional: run app and smoke-test endpoints
 
