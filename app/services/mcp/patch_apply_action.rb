@@ -33,7 +33,7 @@ module Mcp
 
     def enqueue_semantic_ingestion(path:)
       @semantic_ingestion_service.enqueue_for_paths(paths: [path])
-    rescue StandardError
+    rescue
       nil
     end
   end

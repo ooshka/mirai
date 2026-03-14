@@ -43,6 +43,81 @@ Avoid broad approvals when possible; prefer the smallest prefix that still allow
 
 Run from repository root.
 
+Branch CI note:
+- GitHub Actions runs `bundle exec rspec` and `bundle exec standardrb` on every branch push and via `workflow_dispatch`.
+- Treat CI as the independent hosted verification signal before merge; local Docker Compose commands remain the canonical developer workflow.
+
+## GitHub Actions CI Verification
+
+When on a feature branch, push the feature branch and ensure it has an upstream before checking GitHub Actions status with the repo CI helper scripts.
+
+Expected timing:
+- The current CI workflow is small and typically finishes in well under a minute.
+- Recent runs in this repo completed in about 15 to 45 seconds, but queue time can add delay.
+
+Prerequisites:
+- `gh` is installed and authenticated for the repository host.
+- `jq` is installed locally for the pass/fail helper script.
+- Network access to `api.github.com` is available.
+- The current branch has been pushed at least once, for example:
+
+```bash
+git push -u origin "$(git branch --show-current)"
+```
+
+If the branch has not been pushed yet, the commands below may return no runs.
+
+Suggested narrow approval prefixes when a sandboxed agent must shell out to a user shell:
+- `/bin/bash scripts/ci_trigger_current_branch.sh`
+- `/bin/bash scripts/ci_run_list_current_branch.sh`
+- `/bin/bash scripts/ci_watch_latest_branch_run.sh`
+- `/bin/bash scripts/ci_view_latest_branch_run.sh`
+- `/bin/bash scripts/ci_assert_latest_branch_green.sh`
+
+### List recent runs for the current branch
+
+```bash
+/bin/bash scripts/ci_run_list_current_branch.sh
+```
+
+Use this to find the latest run `STATUS`, `CONCLUSION`, and run ID for the branch you just pushed.
+
+If this returns no rows, trigger a run by pushing the branch or manually starting the workflow:
+
+```bash
+/bin/bash scripts/ci_trigger_current_branch.sh
+```
+
+Then re-run `/bin/bash scripts/ci_run_list_current_branch.sh` until a run appears.
+
+### Watch the latest run to completion
+
+```bash
+/bin/bash scripts/ci_watch_latest_branch_run.sh
+```
+
+This blocks until the latest branch run finishes and exits non-zero if the watched run fails.
+If the workflow was just triggered, expect the watch step to usually complete within about a minute.
+
+### View run details for the latest branch run
+
+```bash
+/bin/bash scripts/ci_view_latest_branch_run.sh
+```
+
+Use this for a human-readable summary of jobs, steps, and the final conclusion.
+
+### Check only the final conclusion programmatically
+
+```bash
+/bin/bash scripts/ci_assert_latest_branch_green.sh
+```
+
+This exits zero only when the latest branch run is both `completed` and `success`.
+If it exits non-zero, either there is no branch run yet or the latest run is not green.
+
+## Local Verification
+
 ### Recommended (containerized, reproducible)
 
 ```bash
@@ -66,6 +141,8 @@ docker compose run --rm dev bundle exec rspec spec/health_spec.rb:4
 ```bash
 docker compose run --rm dev bundle exec standardrb
 ```
+
+## Local Smoke Test
 
 ### Optional: run app and smoke-test endpoints
 

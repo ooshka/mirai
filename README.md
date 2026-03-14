@@ -36,6 +36,16 @@ Run tests:
 docker compose run --rm dev bundle exec rspec
 ```
 
+Run lint:
+
+```bash
+docker compose run --rm dev bundle exec standardrb
+```
+
+## Branch CI
+
+GitHub Actions runs the full `bundle exec rspec` suite and `bundle exec standardrb` on every branch push and via manual dispatch. This is the independent clean-environment verification signal for the current branch/reviewer workflow; local Docker-based commands remain the canonical development path.
+
 Run local smoke workflow.
 
 Canonical Docker command (with app running via `docker compose up`):

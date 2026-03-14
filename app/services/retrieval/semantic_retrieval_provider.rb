@@ -23,9 +23,9 @@ class SemanticRetrievalProvider
     semantic_results = @openai_client.search(query_text: query_text, limit: limit)
     normalize_results(semantic_results: semantic_results, fallback_chunks: chunks, limit: limit)
   rescue OpenAiSemanticClient::ConfigError,
-      OpenAiSemanticClient::RequestError,
-      OpenAiSemanticClient::ResponseError,
-      MalformedResultError
+    OpenAiSemanticClient::RequestError,
+    OpenAiSemanticClient::ResponseError,
+    MalformedResultError
     raise UnavailableError, "semantic retrieval provider is unavailable"
   end
 
