@@ -49,10 +49,15 @@ Branch CI note:
 
 ## GitHub Actions CI Verification
 
-When on a feature branch, push the feature branch and ensure it has an upstream before checking GitHub Actions status with `gh`.
+When on a feature branch, push the feature branch and ensure it has an upstream before checking GitHub Actions status with the repo CI helper scripts.
+
+Expected timing:
+- The current CI workflow is small and typically finishes in well under a minute.
+- Recent runs in this repo completed in about 15 to 45 seconds, but queue time can add delay.
 
 Prerequisites:
 - `gh` is installed and authenticated for the repository host.
+- `jq` is installed locally for the pass/fail helper script.
 - Network access to `api.github.com` is available.
 - The current branch has been pushed at least once, for example:
 
@@ -62,10 +67,17 @@ git push -u origin "$(git branch --show-current)"
 
 If the branch has not been pushed yet, the commands below may return no runs.
 
+Suggested narrow approval prefixes when a sandboxed agent must shell out to a user shell:
+- `/bin/bash scripts/ci_trigger_current_branch.sh`
+- `/bin/bash scripts/ci_run_list_current_branch.sh`
+- `/bin/bash scripts/ci_watch_latest_branch_run.sh`
+- `/bin/bash scripts/ci_view_latest_branch_run.sh`
+- `/bin/bash scripts/ci_assert_latest_branch_green.sh`
+
 ### List recent runs for the current branch
 
 ```bash
-gh run list --branch "$(git branch --show-current)" --limit 10
+/bin/bash scripts/ci_run_list_current_branch.sh
 ```
 
 Use this to find the latest run `STATUS`, `CONCLUSION`, and run ID for the branch you just pushed.
@@ -73,36 +85,24 @@ Use this to find the latest run `STATUS`, `CONCLUSION`, and run ID for the branc
 If this returns no rows, trigger a run by pushing the branch or manually starting the workflow:
 
 ```bash
-gh workflow run CI --ref "$(git branch --show-current)"
+/bin/bash scripts/ci_trigger_current_branch.sh
 ```
 
-Then re-run `gh run list` until a run appears.
-
-### Get the latest run ID safely
-
-```bash
-RUN_ID="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json databaseId --jq '.[0].databaseId')"
-test -n "$RUN_ID"
-```
-
-This exits non-zero if there is still no latest run for the branch.
+Then re-run `/bin/bash scripts/ci_run_list_current_branch.sh` until a run appears.
 
 ### Watch the latest run to completion
 
 ```bash
-RUN_ID="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json databaseId --jq '.[0].databaseId')" &&
-test -n "$RUN_ID" &&
-gh run watch "$RUN_ID"
+/bin/bash scripts/ci_watch_latest_branch_run.sh
 ```
 
 This blocks until the latest branch run finishes and exits non-zero if the watched run fails.
+If the workflow was just triggered, expect the watch step to usually complete within about a minute.
 
 ### View run details for the latest branch run
 
 ```bash
-RUN_ID="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json databaseId --jq '.[0].databaseId')" &&
-test -n "$RUN_ID" &&
-gh run view "$RUN_ID"
+/bin/bash scripts/ci_view_latest_branch_run.sh
 ```
 
 Use this for a human-readable summary of jobs, steps, and the final conclusion.
@@ -110,25 +110,11 @@ Use this for a human-readable summary of jobs, steps, and the final conclusion.
 ### Check only the final conclusion programmatically
 
 ```bash
-gh run list --branch "$(git branch --show-current)" --limit 1 --json conclusion,status --jq '.[0]'
+/bin/bash scripts/ci_assert_latest_branch_green.sh
 ```
 
-Expected green result:
-- `status` is `completed`
-- `conclusion` is `success`
-
-If the command prints nothing, there is no branch run yet.
-
-### Fail fast in a script unless the latest branch run is green
-
-```bash
-RUN_JSON="$(gh run list --branch "$(git branch --show-current)" --limit 1 --json conclusion,status --jq '.[0]')" &&
-test -n "$RUN_JSON" &&
-test "$(printf '%s' "$RUN_JSON" | jq -r '.status')" = "completed" &&
-test "$(printf '%s' "$RUN_JSON" | jq -r '.conclusion')" = "success"
-```
-
-Use this pattern when an agent or local script needs a simple pass/fail gate before merge.
+This exits zero only when the latest branch run is both `completed` and `success`.
+If it exits non-zero, either there is no branch run yet or the latest run is not green.
 
 ## Local Verification
 
