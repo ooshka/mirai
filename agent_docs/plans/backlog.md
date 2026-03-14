@@ -2,17 +2,12 @@
 
 ## Now
 
-1. GitHub Actions Branch CI Foundation
-- Type: `hardening`
-- Value: gives pushed branches an independent full-suite + lint signal before manual merge, reducing reliance on local-only verification.
-- Size: ~0.5-1 day.
-
-2. Workflow Plan Context Enrichment (Notes/Status Snapshot)
+1. Workflow Plan Context Enrichment (Notes/Status Snapshot)
 - Type: `feature`
 - Value: improves plan quality by grounding planner output with bounded note/status context instead of caller-only free-form hints.
 - Size: ~0.5-1 day.
 
-3. Retrieval Query Path Metadata Echo
+2. Retrieval Query Path Metadata Echo
 - Type: `feature`
 - Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
 - Size: ~0.5-1 day.
