@@ -6,9 +6,9 @@ No currently tracked items.
 
 ## Next
 
-1. Retrieval Query Path Metadata Echo
+1. Retrieval Query Metadata Echo Contract
 - Type: `feature`
-- Value: returns source path metadata consistently in query chunks so callers can audit grounding without post-processing.
+- Value: returns additive chunk metadata consistently in query results so callers can audit grounding through one stable contract instead of mixing top-level fields and provider-specific assumptions.
 - Size: ~0.5-1 day.
 
 2. Planner-to-Draft Handoff Payload Contract

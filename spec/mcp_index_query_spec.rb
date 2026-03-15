@@ -4,6 +4,21 @@ require "fileutils"
 require "tmpdir"
 
 RSpec.describe "MCP index query endpoint" do
+  def expected_chunk(path:, chunk_index:, content:, score:, snippet_offset:)
+    {
+      "path" => path,
+      "chunk_index" => chunk_index,
+      "content" => content,
+      "score" => score,
+      "snippet_offset" => snippet_offset,
+      "metadata" => {
+        "path" => path,
+        "chunk_index" => chunk_index,
+        "snippet_offset" => snippet_offset
+      }
+    }
+  end
+
   around do |example|
     original_notes_root = App.settings.notes_root
     original_mcp_policy_mode = App.settings.mcp_policy_mode
@@ -60,8 +75,8 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha beta",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 2, "snippet_offset" => {"start" => 0, "end" => 5}},
-          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 2, snippet_offset: {"start" => 0, "end" => 5}),
+          expected_chunk(path: "nested/child.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {"start" => 0, "end" => 5})
         ]
       }
     )
@@ -101,8 +116,8 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}},
-          {"path" => "nested/second.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "nested/child.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {"start" => 0, "end" => 5}),
+          expected_chunk(path: "nested/second.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {"start" => 0, "end" => 5})
         ]
       }
     )
@@ -133,7 +148,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "cached.md", "chunk_index" => 0, "content" => "alpha beta", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "cached.md", chunk_index: 0, content: "alpha beta", score: 1, snippet_offset: {"start" => 0, "end" => 5})
         ]
       }
     )
@@ -296,7 +311,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "root.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {"start" => 0, "end" => 5})
         ]
       }
     )
@@ -327,7 +342,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 0.95, snippet_offset: {"start" => 0, "end" => 5})
         ]
       }
     )
@@ -363,7 +378,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 5,
         "chunks" => [
-          {"path" => "nested/child.md", "chunk_index" => 0, "content" => "nested alpha", "score" => 0.8, "snippet_offset" => {"start" => 7, "end" => 12}}
+          expected_chunk(path: "nested/child.md", chunk_index: 0, content: "nested alpha", score: 0.8, snippet_offset: {"start" => 7, "end" => 12})
         ]
       }
     )
@@ -391,7 +406,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 1, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 1, snippet_offset: {"start" => 0, "end" => 5})
         ]
       }
     )
@@ -422,7 +437,7 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "lion",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "tiger", "score" => 0.95, "snippet_offset" => nil}
+          expected_chunk(path: "root.md", chunk_index: 0, content: "tiger", score: 0.95, snippet_offset: nil)
         ]
       }
     )
@@ -451,8 +466,24 @@ RSpec.describe "MCP index query endpoint" do
         "query" => "alpha",
         "limit" => 2,
         "chunks" => [
-          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95, "snippet_offset" => {"start" => 0, "end" => 5}}
+          expected_chunk(path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 0.95, snippet_offset: {"start" => 0, "end" => 5})
         ]
+      }
+    )
+  end
+
+  it "echoes public metadata from normalized chunk fields" do
+    File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
+
+    get "/mcp/index/query", q: "alpha", limit: "1"
+
+    expect(last_response.status).to eq(200)
+    chunk = JSON.parse(last_response.body).fetch("chunks").first
+    expect(chunk.fetch("metadata")).to eq(
+      {
+        "path" => chunk.fetch("path"),
+        "chunk_index" => chunk.fetch("chunk_index"),
+        "snippet_offset" => chunk.fetch("snippet_offset")
       }
     )
   end
