@@ -2,15 +2,7 @@
 
 ## Now
 
-1. Local Semantic Retrieval Adapter V1
-- Type: `feature`
-- Value: replaces the current OpenAI-only semantic retrieval assumption with a first self-hosted/local adapter seam while preserving lexical fallback.
-- Size: ~0.5-1 day.
-
-2. Workflow Plan Context Enrichment (Notes/Status Snapshot)
-- Type: `feature`
-- Value: improves plan quality by grounding planner output with bounded note/status context instead of caller-only free-form hints.
-- Size: ~0.5-1 day.
+No currently tracked items.
 
 ## Next
 
@@ -34,10 +26,6 @@
 - Value: reduces planner/implementor confusion by resolving stale open case files.
 - Size: ~0.5 day.
 
-5. ActionPolicy Identity Context Storage Clarity
-- Type: `hardening`
-- Value: removes ambiguity in policy identity-context ownership before identity-aware rules expand.
-- Size: ~0.5 day.
 ## Later
 
 1. Policy Identity Plumbing Spec Without `any_instance`
