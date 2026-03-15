@@ -5,6 +5,7 @@ This document explains how to verify changes in this repository with the minimum
 ## Goal
 
 Pick the smallest command set that still verifies the behavior you changed, then report exactly what was run and what passed/failed.
+On feature branches, treat branch CI as part of the normal verification flow before considering the work complete.
 
 ## Test Infrastructure Summary
 
@@ -43,9 +44,11 @@ Avoid broad approvals when possible; prefer the smallest prefix that still allow
 
 Run from repository root.
 
-Branch CI note:
+Branch CI requirement on feature branches:
 - GitHub Actions runs `bundle exec rspec` and `bundle exec standardrb` on every branch push and via `workflow_dispatch`.
 - Treat CI as the independent hosted verification signal before merge; local Docker Compose commands remain the canonical developer workflow.
+- After local verification passes on a feature branch, push the branch and confirm the latest branch CI run is green.
+- Do not treat a Case as fully verified on a feature branch until both local checks and branch CI have passed, unless network/CI access is unavailable and that limitation is reported explicitly.
 
 ## GitHub Actions CI Verification
 
@@ -196,27 +199,36 @@ What it covers:
 2. Run the narrowest relevant checks first.
 3. If behavior changed broadly, run full test suite.
 4. If code style changed, run lint.
-5. Report command list and outcomes.
+5. If on a feature branch, push the branch or confirm the current HEAD is already pushed.
+6. On a feature branch, run the branch CI helper flow and wait for a green result:
+   - `/bin/bash scripts/ci_run_list_current_branch.sh`
+   - `/bin/bash scripts/ci_watch_latest_branch_run.sh`
+7. Report command list and outcomes, including CI status when applicable.
 
 ## Minimal Command Selection by Change Type
 
 - Docs-only changes:
-  - Usually no tests required.
+  - Usually no local tests required.
+  - If the docs change is on a feature branch that will be reviewed or merged, still run branch CI after pushing so hosted verification stays current for the branch head.
 - Small isolated app behavior change with targeted spec coverage:
   - `docker compose run --rm dev bundle exec rspec path/to/spec_file.rb`
+  - Then on a feature branch: push and watch branch CI to green.
 - New endpoint or request/response behavior:
   - Targeted spec(s), then full suite:
   - `docker compose run --rm dev bundle exec rspec`
+  - Then on a feature branch: push and watch branch CI to green.
 - Refactor touching shared paths/config/helpers:
   - Full suite + lint:
   - `docker compose run --rm dev bundle exec rspec`
   - `docker compose run --rm dev bundle exec standardrb`
+  - Then on a feature branch: push and watch branch CI to green.
 - Runtime/config wiring concerns:
   - Optional smoke check with `docker compose up` + `curl`
 - Endpoint orchestration or environment-level risk:
   - Run targeted specs first, then smoke:
   - `docker compose run --rm dev bundle exec rspec <relevant-specs>`
   - `BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh`
+  - Then on a feature branch: push and watch branch CI to green.
 
 ## Upkeep
 
