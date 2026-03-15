@@ -259,6 +259,18 @@
 
 ## 2026-03-01 (runtime-agent policy mode hardening follow-up planning pass)
 
+## 2026-03-14 (local retrieval adapter planning pass)
+
+### Observed signals
+- `local_llm` now defines a ranked chunk artifact contract for self-hosted retrieval, but `mirai` retrieval wiring still treats semantic mode as effectively OpenAI-specific.
+- `RetrievalProviderFactory` and runtime config expose a semantic-provider field, yet the current implementation does not use that setting to choose among semantic adapters.
+- Without a bounded local adapter slice now, future self-hosted retrieval work is likely to grow around OpenAI-shaped assumptions in config and provider construction.
+
+### Debt posture for next slice
+- Debt paid down next: introduce provider-aware semantic retrieval selection so local/self-hosted retrieval can plug into the existing query contract with lexical fallback.
+- Debt potentially added: local provider transport and ingestion semantics will remain intentionally partial until a later slice.
+- Refactor signal: if semantic provider variants expand beyond a small set, split provider registration/selection from the current factory initializer.
+
 ## 2026-03-08 (workflow-plan context enrichment planning pass)
 
 ### Observed signals
