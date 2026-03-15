@@ -2,7 +2,6 @@
 
 require_relative "../indexing/notes_indexer"
 require_relative "../indexing/index_store"
-require_relative "query_metadata_echo_annotator"
 require_relative "query_snippet_annotator"
 require_relative "retrieval_provider_factory"
 require_relative "retrieval_fallback_policy"
@@ -17,14 +16,12 @@ class NotesRetriever
     index_store: IndexStore.new(notes_root: notes_root),
     provider: nil,
     snippet_annotator: QuerySnippetAnnotator.new,
-    metadata_echo_annotator: QueryMetadataEchoAnnotator.new,
     provider_factory: RetrievalProviderFactory.new,
     fallback_policy: RetrievalFallbackPolicy.new
   )
     @indexer = indexer
     @index_store = index_store
     @snippet_annotator = snippet_annotator
-    @metadata_echo_annotator = metadata_echo_annotator
     @fallback_policy = fallback_policy
     if provider
       @provider = provider
@@ -48,10 +45,24 @@ class NotesRetriever
 
     annotated_chunks = @snippet_annotator.annotate(query_text: text, chunks: ranked_chunks)
 
-    @metadata_echo_annotator.annotate(chunks: annotated_chunks)
+    build_query_response_chunks(chunks: annotated_chunks)
   end
 
   private
+
+  def build_query_response_chunks(chunks:)
+    chunks.map do |chunk|
+      {
+        content: chunk.fetch(:content),
+        score: chunk.fetch(:score),
+        metadata: {
+          path: chunk.fetch(:path),
+          chunk_index: Integer(chunk.fetch(:chunk_index)),
+          snippet_offset: chunk.fetch(:snippet_offset, nil)
+        }
+      }
+    end
+  end
 
   def chunks_for_query(path_prefix:)
     stored_index = @index_store.read
