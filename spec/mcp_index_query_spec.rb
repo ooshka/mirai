@@ -10,9 +10,12 @@ RSpec.describe "MCP index query endpoint" do
     original_mcp_retrieval_mode = App.settings.mcp_retrieval_mode
     original_semantic_enabled = App.settings.mcp_semantic_provider_enabled
     original_semantic_provider = App.settings.mcp_semantic_provider
+    original_semantic_configured = App.settings.mcp_semantic_configured
     original_openai_embedding_model = App.settings.mcp_openai_embedding_model
     original_openai_vector_store_id = App.settings.mcp_openai_vector_store_id
     original_openai_configured = App.settings.mcp_openai_configured
+    original_local_semantic_base_url = App.settings.mcp_local_semantic_base_url
+    original_local_semantic_configured = App.settings.mcp_local_semantic_configured
 
     Dir.mktmpdir("notes-root") do |notes_root|
       @notes_root = notes_root
@@ -21,9 +24,12 @@ RSpec.describe "MCP index query endpoint" do
       App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_LEXICAL
       App.set :mcp_semantic_provider_enabled, false
       App.set :mcp_semantic_provider, "openai"
+      App.set :mcp_semantic_configured, false
       App.set :mcp_openai_embedding_model, OpenAiSemanticClient::DEFAULT_EMBEDDING_MODEL
       App.set :mcp_openai_vector_store_id, nil
       App.set :mcp_openai_configured, false
+      App.set :mcp_local_semantic_base_url, nil
+      App.set :mcp_local_semantic_configured, false
       example.run
     end
   ensure
@@ -32,9 +38,12 @@ RSpec.describe "MCP index query endpoint" do
     App.set :mcp_retrieval_mode, original_mcp_retrieval_mode
     App.set :mcp_semantic_provider_enabled, original_semantic_enabled
     App.set :mcp_semantic_provider, original_semantic_provider
+    App.set :mcp_semantic_configured, original_semantic_configured
     App.set :mcp_openai_embedding_model, original_openai_embedding_model
     App.set :mcp_openai_vector_store_id, original_openai_vector_store_id
     App.set :mcp_openai_configured, original_openai_configured
+    App.set :mcp_local_semantic_base_url, original_local_semantic_base_url
+    App.set :mcp_local_semantic_configured, original_local_semantic_configured
   end
 
   it "returns ranked chunks for a query with an explicit limit" do
@@ -296,6 +305,8 @@ RSpec.describe "MCP index query endpoint" do
   it "preserves query contract when semantic mode is enabled" do
     App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
     App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_semantic_provider, "openai"
+    App.set :mcp_semantic_configured, true
     App.set :mcp_openai_vector_store_id, "vs_123"
     App.set :mcp_openai_configured, true
     allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
@@ -325,6 +336,8 @@ RSpec.describe "MCP index query endpoint" do
   it "keeps semantic results within path_prefix-scoped local chunks" do
     App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
     App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_semantic_provider, "openai"
+    App.set :mcp_semantic_configured, true
     App.set :mcp_openai_vector_store_id, "vs_123"
     App.set :mcp_openai_configured, true
     allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
@@ -359,6 +372,8 @@ RSpec.describe "MCP index query endpoint" do
   it "falls back to lexical retrieval when semantic provider is unavailable" do
     App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
     App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_semantic_provider, "openai"
+    App.set :mcp_semantic_configured, true
     App.set :mcp_openai_vector_store_id, "vs_123"
     App.set :mcp_openai_configured, true
     allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
@@ -385,6 +400,8 @@ RSpec.describe "MCP index query endpoint" do
   it "returns nil snippet_offset when semantic result has no lexical overlap with query" do
     App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
     App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_semantic_provider, "openai"
+    App.set :mcp_semantic_configured, true
     App.set :mcp_openai_vector_store_id, "vs_123"
     App.set :mcp_openai_configured, true
     allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_call_original
@@ -406,6 +423,35 @@ RSpec.describe "MCP index query endpoint" do
         "limit" => 2,
         "chunks" => [
           {"path" => "root.md", "chunk_index" => 0, "content" => "tiger", "score" => 0.95, "snippet_offset" => nil}
+        ]
+      }
+    )
+  end
+
+  it "preserves query contract when local semantic provider is enabled" do
+    App.set :mcp_retrieval_mode, RetrievalProviderFactory::MODE_SEMANTIC
+    App.set :mcp_semantic_provider_enabled, true
+    App.set :mcp_semantic_provider, "local"
+    App.set :mcp_local_semantic_base_url, "http://127.0.0.1:4000"
+    App.set :mcp_local_semantic_configured, true
+    App.set :mcp_semantic_configured, true
+    allow(LocalSemanticClient).to receive(:new).and_return(
+      instance_double(
+        "LocalSemanticClient",
+        search: [{"path" => "root.md", "chunk_index" => 0, "content" => "provider content", "score" => 0.95}]
+      )
+    )
+    File.write(File.join(@notes_root, "root.md"), "alpha beta\ngamma\n")
+
+    get "/mcp/index/query", q: "alpha", limit: "2"
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "query" => "alpha",
+        "limit" => 2,
+        "chunks" => [
+          {"path" => "root.md", "chunk_index" => 0, "content" => "alpha beta\ngamma", "score" => 0.95, "snippet_offset" => {"start" => 0, "end" => 5}}
         ]
       }
     )

@@ -91,7 +91,8 @@ Default container config:
 - `MCP_RETRIEVAL_MODE=lexical` (`semantic` enables semantic provider path with lexical fallback)
   - Mode is validated at startup; invalid values fail boot with `invalid MCP retrieval mode: <value>`.
 - `MCP_SEMANTIC_PROVIDER_ENABLED=false` (semantic mode falls back to lexical when unavailable)
-- `MCP_SEMANTIC_PROVIDER=openai` (semantic adapter selection; currently `openai`)
+- `MCP_SEMANTIC_PROVIDER=openai` (semantic adapter selection; supported: `openai`, `local`)
+- `MCP_LOCAL_SEMANTIC_BASE_URL=<base-url>` (required for `MCP_SEMANTIC_PROVIDER=local`; expected to expose a retrieval query endpoint returning ranked chunk records aligned with the `local_llm` retrieval artifact contract)
 - `MCP_SEMANTIC_INGESTION_ENABLED=false` (when true, successful patch/apply requests enqueue async OpenAI chunk upserts)
 - `MCP_OPENAI_EMBEDDING_MODEL=text-embedding-3-small`
 - `MCP_OPENAI_VECTOR_STORE_ID=<vector-store-id>` (required for OpenAI semantic retrieval)
@@ -105,7 +106,7 @@ Default container config:
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false, "mcp_workflow_planner_enabled": false, "mcp_workflow_planner_provider": "openai", "mcp_openai_workflow_model": "gpt-4.1-mini", "mcp_openai_workflow_configured": false }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_configured": false, "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false, "mcp_local_semantic_base_url": null, "mcp_local_semantic_configured": false, "mcp_workflow_planner_enabled": false, "mcp_workflow_planner_provider": "openai", "mcp_openai_workflow_model": "gpt-4.1-mini", "mcp_openai_workflow_configured": false }` (values depend on environment)
 
 ### Notes read APIs
 

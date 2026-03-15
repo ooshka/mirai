@@ -44,10 +44,40 @@ RSpec.describe RuntimeConfig do
       )
 
       expect(config.mcp_semantic_provider).to eq("openai")
+      expect(config.mcp_semantic_configured).to eq(true)
       expect(config.mcp_semantic_ingestion_enabled).to eq(true)
       expect(config.mcp_openai_embedding_model).to eq("text-embedding-3-large")
       expect(config.mcp_openai_vector_store_id).to eq("vs_123")
       expect(config.mcp_openai_configured).to eq(true)
+    end
+
+    it "exposes local semantic diagnostics when local provider is selected" do
+      config = described_class.from_env(
+        "NOTES_ROOT" => "/notes",
+        "MCP_POLICY_MODE" => "allow_all",
+        "MCP_RETRIEVAL_MODE" => "semantic",
+        "MCP_SEMANTIC_PROVIDER_ENABLED" => "true",
+        "MCP_SEMANTIC_PROVIDER" => "local",
+        "MCP_LOCAL_SEMANTIC_BASE_URL" => "http://127.0.0.1:4000"
+      )
+
+      expect(config.mcp_semantic_provider).to eq("local")
+      expect(config.mcp_local_semantic_base_url).to eq("http://127.0.0.1:4000")
+      expect(config.mcp_local_semantic_configured).to eq(true)
+      expect(config.mcp_semantic_configured).to eq(true)
+      expect(config.mcp_openai_configured).to eq(false)
+    end
+
+    it "raises on invalid semantic provider values" do
+      expect do
+        described_class.from_env(
+          "NOTES_ROOT" => "/notes",
+          "MCP_POLICY_MODE" => "allow_all",
+          "MCP_RETRIEVAL_MODE" => "semantic",
+          "MCP_SEMANTIC_PROVIDER_ENABLED" => "true",
+          "MCP_SEMANTIC_PROVIDER" => "dense"
+        )
+      end.to raise_error(Mcp::SemanticProvider::InvalidProviderError, "invalid MCP semantic provider: dense")
     end
 
     it "exposes workflow planner diagnostics without leaking secrets" do
