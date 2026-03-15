@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "lexical_retrieval_provider"
+require_relative "local_semantic_client"
 require_relative "openai_semantic_client"
 
 class SemanticRetrievalProvider
@@ -10,21 +11,25 @@ class SemanticRetrievalProvider
   def initialize(
     enabled: false,
     lexical_provider: LexicalRetrievalProvider.new,
-    openai_client: OpenAiSemanticClient.new(api_key: nil)
+    semantic_client: nil,
+    openai_client: nil
   )
     @enabled = enabled
     @lexical_provider = lexical_provider
-    @openai_client = openai_client
+    @semantic_client = semantic_client || openai_client || OpenAiSemanticClient.new(api_key: nil)
   end
 
   def rank(query_text:, chunks:, limit:)
     raise UnavailableError, "semantic retrieval provider is unavailable" unless @enabled
 
-    semantic_results = @openai_client.search(query_text: query_text, limit: limit)
+    semantic_results = @semantic_client.search(query_text: query_text, limit: limit)
     normalize_results(semantic_results: semantic_results, fallback_chunks: chunks, limit: limit)
   rescue OpenAiSemanticClient::ConfigError,
     OpenAiSemanticClient::RequestError,
     OpenAiSemanticClient::ResponseError,
+    LocalSemanticClient::ConfigError,
+    LocalSemanticClient::RequestError,
+    LocalSemanticClient::ResponseError,
     MalformedResultError
     raise UnavailableError, "semantic retrieval provider is unavailable"
   end

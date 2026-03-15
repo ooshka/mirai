@@ -10,6 +10,7 @@ RSpec.describe "MCP workflow plan endpoint" do
     original_mcp_retrieval_mode = App.settings.mcp_retrieval_mode
     original_mcp_semantic_provider_enabled = App.settings.mcp_semantic_provider_enabled
     original_mcp_semantic_provider = App.settings.mcp_semantic_provider
+    original_mcp_semantic_configured = App.settings.mcp_semantic_configured
     original_mcp_semantic_ingestion_enabled = App.settings.mcp_semantic_ingestion_enabled
     original_mcp_workflow_planner_enabled = App.settings.mcp_workflow_planner_enabled
     original_mcp_workflow_planner_provider = App.settings.mcp_workflow_planner_provider
@@ -22,6 +23,7 @@ RSpec.describe "MCP workflow plan endpoint" do
       App.set :mcp_retrieval_mode, Mcp::RetrievalMode::MODE_LEXICAL
       App.set :mcp_semantic_provider_enabled, false
       App.set :mcp_semantic_provider, "openai"
+      App.set :mcp_semantic_configured, false
       App.set :mcp_semantic_ingestion_enabled, false
       App.set :mcp_workflow_planner_enabled, true
       App.set :mcp_workflow_planner_provider, "openai"
@@ -35,6 +37,7 @@ RSpec.describe "MCP workflow plan endpoint" do
     App.set :mcp_retrieval_mode, original_mcp_retrieval_mode
     App.set :mcp_semantic_provider_enabled, original_mcp_semantic_provider_enabled
     App.set :mcp_semantic_provider, original_mcp_semantic_provider
+    App.set :mcp_semantic_configured, original_mcp_semantic_configured
     App.set :mcp_semantic_ingestion_enabled, original_mcp_semantic_ingestion_enabled
     App.set :mcp_workflow_planner_enabled, original_mcp_workflow_planner_enabled
     App.set :mcp_workflow_planner_provider, original_mcp_workflow_planner_provider

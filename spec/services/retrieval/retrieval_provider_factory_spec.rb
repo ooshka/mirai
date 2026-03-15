@@ -38,6 +38,36 @@ RSpec.describe RetrievalProviderFactory do
     )
   end
 
+  it "builds a local semantic client when local provider is selected" do
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+    semantic_provider = instance_double("SemanticRetrievalProvider")
+    local_client = instance_double("LocalSemanticClient")
+
+    expect(LocalSemanticClient).to receive(:new).with(
+      base_url: "http://127.0.0.1:4000"
+    ).and_return(local_client)
+    expect(SemanticRetrievalProvider).to receive(:new).with(
+      enabled: true,
+      lexical_provider: lexical_provider,
+      semantic_client: local_client
+    ).and_return(semantic_provider)
+
+    result = described_class.new(
+      mode: described_class::MODE_SEMANTIC,
+      semantic_provider_enabled: true,
+      semantic_provider_name: "local",
+      local_base_url: "http://127.0.0.1:4000",
+      lexical_provider: lexical_provider
+    ).build
+
+    expect(result).to eq(
+      {
+        primary_provider: semantic_provider,
+        fallback_provider: lexical_provider
+      }
+    )
+  end
+
   it "raises on unknown mode values" do
     lexical_provider = instance_double("LexicalRetrievalProvider")
     semantic_provider = instance_double("SemanticRetrievalProvider")
@@ -66,7 +96,7 @@ RSpec.describe RetrievalProviderFactory do
     expect(SemanticRetrievalProvider).to receive(:new).with(
       enabled: true,
       lexical_provider: lexical_provider,
-      openai_client: openai_client
+      semantic_client: openai_client
     ).and_return(semantic_provider)
 
     described_class.new(
@@ -90,7 +120,7 @@ RSpec.describe RetrievalProviderFactory do
     expect(SemanticRetrievalProvider).to receive(:new).with(
       enabled: false,
       lexical_provider: lexical_provider,
-      openai_client: openai_client
+      semantic_client: openai_client
     ).and_return(semantic_provider)
 
     described_class.new(
@@ -113,7 +143,7 @@ RSpec.describe RetrievalProviderFactory do
     expect(SemanticRetrievalProvider).to receive(:new).with(
       enabled: true,
       lexical_provider: lexical_provider,
-      openai_client: openai_client
+      semantic_client: openai_client
     ).and_return(semantic_provider)
 
     described_class.new(
@@ -125,5 +155,16 @@ RSpec.describe RetrievalProviderFactory do
       openai_base_url: "https://example.test",
       lexical_provider: lexical_provider
     ).build
+  end
+
+  it "raises on unknown semantic provider values" do
+    lexical_provider = instance_double("LexicalRetrievalProvider")
+
+    expect do
+      described_class.new(
+        semantic_provider_name: "unknown-provider",
+        lexical_provider: lexical_provider
+      ).build
+    end.to raise_error(Mcp::SemanticProvider::InvalidProviderError, "invalid MCP semantic provider: unknown-provider")
   end
 end

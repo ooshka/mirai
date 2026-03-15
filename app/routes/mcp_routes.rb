@@ -72,10 +72,12 @@ module Routes
             notes_root: settings.notes_root,
             retrieval_mode: settings.mcp_retrieval_mode,
             semantic_provider_enabled: settings.mcp_semantic_provider_enabled,
+            semantic_provider: settings.mcp_semantic_provider,
             openai_api_key: ENV["OPENAI_API_KEY"],
             openai_embedding_model: settings.mcp_openai_embedding_model,
             openai_vector_store_id: settings.mcp_openai_vector_store_id,
-            openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", OpenAiSemanticClient::DEFAULT_BASE_URL)
+            openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", OpenAiSemanticClient::DEFAULT_BASE_URL),
+            local_base_url: settings.mcp_local_semantic_base_url
           )
             .call(query: params["q"], limit: params["limit"], path_prefix: params["path_prefix"])
             .to_json
@@ -102,7 +104,7 @@ module Routes
             semantic_provider_enabled: settings.mcp_semantic_provider_enabled,
             semantic_provider: settings.mcp_semantic_provider,
             semantic_ingestion_enabled: settings.mcp_semantic_ingestion_enabled,
-            semantic_configured: settings.mcp_openai_configured
+            semantic_configured: settings.mcp_semantic_configured
           )
 
           ::Mcp::WorkflowPlanAction.new(planner: planner, context_builder: context_builder).call(
