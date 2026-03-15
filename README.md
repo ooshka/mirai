@@ -2,6 +2,15 @@
 
 Experimental Sinatra backend for safe, git-backed markdown note operations and deterministic retrieval primitives.
 
+## Contract posture
+
+This project is still in an early contract-shaping phase.
+
+- Prefer clean, explicit API contracts over compatibility layers that preserve ambiguous or duplicative response shapes.
+- Breaking contract changes are acceptable when they reduce design debt and the affected consumers can be updated in a coordinated way.
+- The expected external consumer set is intentionally small: hosted-provider integration owned here plus the self-hosted path being developed in `../local_llm`.
+- When a contract changes, update repo docs, request specs, and any known consumer notes or fixtures in the same planning/implementation cycle rather than carrying long-lived compatibility shims by default.
+
 ## What this service does
 
 - Reads markdown notes from a separate notes repository mounted at `NOTES_ROOT` (app default: `/notes`; Docker Compose sets `/notes_repo/notes`).
