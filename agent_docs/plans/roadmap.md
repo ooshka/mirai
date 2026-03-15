@@ -28,9 +28,15 @@ Long-term product goal (hosted web frontend):
 
 Project boundaries:
 - Prioritize contract clarity, deterministic behavior, and auditability over rapid feature breadth.
-- Favor incremental slices that preserve existing endpoint behavior unless explicitly planned.
+- Favor incremental slices, but allow explicit contract refactors when the consumer surface is still small and coordinated updates are cheaper than carrying ambiguity.
 - Require retrieval, update, and notes-management flows to preserve MCP contract compatibility across OpenAI and self-hosted backends.
+- Prefer removing ambiguous or duplicative public fields now instead of preserving them with compatibility shims by default.
 - Defer advanced ranking/policy complexity until fallback/policy ownership is explicit.
+
+Early-stage contract policy:
+- During the current pre-broad-adoption phase, breaking API changes are acceptable when they simplify the contract and can be propagated to the known consumers in the same work cycle.
+- Compatibility layers are a tool, not a default; use them only when the coordination cost is genuinely higher than the ongoing contract debt they introduce.
+- `mirai` remains the contract owner, so `local_llm` and any hosted-provider fixtures should be refactored to match cleaner `mirai` contracts rather than freezing early awkward shapes.
 
 ## Near-Term Follow-ons
 

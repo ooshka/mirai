@@ -2,6 +2,15 @@
 
 Experimental Sinatra backend for safe, git-backed markdown note operations and deterministic retrieval primitives.
 
+## Contract posture
+
+This project is still in an early contract-shaping phase.
+
+- Prefer clean, explicit API contracts over compatibility layers that preserve ambiguous or duplicative response shapes.
+- Breaking contract changes are acceptable when they reduce design debt and the affected consumers can be updated in a coordinated way.
+- The expected external consumer set is intentionally small: hosted-provider integration owned here plus the self-hosted path being developed in `../local_llm`.
+- When a contract changes, update repo docs, request specs, and any known consumer notes or fixtures in the same planning/implementation cycle rather than carrying long-lived compatibility shims by default.
+
 ## What this service does
 
 - Reads markdown notes from a separate notes repository mounted at `NOTES_ROOT` (app default: `/notes`; Docker Compose sets `/notes_repo/notes`).
@@ -177,8 +186,9 @@ Default container config:
     - `semantic`: OpenAI semantic adapter (embedding + vector search) path; falls back to lexical ranking if provider/config is unavailable.
   - Optional `path_prefix` scopes candidate chunks to paths that start with the normalized relative prefix (for example, `nested/`).
   - `path_prefix` must be a string relative to `NOTES_ROOT`; absolute or traversal values return `invalid_query`.
-  - Response: `{ "query": "alpha", "limit": 5, "chunks": [{"path":"root.md","chunk_index":0,"content":"alpha beta","score":1,"snippet_offset":{"start":0,"end":5}}] }`
-  - `snippet_offset` is additive metadata for grounding hints. `start` is a zero-based inclusive character index and `end` is an exclusive character index (Ruby slice style: `content[start...end]`). It is `null` when no lexical token overlap is found in a returned chunk (for example, semantic hit with non-overlapping text).
+  - Response: `{ "query": "alpha", "limit": 5, "chunks": [{"content":"alpha beta","score":1,"metadata":{"path":"root.md","chunk_index":0,"snippet_offset":{"start":0,"end":5}}}] }`
+  - `metadata` is the canonical grounding metadata for each chunk. Query results no longer expose `path`, `chunk_index`, or `snippet_offset` at top level.
+  - `metadata.snippet_offset` is a grounding hint. `start` is a zero-based inclusive character index and `end` is an exclusive character index (Ruby slice style: `content[start...end]`). It is `null` when no lexical token overlap is found in a returned chunk (for example, semantic hit with non-overlapping text).
   - Default limit: `5`, max limit: `50`.
 
 ### Workflow Planning API

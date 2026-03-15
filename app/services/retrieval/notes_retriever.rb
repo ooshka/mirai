@@ -43,10 +43,26 @@ class NotesRetriever
       limit: limit
     )
 
-    @snippet_annotator.annotate(query_text: text, chunks: ranked_chunks)
+    annotated_chunks = @snippet_annotator.annotate(query_text: text, chunks: ranked_chunks)
+
+    build_query_response_chunks(chunks: annotated_chunks)
   end
 
   private
+
+  def build_query_response_chunks(chunks:)
+    chunks.map do |chunk|
+      {
+        content: chunk.fetch(:content),
+        score: chunk.fetch(:score),
+        metadata: {
+          path: chunk.fetch(:path),
+          chunk_index: Integer(chunk.fetch(:chunk_index)),
+          snippet_offset: chunk.fetch(:snippet_offset, nil)
+        }
+      }
+    end
+  end
 
   def chunks_for_query(path_prefix:)
     stored_index = @index_store.read
