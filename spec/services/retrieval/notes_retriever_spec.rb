@@ -11,11 +11,8 @@ require_relative "../../../app/services/retrieval/semantic_retrieval_provider"
 RSpec.describe NotesRetriever do
   def expected_chunk(path:, chunk_index:, content:, score:, snippet_offset:)
     {
-      path: path,
-      chunk_index: chunk_index,
       content: content,
       score: score,
-      snippet_offset: snippet_offset,
       metadata: {
         path: path,
         chunk_index: chunk_index,
@@ -387,5 +384,16 @@ RSpec.describe NotesRetriever do
     expect(result).to eq(
       [expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 9, snippet_offset: {start: 0, end: 5})]
     )
+  end
+
+  it "removes top-level grounding fields from the public query shape" do
+    File.write(File.join(@notes_root, "root.md"), "alpha\n")
+
+    retriever = described_class.new(notes_root: @notes_root)
+    result = retriever.query(text: "alpha", limit: 1)
+    chunk = result.first
+
+    expect(chunk.keys).to eq(%i[content score metadata])
+    expect(chunk.fetch(:metadata).keys).to eq(%i[path chunk_index snippet_offset])
   end
 end

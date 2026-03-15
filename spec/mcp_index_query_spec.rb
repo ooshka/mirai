@@ -6,11 +6,8 @@ require "tmpdir"
 RSpec.describe "MCP index query endpoint" do
   def expected_chunk(path:, chunk_index:, content:, score:, snippet_offset:)
     {
-      "path" => path,
-      "chunk_index" => chunk_index,
       "content" => content,
       "score" => score,
-      "snippet_offset" => snippet_offset,
       "metadata" => {
         "path" => path,
         "chunk_index" => chunk_index,
@@ -80,7 +77,7 @@ RSpec.describe "MCP index query endpoint" do
         ]
       }
     )
-    offset = body.fetch("chunks").first.fetch("snippet_offset")
+    offset = body.fetch("chunks").first.fetch("metadata").fetch("snippet_offset")
     content = body.fetch("chunks").first.fetch("content")
     expect(content[offset.fetch("start")...offset.fetch("end")]).to eq("alpha")
   end
@@ -97,7 +94,7 @@ RSpec.describe "MCP index query endpoint" do
     body = JSON.parse(last_response.body)
     expect(body["limit"]).to eq(5)
     expect(body["chunks"].length).to eq(5)
-    expect(body["chunks"].map { |chunk| chunk["path"] }).to eq(
+    expect(body["chunks"].map { |chunk| chunk.fetch("metadata").fetch("path") }).to eq(
       %w[a.md b.md c.md d.md e.md]
     )
   end
@@ -479,12 +476,7 @@ RSpec.describe "MCP index query endpoint" do
 
     expect(last_response.status).to eq(200)
     chunk = JSON.parse(last_response.body).fetch("chunks").first
-    expect(chunk.fetch("metadata")).to eq(
-      {
-        "path" => chunk.fetch("path"),
-        "chunk_index" => chunk.fetch("chunk_index"),
-        "snippet_offset" => chunk.fetch("snippet_offset")
-      }
-    )
+    expect(chunk.keys).to contain_exactly("content", "score", "metadata")
+    expect(chunk.fetch("metadata")).to eq({"path" => "root.md", "chunk_index" => 0, "snippet_offset" => {"start" => 0, "end" => 5}})
   end
 end
