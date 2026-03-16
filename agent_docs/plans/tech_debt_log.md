@@ -507,3 +507,15 @@
 - Debt paid down next: add an external, repeatable branch verification gate for full-suite and lint checks before manual merge.
 - Debt potentially added: CI may initially run in native GitHub Ruby instead of the local Docker runtime, leaving a small environment-parity gap by design.
 - Refactor signal: if CI responsibilities expand beyond test/lint (smoke, image packaging, deploy), split workflow concerns early to avoid one oversized pipeline file.
+
+## 2026-03-16 (exploratory planning pass: retrieval query result match explainability)
+
+### Observed signals
+- `/mcp/index/query` now exposes canonical grounding metadata (`metadata.path`, `metadata.chunk_index`, `metadata.snippet_offset`), but operators still only get a raw score with no bounded rationale for why a chunk matched.
+- `NotesRetriever` is already the single response-shaping boundary across lexical and semantic retrieval paths, making it the safest place to add one small explanation contract without route churn.
+- Retrieval contracts recently stabilized after metadata cleanup, so this is a good moment to add trust-improving fields before more consumers build their own explanation heuristics around opaque scores.
+
+### Debt posture for next slice
+- Debt paid down next: reduce client-side guesswork and future ad hoc explanation logic by establishing one deterministic retrieval-owned explanation contract.
+- Debt potentially added: first-pass explanation fields will likely be lexical-first and intentionally bounded, leaving richer semantic rationale for a follow-on slice.
+- Refactor signal: if explanation payloads expand beyond a couple of deterministic fields, extract a dedicated retrieval explanation builder instead of growing `NotesRetriever` response shaping inline.

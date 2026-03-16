@@ -41,8 +41,8 @@ Early-stage contract policy:
 ## Near-Term Follow-ons
 
 7. Retrieval query response quality enhancements
-- Add optional snippet-location metadata to query results for better grounding and downstream UX
-- Preserve deterministic sorting and existing query contract defaults
+- Add bounded match-explanation metadata to query results for better operator trust and downstream UX
+- Start with deterministic lexical rationale and preserve stable query defaults before extending semantic-provider parity
 
 8. Planning artifact hygiene
 - Reconcile superseded/open planning case artifacts to keep execution context unambiguous

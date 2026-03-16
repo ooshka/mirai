@@ -2,14 +2,17 @@
 
 ## Now
 
-No currently tracked items.
+1. Retrieval Query Result Match Explainability
+- Type: `feature`
+- Value: adds bounded match rationale fields so operators can see why a chunk matched without rescanning or guessing ranking behavior.
+- Size: ~1 day.
 
 ## Next
 
-1. Retrieval Query Result Match Explainability
+1. Semantic Retrieval Match Explainability Parity
 - Type: `feature`
-- Value: adds basic match rationale fields to improve operator trust in retrieval ranking decisions.
-- Size: ~1 day.
+- Value: extends the new explanation contract across semantic hits without leaking provider-specific payloads or weakening lexical fallback behavior.
+- Size: ~0.5-1 day.
 
 2. Planning Artifact Hygiene: Reconcile Superseded Open Cases
 - Type: `docs`
