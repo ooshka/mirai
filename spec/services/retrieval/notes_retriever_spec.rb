@@ -9,7 +9,18 @@ require_relative "../../../app/services/indexing/index_store"
 require_relative "../../../app/services/retrieval/semantic_retrieval_provider"
 
 RSpec.describe NotesRetriever do
-  def expected_chunk(path:, chunk_index:, content:, score:, snippet_offset:)
+  def expected_explanation(query_text:, content:)
+    scorer = LexicalChunkScorer.new
+    query_tokens = scorer.tokenize(query_text).uniq
+    matched_terms = query_tokens.select { |token| scorer.token_match(text: content, token: token) }
+
+    {
+      matched_terms: matched_terms,
+      matched_term_count: matched_terms.length
+    }
+  end
+
+  def expected_chunk(path:, chunk_index:, content:, score:, snippet_offset:, query_text:)
     {
       content: content,
       score: score,
@@ -17,7 +28,8 @@ RSpec.describe NotesRetriever do
         path: path,
         chunk_index: chunk_index,
         snippet_offset: snippet_offset
-      }
+      },
+      explanation: expected_explanation(query_text: query_text, content: content)
     }
   end
 
@@ -42,9 +54,9 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        expected_chunk(path: "nested/child.md", chunk_index: 0, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}),
-        expected_chunk(path: "root.md", chunk_index: 0, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}),
-        expected_chunk(path: "root.md", chunk_index: 1, content: "apple", score: 1, snippet_offset: {start: 0, end: 5})
+        expected_chunk(path: "nested/child.md", chunk_index: 0, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}, query_text: "apple"),
+        expected_chunk(path: "root.md", chunk_index: 0, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}, query_text: "apple"),
+        expected_chunk(path: "root.md", chunk_index: 1, content: "apple", score: 1, snippet_offset: {start: 0, end: 5}, query_text: "apple")
       ]
     )
   end
@@ -58,7 +70,7 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        expected_chunk(path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 2, snippet_offset: {start: 0, end: 5})
+        expected_chunk(path: "root.md", chunk_index: 0, content: "alpha beta\ngamma", score: 2, snippet_offset: {start: 0, end: 5}, query_text: "alpha beta")
       ]
     )
   end
@@ -82,7 +94,7 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        expected_chunk(path: "cached.md", chunk_index: 0, content: "alpha beta", score: 1, snippet_offset: {start: 0, end: 5})
+        expected_chunk(path: "cached.md", chunk_index: 0, content: "alpha beta", score: 1, snippet_offset: {start: 0, end: 5}, query_text: "alpha")
       ]
     )
   end
@@ -102,7 +114,7 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {start: 0, end: 5})
+        expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {start: 0, end: 5}, query_text: "alpha")
       ]
     )
   end
@@ -169,8 +181,8 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        expected_chunk(path: "b.md", chunk_index: 0, content: "two", score: 2, snippet_offset: nil),
-        expected_chunk(path: "a.md", chunk_index: 0, content: "one", score: 1, snippet_offset: nil)
+        expected_chunk(path: "b.md", chunk_index: 0, content: "two", score: 2, snippet_offset: nil, query_text: "alpha alpha"),
+        expected_chunk(path: "a.md", chunk_index: 0, content: "one", score: 1, snippet_offset: nil, query_text: "alpha alpha")
       ]
     )
   end
@@ -198,7 +210,7 @@ RSpec.describe NotesRetriever do
       limit: 3
     )
     expect(result).to eq(
-      [expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 9, snippet_offset: {start: 0, end: 5})]
+      [expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 9, snippet_offset: {start: 0, end: 5}, query_text: "alpha")]
     )
   end
 
@@ -231,7 +243,7 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "alpha", limit: 2)
 
     expect(result).to eq(
-      [expected_chunk(path: "mode.md", chunk_index: 0, content: "alpha", score: 7, snippet_offset: {start: 0, end: 5})]
+      [expected_chunk(path: "mode.md", chunk_index: 0, content: "alpha", score: 7, snippet_offset: {start: 0, end: 5}, query_text: "alpha")]
     )
     expect(semantic_provider).to have_received(:rank).with(
       query_text: "alpha",
@@ -271,7 +283,7 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "alpha", limit: 2)
 
     expect(result).to eq(
-      [expected_chunk(path: "mode.md", chunk_index: 0, content: "alpha", score: 3, snippet_offset: {start: 0, end: 5})]
+      [expected_chunk(path: "mode.md", chunk_index: 0, content: "alpha", score: 3, snippet_offset: {start: 0, end: 5}, query_text: "alpha")]
     )
     expect(fallback_policy).to have_received(:rank).with(
       primary_provider: semantic_provider,
@@ -313,7 +325,7 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "alpha", limit: 2)
 
     expect(result).to eq(
-      [expected_chunk(path: "mode.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {start: 0, end: 5})]
+      [expected_chunk(path: "mode.md", chunk_index: 0, content: "alpha", score: 1, snippet_offset: {start: 0, end: 5}, query_text: "alpha")]
     )
     expect(semantic_provider).to have_received(:rank)
     expect(lexical_provider).to have_received(:rank).with(
@@ -352,7 +364,7 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "lion", limit: 2)
 
     expect(result).to eq(
-      [expected_chunk(path: "mode.md", chunk_index: 0, content: "tiger", score: 0.92, snippet_offset: nil)]
+      [expected_chunk(path: "mode.md", chunk_index: 0, content: "tiger", score: 0.92, snippet_offset: nil, query_text: "lion")]
     )
   end
 
@@ -382,18 +394,19 @@ RSpec.describe NotesRetriever do
     result = retriever.query(text: "alpha", limit: 3)
 
     expect(result).to eq(
-      [expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 9, snippet_offset: {start: 0, end: 5})]
+      [expected_chunk(path: "fallback.md", chunk_index: 0, content: "alpha", score: 9, snippet_offset: {start: 0, end: 5}, query_text: "alpha")]
     )
   end
 
-  it "removes top-level grounding fields from the public query shape" do
+  it "returns explanation alongside metadata without top-level grounding fields" do
     File.write(File.join(@notes_root, "root.md"), "alpha\n")
 
     retriever = described_class.new(notes_root: @notes_root)
     result = retriever.query(text: "alpha", limit: 1)
     chunk = result.first
 
-    expect(chunk.keys).to eq(%i[content score metadata])
+    expect(chunk.keys).to eq(%i[content score metadata explanation])
     expect(chunk.fetch(:metadata).keys).to eq(%i[path chunk_index snippet_offset])
+    expect(chunk.fetch(:explanation)).to eq({matched_terms: ["alpha"], matched_term_count: 1})
   end
 end
