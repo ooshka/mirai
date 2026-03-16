@@ -174,6 +174,31 @@ RSpec.describe "MCP workflow plan endpoint" do
     )
   end
 
+  it "returns planner_unavailable when provider returns a legacy draft-like action" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
+    allow(openai_client).to receive(:plan).and_return(
+      {
+        "rationale" => "draft update",
+        "actions" => [
+          {"action" => "patch.propose", "reason" => "draft update", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+    allow(Llm::OpenAiWorkflowPlannerClient).to receive(:new).and_return(openai_client)
+
+    post "/mcp/workflow/plan", JSON.generate({intent: "update today's note"})
+
+    expect(last_response.status).to eq(503)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "planner_unavailable",
+          "message" => "workflow planner is unavailable"
+        }
+      }
+    )
+  end
+
   it "returns not_found when hinted note path does not exist" do
     post "/mcp/workflow/plan", JSON.generate({intent: "update", context: {path: "notes/missing.md"}})
 

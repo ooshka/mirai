@@ -65,6 +65,23 @@ RSpec.describe Llm::WorkflowPlanner do
     end.to raise_error(described_class::UnavailableError, "workflow planner is unavailable")
   end
 
+  it "maps legacy draft-like actions to unavailable" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
+    allow(openai_client).to receive(:plan).and_return(
+      {
+        "rationale" => "Need to draft patch",
+        "actions" => [
+          {"action" => "patch.propose", "reason" => "draft note update", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+    planner = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+
+    expect do
+      planner.plan(intent: "update", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow planner is unavailable")
+  end
+
   it "raises unavailable when planner is disabled" do
     planner = described_class.new(enabled: false, openai_client: instance_double("Llm::OpenAiWorkflowPlannerClient"))
 

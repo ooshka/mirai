@@ -7,6 +7,7 @@ module Llm
     DEFAULT_PROVIDER = "openai"
     SUPPORTED_PROVIDERS = [DEFAULT_PROVIDER].freeze
     DRAFT_PATCH_ACTION = "workflow.draft_patch"
+    LEGACY_DRAFT_ACTIONS = ["patch.propose"].freeze
 
     class UnavailableError < StandardError; end
     class InvalidPlanError < StandardError; end
@@ -57,6 +58,7 @@ module Llm
 
       name = normalize_optional_string(action["action"])
       raise InvalidPlanError, "workflow plan action is required" if name.nil?
+      raise InvalidPlanError, "workflow plan action #{name} is not supported for draft generation" if LEGACY_DRAFT_ACTIONS.include?(name)
 
       params = action["params"]
       raise InvalidPlanError, "workflow plan action params must be an object" unless params.nil? || params.is_a?(Hash)
