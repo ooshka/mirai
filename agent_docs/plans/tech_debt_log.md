@@ -221,6 +221,18 @@
 - Debt potentially added: initial policy modes will be coarse-grained and environment-driven before identity-aware controls exist.
 - Refactor signal: if policy modes or action sets grow, separate mode/config parsing from enforcement to keep policy logic small and testable.
 
+## 2026-03-15 (workflow plan/draft handoff planning pass)
+
+### Observed signals
+- `/mcp/workflow/plan` and `/mcp/workflow/draft_patch` now exist as adjacent workflow endpoints, but the planner action contract is still free-form enough that consumers must guess how to translate draft intent into a drafter request.
+- `WorkflowPlanner` currently normalizes generic `{action, reason, params}` objects, while `WorkflowDraftPatchAction` separately validates top-level `instruction`, `path`, and `context`, creating a contract seam with duplicate ownership.
+- README examples and request specs cover each endpoint independently, but there is no canonical handoff example showing how a plan response should drive the draft endpoint.
+
+### Debt posture for next slice
+- Debt paid down next: define one canonical draft-handoff payload so planning and drafting share an explicit contract instead of ad hoc consumer translation.
+- Debt potentially added: the first typed planner-action validation may remain limited to the draft handoff path until more workflow actions justify a broader schema layer.
+- Refactor signal: if more planner actions need typed validation, extract a dedicated workflow action-schema validator rather than expanding `WorkflowPlanner#normalize_action` into a large conditional parser.
+
 ## 2026-03-01 (semantic retrieval runtime integration planning pass)
 
 ### Observed signals

@@ -1,4 +1,4 @@
 # Current Sprint
 
 ## Active Case
-No active case.
+[CASE_workflow_plan_draft_handoff_payload_contract.md](../cases/CASE_workflow_plan_draft_handoff_payload_contract.md)
