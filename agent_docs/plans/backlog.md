@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Planner-to-Draft Handoff Payload Contract
-- Type: `feature`
-- Value: aligns `/mcp/workflow/plan` output with `/mcp/workflow/draft_patch` input shape for low-friction operator/tool workflows.
-- Size: ~0.5-1 day.
+No currently tracked items.
 
 ## Next
 

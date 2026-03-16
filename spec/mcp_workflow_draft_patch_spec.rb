@@ -49,9 +49,12 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
-        instruction: "add beta",
-        path: "notes/today.md",
-        context: {source: "test"}
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          context: {source: "test"}
+        }
       }
     )
 
@@ -70,8 +73,61 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(File.read(file_path)).to eq("alpha\n")
   end
 
+  it "accepts a workflow.draft_patch action payload directly from planner output" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    file_path = File.join(App.settings.notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    expect(openai_client).to receive(:draft_patch).with(
+      instruction: "add beta",
+      path: "notes/today.md",
+      content: "alpha\n",
+      context: {"source" => "planner"}
+    ).and_return(
+      <<~PATCH
+        --- a/notes/today.md
+        +++ b/notes/today.md
+        @@ -1 +1,2 @@
+         alpha
+        +beta
+      PATCH
+    )
+    allow(Llm::OpenAiWorkflowPatchClient).to receive(:new).and_return(openai_client)
+
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        reason: "draft update",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          context: {source: "planner"}
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "patch" => <<~PATCH.strip
+          --- a/notes/today.md
+          +++ b/notes/today.md
+          @@ -1 +1,2 @@
+           alpha
+          +beta
+        PATCH
+      }
+    )
+  end
+
   it "returns invalid_workflow_draft when instruction is missing" do
-    post "/mcp/workflow/draft_patch", JSON.generate({path: "notes/today.md"})
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {path: "notes/today.md"}
+      }
+    )
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -84,8 +140,51 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     )
   end
 
+  it "returns invalid_workflow_draft when action payload uses the wrong action name" do
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "patch.propose",
+        params: {instruction: "add beta", path: "notes/today.md"}
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_draft",
+          "message" => "workflow draft action must be workflow.draft_patch"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_workflow_draft when action payload params are not an object" do
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: "bad"
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_draft",
+          "message" => "workflow draft params must be an object"
+        }
+      }
+    )
+  end
+
   it "returns invalid_workflow_draft when path is missing" do
-    post "/mcp/workflow/draft_patch", JSON.generate({instruction: "add beta"})
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {instruction: "add beta"}
+      }
+    )
 
     expect(last_response.status).to eq(400)
     expect(JSON.parse(last_response.body)).to eq(
@@ -104,8 +203,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     App.set :mcp_workflow_planner_enabled, false
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
-        instruction: "add beta",
-        path: "notes/today.md"
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md"
+        }
       }
     )
 
@@ -139,11 +241,33 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+  end
+
+  it "returns invalid_workflow_draft when canonical action envelope is missing" do
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
         instruction: "add beta",
         path: "notes/today.md"
       }
     )
 
-    expect(last_response.status).to eq(200)
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_draft",
+          "message" => "workflow draft action must be workflow.draft_patch"
+        }
+      }
+    )
   end
 end

@@ -31,7 +31,14 @@ module Routes
     end
 
     def parsed_workflow_draft_patch_payload
-      parsed_json_payload(error_code: "invalid_workflow_draft", error_message: "instruction and path are required")
+      payload = parsed_json_payload(error_code: "invalid_workflow_draft", error_message: "instruction and path are required")
+      normalized_action = payload["action"].to_s.strip
+      render_error(400, "invalid_workflow_draft", "workflow draft action must be workflow.draft_patch") unless normalized_action == ::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH
+
+      params = payload["params"]
+      render_error(400, "invalid_workflow_draft", "workflow draft params must be an object") unless params.is_a?(Hash)
+
+      params
     end
 
     def with_mcp_error_handling
