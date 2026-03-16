@@ -197,12 +197,14 @@ Default container config:
   - Produces a planning-only MCP action sequence for a natural-language intent.
   - Request: `{ "intent": "update today's note", "context": { ...optional object... } }`
   - Optional context hint: `context.path` (`.md` relative path) asks the server to include a bounded note preview and retrieval/index status snapshot in planner context.
-  - Response: `{ "intent": "...", "provider": "openai", "rationale": "...", "actions": [{"action":"notes.read","reason":"...","params":{...}}] }`
+  - Canonical draft handoff action: `{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{...optional object...}}}`
+  - Response: `{ "intent": "...", "provider": "openai", "rationale": "...", "actions": [{"action":"notes.read","reason":"...","params":{"path":"notes/today.md"}},{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{"source":"planner"}}}] }`
   - Safety note: this endpoint does not execute actions; it returns proposed steps only.
 
 - `POST /mcp/workflow/draft_patch`
   - Produces a dry-run single-file unified diff draft from an instruction and explicit target path.
   - Request: `{ "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } }`
+  - Also accepts the planner action envelope directly: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
   - Response: `{ "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." }`
   - Safety note: this endpoint validates draft shape but does not apply/commit changes.
 

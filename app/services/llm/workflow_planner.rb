@@ -6,6 +6,7 @@ module Llm
   class WorkflowPlanner
     DEFAULT_PROVIDER = "openai"
     SUPPORTED_PROVIDERS = [DEFAULT_PROVIDER].freeze
+    DRAFT_PATCH_ACTION = "workflow.draft_patch"
 
     class UnavailableError < StandardError; end
     class InvalidPlanError < StandardError; end
@@ -60,11 +61,33 @@ module Llm
       params = action["params"]
       raise InvalidPlanError, "workflow plan action params must be an object" unless params.nil? || params.is_a?(Hash)
 
+      normalized_params = normalize_action_params(name: name, params: params || {})
+
       {
         action: name,
         reason: normalize_optional_string(action["reason"]),
-        params: params || {}
+        params: normalized_params
       }
+    end
+
+    def normalize_action_params(name:, params:)
+      return params unless name == DRAFT_PATCH_ACTION
+
+      instruction = normalize_optional_string(params["instruction"])
+      raise InvalidPlanError, "workflow.draft_patch params.instruction is required" if instruction.nil?
+
+      path = normalize_optional_string(params["path"])
+      raise InvalidPlanError, "workflow.draft_patch params.path is required" if path.nil?
+
+      context = params.fetch("context", nil)
+      raise InvalidPlanError, "workflow.draft_patch params.context must be an object" unless context.nil? || context.is_a?(Hash)
+
+      normalized = {
+        "instruction" => instruction,
+        "path" => path
+      }
+      normalized["context"] = context unless context.nil?
+      normalized
     end
 
     def normalize_provider(provider)

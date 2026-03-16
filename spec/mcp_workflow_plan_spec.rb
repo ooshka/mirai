@@ -74,7 +74,15 @@ RSpec.describe "MCP workflow plan endpoint" do
         "rationale" => "read then propose patch",
         "actions" => [
           {"action" => "notes.read", "reason" => "fetch note", "params" => {"path" => "notes/today.md"}},
-          {"action" => "patch.propose", "reason" => "draft update", "params" => {"path" => "notes/today.md"}}
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta to today's note",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"}
+            }
+          }
         ]
       }
     )
@@ -95,7 +103,15 @@ RSpec.describe "MCP workflow plan endpoint" do
         "rationale" => "read then propose patch",
         "actions" => [
           {"action" => "notes.read", "reason" => "fetch note", "params" => {"path" => "notes/today.md"}},
-          {"action" => "patch.propose", "reason" => "draft update", "params" => {"path" => "notes/today.md"}}
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta to today's note",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"}
+            }
+          }
         ]
       }
     )
