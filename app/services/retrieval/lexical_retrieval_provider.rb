@@ -7,8 +7,16 @@ class LexicalRetrievalProvider
     @scorer = scorer
   end
 
+  def tokenize(text)
+    @scorer.tokenize(text)
+  end
+
+  def token_match(text:, token:)
+    @scorer.token_match(text: text, token: token)
+  end
+
   def rank(query_text:, chunks:, limit:)
-    query_tokens = @scorer.tokenize(query_text).uniq
+    query_tokens = tokenize(query_text).uniq
     return [] if query_tokens.empty?
 
     chunks.map do |chunk|

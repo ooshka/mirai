@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Retrieval Query Result Match Explainability
-- Type: `feature`
-- Value: adds bounded match rationale fields so operators can see why a chunk matched without rescanning or guessing ranking behavior.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 

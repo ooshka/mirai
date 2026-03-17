@@ -186,8 +186,9 @@ Default container config:
     - `semantic`: OpenAI semantic adapter (embedding + vector search) path; falls back to lexical ranking if provider/config is unavailable.
   - Optional `path_prefix` scopes candidate chunks to paths that start with the normalized relative prefix (for example, `nested/`).
   - `path_prefix` must be a string relative to `NOTES_ROOT`; absolute or traversal values return `invalid_query`.
-  - Response: `{ "query": "alpha", "limit": 5, "chunks": [{"content":"alpha beta","score":1,"metadata":{"path":"root.md","chunk_index":0,"snippet_offset":{"start":0,"end":5}}}] }`
+  - Response: `{ "query": "alpha", "limit": 5, "chunks": [{"content":"alpha beta","score":1,"metadata":{"path":"root.md","chunk_index":0,"snippet_offset":{"start":0,"end":5}},"explanation":{"matched_terms":["alpha"],"matched_term_count":1}}] }`
   - `metadata` is the canonical grounding metadata for each chunk. Query results no longer expose `path`, `chunk_index`, or `snippet_offset` at top level.
+  - `explanation` is the canonical bounded match-rationale container. `matched_terms` lists unique query tokens with token-boundary matches in the returned chunk content, in query order. `matched_term_count` is the size of that list.
   - `metadata.snippet_offset` is a grounding hint. `start` is a zero-based inclusive character index and `end` is an exclusive character index (Ruby slice style: `content[start...end]`). It is `null` when no lexical token overlap is found in a returned chunk (for example, semantic hit with non-overlapping text).
   - Default limit: `5`, max limit: `50`.
 
