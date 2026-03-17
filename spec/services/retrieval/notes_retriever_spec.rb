@@ -162,6 +162,9 @@ RSpec.describe NotesRetriever do
     allow(scorer).to receive(:tokenize).with("alpha alpha").and_return(%w[alpha alpha])
     allow(scorer).to receive(:score).with(query_tokens: ["alpha"], content: "one").and_return(1)
     allow(scorer).to receive(:score).with(query_tokens: ["alpha"], content: "two").and_return(2)
+    alpha_match = instance_double(MatchData, begin: 1, end: 6)
+    allow(scorer).to receive(:token_match).with(text: "one", token: "alpha").and_return(nil)
+    allow(scorer).to receive(:token_match).with(text: "two", token: "alpha").and_return(alpha_match)
 
     indexer = instance_double(NotesIndexer)
     allow(indexer).to receive(:index).and_return(
@@ -181,8 +184,32 @@ RSpec.describe NotesRetriever do
 
     expect(result).to eq(
       [
-        expected_chunk(path: "b.md", chunk_index: 0, content: "two", score: 2, snippet_offset: nil, query_text: "alpha alpha"),
-        expected_chunk(path: "a.md", chunk_index: 0, content: "one", score: 1, snippet_offset: nil, query_text: "alpha alpha")
+        {
+          content: "two",
+          score: 2,
+          metadata: {
+            path: "b.md",
+            chunk_index: 0,
+            snippet_offset: nil
+          },
+          explanation: {
+            matched_terms: ["alpha"],
+            matched_term_count: 1
+          }
+        },
+        {
+          content: "one",
+          score: 1,
+          metadata: {
+            path: "a.md",
+            chunk_index: 0,
+            snippet_offset: nil
+          },
+          explanation: {
+            matched_terms: [],
+            matched_term_count: 0
+          }
+        }
       ]
     )
   end
