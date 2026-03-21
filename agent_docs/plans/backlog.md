@@ -11,11 +11,6 @@ No currently tracked items.
 - Value: extends the new explanation contract across semantic hits without leaking provider-specific payloads or weakening lexical fallback behavior.
 - Size: ~0.5-1 day.
 
-2. Planning Artifact Hygiene: Reconcile Superseded Open Cases
-- Type: `docs`
-- Value: reduces planner/implementor confusion by resolving stale open case files.
-- Size: ~0.5 day.
-
 ## Later
 
 1. Policy Identity Plumbing Spec Without `any_instance`
