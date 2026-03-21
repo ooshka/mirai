@@ -59,7 +59,7 @@ Local-vs-CI balance:
 
 ## GitHub Actions CI Verification
 
-When on a feature branch, push the feature branch and ensure it has an upstream before checking GitHub Actions status with the repo CI helper scripts.
+When on a feature branch, use the repo CI helper script to push the branch and check GitHub Actions status for the current branch.
 
 Expected timing:
 - The current CI workflow is small and typically finishes in well under a minute.
@@ -69,25 +69,30 @@ Prerequisites:
 - `gh` is installed and authenticated for the repository host.
 - `jq` is installed locally for the pass/fail helper script.
 - Network access to `api.github.com` is available.
-- The current branch has been pushed at least once, for example:
-
-```bash
-git push -u origin "$(git branch --show-current)"
-```
-
-If the branch has not been pushed yet, the commands below may return no runs.
 
 Suggested narrow approval prefixes when a sandboxed agent must shell out to a user shell:
-- `/bin/bash scripts/ci_trigger_current_branch.sh`
-- `/bin/bash scripts/ci_run_list_current_branch.sh`
-- `/bin/bash scripts/ci_watch_latest_branch_run.sh`
-- `/bin/bash scripts/ci_view_latest_branch_run.sh`
-- `/bin/bash scripts/ci_assert_latest_branch_green.sh`
+- `/bin/bash scripts/ci_current_branch.sh`
+
+### Push the current branch and set upstream
+
+```bash
+/bin/bash scripts/ci_current_branch.sh push
+```
+
+Use this when the branch has not been pushed yet or when you want an explicit push step before inspecting CI.
+
+### Push the current branch and require a green CI run for the current HEAD
+
+```bash
+/bin/bash scripts/ci_current_branch.sh verify
+```
+
+This is the canonical agent flow on feature branches. It pushes `HEAD`, waits for the matching branch CI run to appear, watches it to completion, and exits non-zero unless that exact run succeeds.
 
 ### List recent runs for the current branch
 
 ```bash
-/bin/bash scripts/ci_run_list_current_branch.sh
+/bin/bash scripts/ci_current_branch.sh list
 ```
 
 Use this to find the latest run `STATUS`, `CONCLUSION`, and run ID for the branch you just pushed.
@@ -95,15 +100,15 @@ Use this to find the latest run `STATUS`, `CONCLUSION`, and run ID for the branc
 If this returns no rows, trigger a run by pushing the branch or manually starting the workflow:
 
 ```bash
-/bin/bash scripts/ci_trigger_current_branch.sh
+/bin/bash scripts/ci_current_branch.sh trigger
 ```
 
-Then re-run `/bin/bash scripts/ci_run_list_current_branch.sh` until a run appears.
+Then re-run `/bin/bash scripts/ci_current_branch.sh list` until a run appears.
 
 ### Watch the latest run to completion
 
 ```bash
-/bin/bash scripts/ci_watch_latest_branch_run.sh
+/bin/bash scripts/ci_current_branch.sh watch
 ```
 
 This blocks until the latest branch run finishes and exits non-zero if the watched run fails.
@@ -112,7 +117,7 @@ If the workflow was just triggered, expect the watch step to usually complete wi
 ### View run details for the latest branch run
 
 ```bash
-/bin/bash scripts/ci_view_latest_branch_run.sh
+/bin/bash scripts/ci_current_branch.sh view
 ```
 
 Use this for a human-readable summary of jobs, steps, and the final conclusion.
@@ -120,7 +125,7 @@ Use this for a human-readable summary of jobs, steps, and the final conclusion.
 ### Check only the final conclusion programmatically
 
 ```bash
-/bin/bash scripts/ci_assert_latest_branch_green.sh
+/bin/bash scripts/ci_current_branch.sh assert
 ```
 
 This exits zero only when the latest branch run is both `completed` and `success`.
@@ -210,8 +215,9 @@ What it covers:
 6. Use smoke checks only when runtime wiring or orchestration risk justifies them.
 7. If on a feature branch, push the branch or confirm the current HEAD is already pushed.
 8. On a feature branch, run the branch CI helper flow and wait for a green result:
-   - `/bin/bash scripts/ci_run_list_current_branch.sh`
-   - `/bin/bash scripts/ci_watch_latest_branch_run.sh`
+   - Prefer `/bin/bash scripts/ci_current_branch.sh verify`
+   - Or use `/bin/bash scripts/ci_current_branch.sh list`
+   - Then `/bin/bash scripts/ci_current_branch.sh watch`
 9. Report command list and outcomes, including CI status when applicable.
 
 ## Minimal Command Selection by Change Type
