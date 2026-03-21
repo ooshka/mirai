@@ -31,5 +31,8 @@ RSpec.describe "Health" do
     expect(body.fetch("mcp_workflow_planner_provider")).to eq(App.settings.mcp_workflow_planner_provider)
     expect(body.fetch("mcp_openai_workflow_model")).to eq(App.settings.mcp_openai_workflow_model)
     expect(body.fetch("mcp_openai_workflow_configured")).to eq(App.settings.mcp_openai_workflow_configured)
+    expect(body.fetch("mcp_local_workflow_base_url")).to eq(App.settings.mcp_local_workflow_base_url)
+    expect(body.fetch("mcp_local_workflow_configured")).to eq(App.settings.mcp_local_workflow_configured)
+    expect(body.fetch("mcp_workflow_planner_configured")).to eq(App.settings.mcp_workflow_planner_configured)
   end
 end
