@@ -319,6 +319,18 @@
 
 ## 2026-03-01 (runtime config mode contract hardening planning pass)
 
+## 2026-03-21 (local planner provider handoff planning pass)
+
+### Observed signals
+- `local_llm` now has planner smoke, parity fixtures, and a stable OpenAI-compatible local runtime baseline, but `mirai`'s workflow planner still hard-codes provider support to `openai`.
+- Retrieval-side local provider wiring already exists, so workflow planning is now the most concrete remaining self-hosted seam inside `mirai`.
+- Route wiring currently constructs an OpenAI workflow planner client inline, increasing the risk of route-level branching if local planner support is added without a bounded seam.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a provider-aware workflow planner boundary so self-hosted planner wiring can land without changing `/mcp/workflow/plan` contracts.
+- Debt potentially added: local planner support will initially stop at planning-only mode and defer local patch-drafter wiring.
+- Refactor signal: if planner provider variants or fallback rules expand beyond a small set, extract a dedicated planner client factory instead of widening route construction and service initializer branching.
+
 ### Observed signals
 - Runtime mode parsing is currently split across app boot (`MCP_POLICY_MODE`) and retrieval provider selection (`MCP_RETRIEVAL_MODE`), which creates inconsistent failure behavior.
 - Policy mode already fails fast on invalid values, while retrieval mode silently falls back to lexical, increasing risk of unnoticed environment drift.

@@ -2,9 +2,17 @@
 
 ## Now
 
-No currently tracked items.
+1. Local Planner Provider Handoff Case
+- Type: `feature`
+- Value: consumes the completed `local_llm` planner smoke and parity evidence in a narrow self-hosted workflow-plan seam.
+- Size: ~1 day.
 
 ## Next
+
+1. Local Workflow Patch Drafter Provider Handoff Case
+- Type: `feature`
+- Value: extends the self-hosted provider path from workflow planning into bounded draft-patch generation after planner-provider wiring is stable.
+- Size: ~1 day.
 
 ## Later
 
