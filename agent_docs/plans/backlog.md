@@ -6,11 +6,6 @@ No currently tracked items.
 
 ## Next
 
-1. Semantic Retrieval Match Explainability Parity
-- Type: `feature`
-- Value: extends the new explanation contract across semantic hits without leaking provider-specific payloads or weakening lexical fallback behavior.
-- Size: ~0.5-1 day.
-
 ## Later
 
 1. Policy Identity Plumbing Spec Without `any_instance`

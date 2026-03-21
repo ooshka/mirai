@@ -42,7 +42,7 @@ Early-stage contract policy:
 
 7. Retrieval query response quality enhancements
 - Add bounded match-explanation metadata to query results for better operator trust and downstream UX
-- Start with deterministic lexical rationale and preserve stable query defaults before extending semantic-provider parity
+- Preserve the bounded explainability contract while deferring any richer provider-specific rationale until retrieval policy ownership is clearer
 
 8. Planning artifact hygiene
 - Reconcile superseded/open planning case artifacts to keep execution context unambiguous
