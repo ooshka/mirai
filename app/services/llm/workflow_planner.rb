@@ -1,41 +1,61 @@
 # frozen_string_literal: true
 
+require_relative "local_workflow_planner_client"
 require_relative "openai_workflow_planner_client"
 
 module Llm
   class WorkflowPlanner
     DEFAULT_PROVIDER = "openai"
-    SUPPORTED_PROVIDERS = [DEFAULT_PROVIDER].freeze
+    LOCAL_PROVIDER = "local"
+    SUPPORTED_PROVIDERS = [DEFAULT_PROVIDER, LOCAL_PROVIDER].freeze
     DRAFT_PATCH_ACTION = "workflow.draft_patch"
     LEGACY_DRAFT_ACTIONS = ["patch.propose"].freeze
 
     class UnavailableError < StandardError; end
     class InvalidPlanError < StandardError; end
+    class InvalidProviderError < StandardError; end
+
+    def self.normalize_provider!(provider)
+      normalized = send(:normalize_optional_string, provider) || DEFAULT_PROVIDER
+      return normalized if SUPPORTED_PROVIDERS.include?(normalized)
+
+      raise InvalidProviderError, "invalid workflow planner provider: #{normalized}"
+    end
 
     def initialize(
       enabled: false,
       provider: DEFAULT_PROVIDER,
-      openai_client: OpenAiWorkflowPlannerClient.new(api_key: nil)
+      openai_client: OpenAiWorkflowPlannerClient.new(api_key: nil),
+      local_client: LocalWorkflowPlannerClient.new
     )
       @enabled = enabled
-      @provider = normalize_provider(provider)
+      @provider = self.class.normalize_provider!(provider)
       @openai_client = openai_client
+      @local_client = local_client
     end
 
     def plan(intent:, context:)
       raise UnavailableError, "workflow planner is unavailable" unless @enabled
-      raise UnavailableError, "workflow planner is unavailable" unless @provider == DEFAULT_PROVIDER
 
-      raw_plan = @openai_client.plan(intent: intent, context: context)
+      raw_plan = planner_client.plan(intent: intent, context: context)
       normalize_plan(raw_plan: raw_plan, intent: intent)
     rescue OpenAiWorkflowPlannerClient::ConfigError,
       OpenAiWorkflowPlannerClient::RequestError,
       OpenAiWorkflowPlannerClient::ResponseError,
+      LocalWorkflowPlannerClient::ConfigError,
+      LocalWorkflowPlannerClient::RequestError,
+      LocalWorkflowPlannerClient::ResponseError,
       InvalidPlanError
       raise UnavailableError, "workflow planner is unavailable"
     end
 
     private
+
+    def planner_client
+      return @local_client if @provider == LOCAL_PROVIDER
+
+      @openai_client
+    end
 
     def normalize_plan(raw_plan:, intent:)
       raise InvalidPlanError, "workflow plan must be a hash" unless raw_plan.is_a?(Hash)
@@ -92,12 +112,15 @@ module Llm
       normalized
     end
 
-    def normalize_provider(provider)
-      normalized = normalize_optional_string(provider) || DEFAULT_PROVIDER
-      return normalized if SUPPORTED_PROVIDERS.include?(normalized)
+    def self.normalize_optional_string(value)
+      return nil if value.nil?
+
+      normalized = value.to_s.strip
+      return nil if normalized.empty?
 
       normalized
     end
+    private_class_method :normalize_optional_string
 
     def normalize_optional_string(value)
       return nil if value.nil?

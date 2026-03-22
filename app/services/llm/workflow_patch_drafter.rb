@@ -5,12 +5,14 @@ require_relative "workflow_planner"
 
 module Llm
   class WorkflowPatchDrafter
+    DEFAULT_PROVIDER = WorkflowPlanner::DEFAULT_PROVIDER
+
     class UnavailableError < StandardError; end
     class InvalidDraftError < StandardError; end
 
     def initialize(
       enabled: false,
-      provider: WorkflowPlanner::DEFAULT_PROVIDER,
+      provider: DEFAULT_PROVIDER,
       openai_client: OpenAiWorkflowPatchClient.new(api_key: nil)
     )
       @enabled = enabled
@@ -20,7 +22,7 @@ module Llm
 
     def draft_patch(instruction:, path:, content:, context:)
       raise UnavailableError, "workflow patch drafter is unavailable" unless @enabled
-      raise UnavailableError, "workflow patch drafter is unavailable" unless @provider == WorkflowPlanner::DEFAULT_PROVIDER
+      raise UnavailableError, "workflow patch drafter is unavailable" unless @provider == DEFAULT_PROVIDER
 
       patch = @openai_client.draft_patch(
         instruction: instruction,
@@ -43,7 +45,7 @@ module Llm
     private
 
     def normalize_provider(provider)
-      normalize_optional_string(provider) || WorkflowPlanner::DEFAULT_PROVIDER
+      normalize_optional_string(provider) || DEFAULT_PROVIDER
     end
 
     def normalize_optional_string(value)

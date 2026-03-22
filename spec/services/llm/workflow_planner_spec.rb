@@ -3,6 +3,33 @@
 require_relative "../../../app/services/llm/workflow_planner"
 
 RSpec.describe Llm::WorkflowPlanner do
+  it "supports the local provider with the same normalized plan contract" do
+    local_client = instance_double("Llm::LocalWorkflowPlannerClient")
+    allow(local_client).to receive(:plan).and_return(
+      {
+        "rationale" => "inspect note first",
+        "actions" => [
+          {"action" => "notes.read", "reason" => "fetch note", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+
+    planner = described_class.new(enabled: true, provider: "local", local_client: local_client)
+
+    result = planner.plan(intent: "update today's note", context: {"project" => "mirai"})
+
+    expect(result).to eq(
+      {
+        intent: "update today's note",
+        provider: "local",
+        rationale: "inspect note first",
+        actions: [
+          {action: "notes.read", reason: "fetch note", params: {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+  end
+
   it "returns a normalized plan when enabled and provider output is valid" do
     openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
     allow(openai_client).to receive(:plan).and_return(
@@ -110,5 +137,23 @@ RSpec.describe Llm::WorkflowPlanner do
     expect do
       planner.plan(intent: "update", context: {})
     end.to raise_error(described_class::UnavailableError, "workflow planner is unavailable")
+  end
+
+  it "maps local provider response errors to unavailable" do
+    local_client = instance_double("Llm::LocalWorkflowPlannerClient")
+    allow(local_client).to receive(:plan).and_raise(
+      Llm::LocalWorkflowPlannerClient::ResponseError, "bad json"
+    )
+    planner = described_class.new(enabled: true, provider: "local", local_client: local_client)
+
+    expect do
+      planner.plan(intent: "update", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow planner is unavailable")
+  end
+
+  it "rejects unsupported provider values" do
+    expect do
+      described_class.new(enabled: true, provider: "dense")
+    end.to raise_error(described_class::InvalidProviderError, "invalid workflow planner provider: dense")
   end
 end

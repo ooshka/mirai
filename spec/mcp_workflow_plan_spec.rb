@@ -16,6 +16,9 @@ RSpec.describe "MCP workflow plan endpoint" do
     original_mcp_workflow_planner_provider = App.settings.mcp_workflow_planner_provider
     original_mcp_openai_workflow_model = App.settings.mcp_openai_workflow_model
     original_mcp_openai_workflow_configured = App.settings.mcp_openai_workflow_configured
+    original_mcp_local_workflow_base_url = App.settings.mcp_local_workflow_base_url
+    original_mcp_local_workflow_configured = App.settings.mcp_local_workflow_configured
+    original_mcp_workflow_planner_configured = App.settings.mcp_workflow_planner_configured
 
     Dir.mktmpdir("notes-root") do |notes_root|
       App.set :notes_root, notes_root
@@ -29,6 +32,9 @@ RSpec.describe "MCP workflow plan endpoint" do
       App.set :mcp_workflow_planner_provider, "openai"
       App.set :mcp_openai_workflow_model, Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
       App.set :mcp_openai_workflow_configured, true
+      App.set :mcp_local_workflow_base_url, nil
+      App.set :mcp_local_workflow_configured, false
+      App.set :mcp_workflow_planner_configured, true
       example.run
     end
   ensure
@@ -43,6 +49,9 @@ RSpec.describe "MCP workflow plan endpoint" do
     App.set :mcp_workflow_planner_provider, original_mcp_workflow_planner_provider
     App.set :mcp_openai_workflow_model, original_mcp_openai_workflow_model
     App.set :mcp_openai_workflow_configured, original_mcp_openai_workflow_configured
+    App.set :mcp_local_workflow_base_url, original_mcp_local_workflow_base_url
+    App.set :mcp_local_workflow_configured, original_mcp_local_workflow_configured
+    App.set :mcp_workflow_planner_configured, original_mcp_workflow_planner_configured
   end
 
   it "returns a structured plan for a valid intent payload" do
@@ -86,7 +95,13 @@ RSpec.describe "MCP workflow plan endpoint" do
         ]
       }
     )
-    allow(Llm::OpenAiWorkflowPlannerClient).to receive(:new).and_return(openai_client)
+    expect(Llm::WorkflowPlannerClientFactory).to receive(:new).with(
+      provider: "openai",
+      openai_api_key: nil,
+      workflow_model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+      openai_base_url: Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL,
+      local_base_url: nil
+    ).and_return(instance_double("Llm::WorkflowPlannerClientFactory", build: openai_client))
 
     post "/mcp/workflow/plan", JSON.generate(
       {
@@ -184,9 +199,85 @@ RSpec.describe "MCP workflow plan endpoint" do
         ]
       }
     )
-    allow(Llm::OpenAiWorkflowPlannerClient).to receive(:new).and_return(openai_client)
+    allow(Llm::WorkflowPlannerClientFactory).to receive(:new).and_return(
+      instance_double("Llm::WorkflowPlannerClientFactory", build: openai_client)
+    )
 
     post "/mcp/workflow/plan", JSON.generate({intent: "update today's note"})
+
+    expect(last_response.status).to eq(503)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "planner_unavailable",
+          "message" => "workflow planner is unavailable"
+        }
+      }
+    )
+  end
+
+  it "returns a structured plan through the local planner provider" do
+    App.set :mcp_workflow_planner_provider, "local"
+    App.set :mcp_openai_workflow_model, "qwen2.5:7b-instruct"
+    App.set :mcp_local_workflow_base_url, "http://127.0.0.1:11434"
+    App.set :mcp_local_workflow_configured, true
+    App.set :mcp_workflow_planner_configured, true
+
+    local_client = instance_double("Llm::LocalWorkflowPlannerClient")
+    expect(local_client).to receive(:plan).with(
+      intent: "plan local workflow",
+      context: hash_including(
+        input: {},
+        retrieval_status: hash_including(
+          retrieval_mode: Mcp::RetrievalMode::MODE_LEXICAL
+        )
+      )
+    ).and_return(
+      {
+        "rationale" => "use local planner",
+        "actions" => [
+          {"action" => "notes.read", "reason" => "inspect note", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+    expect(Llm::WorkflowPlannerClientFactory).to receive(:new).with(
+      provider: "local",
+      openai_api_key: nil,
+      workflow_model: "qwen2.5:7b-instruct",
+      openai_base_url: Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL,
+      local_base_url: "http://127.0.0.1:11434"
+    ).and_return(instance_double("Llm::WorkflowPlannerClientFactory", build: local_client))
+
+    post "/mcp/workflow/plan", JSON.generate({intent: "plan local workflow"})
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "intent" => "plan local workflow",
+        "provider" => "local",
+        "rationale" => "use local planner",
+        "actions" => [
+          {"action" => "notes.read", "reason" => "inspect note", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+  end
+
+  it "returns planner_unavailable when the local planner provider is unreachable" do
+    App.set :mcp_workflow_planner_provider, "local"
+    App.set :mcp_local_workflow_base_url, "http://127.0.0.1:11434"
+    App.set :mcp_local_workflow_configured, true
+    App.set :mcp_workflow_planner_configured, true
+
+    local_client = instance_double("Llm::LocalWorkflowPlannerClient")
+    allow(local_client).to receive(:plan).and_raise(
+      Llm::LocalWorkflowPlannerClient::RequestError, "connection refused"
+    )
+    allow(Llm::WorkflowPlannerClientFactory).to receive(:new).and_return(
+      instance_double("Llm::WorkflowPlannerClientFactory", build: local_client)
+    )
+
+    post "/mcp/workflow/plan", JSON.generate({intent: "plan local workflow"})
 
     expect(last_response.status).to eq(503)
     expect(JSON.parse(last_response.body)).to eq(
@@ -233,7 +324,9 @@ RSpec.describe "MCP workflow plan endpoint" do
     App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
     openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
     allow(openai_client).to receive(:plan).and_return({"rationale" => "read note", "actions" => []})
-    allow(Llm::OpenAiWorkflowPlannerClient).to receive(:new).and_return(openai_client)
+    allow(Llm::WorkflowPlannerClientFactory).to receive(:new).and_return(
+      instance_double("Llm::WorkflowPlannerClientFactory", build: openai_client)
+    )
 
     post "/mcp/workflow/plan", JSON.generate({intent: "plan read workflow"})
 

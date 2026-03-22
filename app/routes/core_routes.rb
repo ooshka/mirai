@@ -28,7 +28,10 @@ module Routes
           mcp_workflow_planner_enabled: settings.mcp_workflow_planner_enabled,
           mcp_workflow_planner_provider: settings.mcp_workflow_planner_provider,
           mcp_openai_workflow_model: settings.mcp_openai_workflow_model,
-          mcp_openai_workflow_configured: settings.mcp_openai_workflow_configured
+          mcp_openai_workflow_configured: settings.mcp_openai_workflow_configured,
+          mcp_local_workflow_base_url: settings.mcp_local_workflow_base_url,
+          mcp_local_workflow_configured: settings.mcp_local_workflow_configured,
+          mcp_workflow_planner_configured: settings.mcp_workflow_planner_configured
         }.to_json
       end
     end

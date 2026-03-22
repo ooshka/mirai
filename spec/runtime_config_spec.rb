@@ -100,6 +100,37 @@ RSpec.describe RuntimeConfig do
       expect(config.mcp_workflow_planner_provider).to eq("openai")
       expect(config.mcp_openai_workflow_model).to eq("gpt-4.1-mini")
       expect(config.mcp_openai_workflow_configured).to eq(true)
+      expect(config.mcp_workflow_planner_configured).to eq(true)
+    end
+
+    it "exposes local workflow planner diagnostics when local provider is selected" do
+      config = described_class.from_env(
+        "NOTES_ROOT" => "/notes",
+        "MCP_POLICY_MODE" => "allow_all",
+        "MCP_RETRIEVAL_MODE" => "lexical",
+        "MCP_WORKFLOW_PLANNER_ENABLED" => "true",
+        "MCP_WORKFLOW_PLANNER_PROVIDER" => "local",
+        "MCP_OPENAI_WORKFLOW_MODEL" => "qwen2.5:7b-instruct",
+        "MCP_LOCAL_WORKFLOW_BASE_URL" => "http://127.0.0.1:11434"
+      )
+
+      expect(config.mcp_workflow_planner_provider).to eq("local")
+      expect(config.mcp_openai_workflow_model).to eq("qwen2.5:7b-instruct")
+      expect(config.mcp_local_workflow_base_url).to eq("http://127.0.0.1:11434")
+      expect(config.mcp_local_workflow_configured).to eq(true)
+      expect(config.mcp_workflow_planner_configured).to eq(true)
+      expect(config.mcp_openai_workflow_configured).to eq(false)
+    end
+
+    it "raises on invalid workflow planner provider values" do
+      expect do
+        described_class.from_env(
+          "NOTES_ROOT" => "/notes",
+          "MCP_POLICY_MODE" => "allow_all",
+          "MCP_RETRIEVAL_MODE" => "lexical",
+          "MCP_WORKFLOW_PLANNER_PROVIDER" => "dense"
+        )
+      end.to raise_error(Llm::WorkflowPlanner::InvalidProviderError, "invalid workflow planner provider: dense")
     end
   end
 end

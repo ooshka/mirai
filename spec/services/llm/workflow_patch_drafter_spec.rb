@@ -55,4 +55,16 @@ RSpec.describe Llm::WorkflowPatchDrafter do
       drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
     end.to raise_error(described_class::UnavailableError, "workflow patch drafter is unavailable")
   end
+
+  it "remains unavailable when explicitly initialized with the local provider" do
+    drafter = described_class.new(
+      enabled: true,
+      provider: "local",
+      openai_client: instance_double("Llm::OpenAiWorkflowPatchClient")
+    )
+
+    expect do
+      drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow patch drafter is unavailable")
+  end
 end

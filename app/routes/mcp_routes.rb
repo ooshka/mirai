@@ -88,14 +88,18 @@ module Routes
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_PLAN)
           payload = parsed_workflow_plan_payload
+          planner_client = Llm::WorkflowPlannerClientFactory.new(
+            provider: settings.mcp_workflow_planner_provider,
+            openai_api_key: ENV["OPENAI_API_KEY"],
+            workflow_model: settings.mcp_openai_workflow_model,
+            openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL),
+            local_base_url: settings.mcp_local_workflow_base_url
+          ).build
           planner = Llm::WorkflowPlanner.new(
             enabled: settings.mcp_workflow_planner_enabled,
             provider: settings.mcp_workflow_planner_provider,
-            openai_client: Llm::OpenAiWorkflowPlannerClient.new(
-              api_key: ENV["OPENAI_API_KEY"],
-              model: settings.mcp_openai_workflow_model,
-              base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL)
-            )
+            openai_client: planner_client,
+            local_client: planner_client
           )
 
           context_builder = ::Mcp::WorkflowPlanContextBuilder.new(
@@ -120,7 +124,7 @@ module Routes
           payload = parsed_workflow_draft_patch_payload
           drafter = Llm::WorkflowPatchDrafter.new(
             enabled: settings.mcp_workflow_planner_enabled,
-            provider: settings.mcp_workflow_planner_provider,
+            provider: Llm::WorkflowPatchDrafter::DEFAULT_PROVIDER,
             openai_client: Llm::OpenAiWorkflowPatchClient.new(
               api_key: ENV["OPENAI_API_KEY"],
               model: settings.mcp_openai_workflow_model,

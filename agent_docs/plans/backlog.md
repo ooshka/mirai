@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Local Planner Provider Handoff Case
-- Type: `feature`
-- Value: consumes the completed `local_llm` planner smoke and parity evidence in a narrow self-hosted workflow-plan seam.
-- Size: ~1 day.
+No active case.
 
 ## Next
 

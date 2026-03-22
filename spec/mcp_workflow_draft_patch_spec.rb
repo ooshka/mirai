@@ -121,6 +121,54 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     )
   end
 
+  it "keeps workflow draft patch available when the planner provider is local" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    file_path = File.join(App.settings.notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    App.set :mcp_workflow_planner_provider, "local"
+
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    expect(openai_client).to receive(:draft_patch).with(
+      instruction: "add beta",
+      path: "notes/today.md",
+      content: "alpha\n",
+      context: {}
+    ).and_return(
+      <<~PATCH
+        --- a/notes/today.md
+        +++ b/notes/today.md
+        @@ -1 +1,2 @@
+         alpha
+        +beta
+      PATCH
+    )
+    allow(Llm::OpenAiWorkflowPatchClient).to receive(:new).and_return(openai_client)
+
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "patch" => <<~PATCH.strip
+          --- a/notes/today.md
+          +++ b/notes/today.md
+          @@ -1 +1,2 @@
+           alpha
+          +beta
+        PATCH
+      }
+    )
+    expect(File.read(file_path)).to eq("alpha\n")
+  end
+
   it "returns invalid_workflow_draft when instruction is missing" do
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
