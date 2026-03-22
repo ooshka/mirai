@@ -124,7 +124,7 @@ module Routes
           payload = parsed_workflow_draft_patch_payload
           drafter = Llm::WorkflowPatchDrafter.new(
             enabled: settings.mcp_workflow_planner_enabled,
-            provider: settings.mcp_workflow_planner_provider,
+            provider: Llm::WorkflowPatchDrafter::DEFAULT_PROVIDER,
             openai_client: Llm::OpenAiWorkflowPatchClient.new(
               api_key: ENV["OPENAI_API_KEY"],
               model: settings.mcp_openai_workflow_model,

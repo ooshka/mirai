@@ -207,6 +207,7 @@ Default container config:
   - Produces a dry-run single-file unified diff draft from an instruction and explicit target path.
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
   - Response: `{ "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." }`
+  - Provider note: this endpoint remains on the existing OpenAI-backed drafter path even when `MCP_WORKFLOW_PLANNER_PROVIDER=local`; local patch drafting is still future work.
   - Safety note: this endpoint validates draft shape but does not apply/commit changes.
 
 ## Safety and error contracts
