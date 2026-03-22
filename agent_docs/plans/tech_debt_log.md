@@ -331,6 +331,18 @@
 - Debt potentially added: local planner support will initially stop at planning-only mode and defer local patch-drafter wiring.
 - Refactor signal: if planner provider variants or fallback rules expand beyond a small set, extract a dedicated planner client factory instead of widening route construction and service initializer branching.
 
+## 2026-03-22 (local workflow patch drafter provider handoff planning pass)
+
+### Observed signals
+- `local_llm` now has a draft-patch smoke path for the OpenAI-compatible local runtime, but `mirai`'s `WorkflowPatchDrafter` still treats any non-OpenAI provider as unavailable.
+- `mirai` already exposes a local workflow base URL and local planner client seam, so the remaining self-hosted workflow gap is concentrated in draft generation rather than config discovery.
+- Planner and drafter provider ownership is still coarse-grained, increasing the risk of route-level branching or duplicate provider parsing if local draft support is added ad hoc.
+
+### Debt posture for next slice
+- Debt paid down next: introduce a provider-aware workflow patch-drafter boundary so self-hosted draft generation can land without changing `/mcp/workflow/draft_patch` contracts.
+- Debt potentially added: planner and drafter may continue sharing coarse workflow runtime settings until a later config-ownership cleanup slice justifies separation.
+- Refactor signal: if planner and drafter client selection logic continue to grow in parallel, extract a shared workflow client factory or typed runtime-config object instead of duplicating provider selection rules.
+
 ### Observed signals
 - Runtime mode parsing is currently split across app boot (`MCP_POLICY_MODE`) and retrieval provider selection (`MCP_RETRIEVAL_MODE`), which creates inconsistent failure behavior.
 - Policy mode already fails fast on invalid values, while retrieval mode silently falls back to lexical, increasing risk of unnoticed environment drift.

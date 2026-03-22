@@ -2,13 +2,16 @@
 
 ## Now
 
-No active case.
+1. Local Workflow Patch Drafter Provider Handoff
+- Type: `feature`
+- Value: completes the self-hosted workflow loop by letting planner-produced draft actions use the local runtime path instead of falling back to the hosted drafter seam.
+- Size: ~1 day.
 
 ## Next
 
-1. Local Workflow Patch Drafter Provider Handoff Case
+1. Local Workflow Plan/Draft Loop Smoke Case
 - Type: `feature`
-- Value: extends the self-hosted provider path from workflow planning into bounded draft-patch generation after planner-provider wiring is stable.
+- Value: adds one bounded end-to-end verification seam for the self-hosted planner-to-drafter loop after local draft-provider wiring lands.
 - Size: ~1 day.
 
 ## Later
