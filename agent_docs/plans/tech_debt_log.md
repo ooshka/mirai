@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-03-22 (local workflow smoke-loop planning pass)
+
+### Observed signals
+- The local workflow planner and local workflow drafter seams have both landed, but the existing smoke script still validates only notes/index/patch flows and never crosses the new planner-to-drafter boundary.
+- Current confidence for the self-hosted workflow path is mostly request/spec-level, which leaves runtime wiring and config assumptions under-validated compared with older MCP surfaces.
+- `scripts/smoke_local.sh` is growing linearly; another workflow section is still reasonable now, but repeated orchestration additions would make the script harder to maintain.
+
+### Debt posture for next slice
+- Debt paid down next: add one bounded end-to-end verification seam for the self-hosted planner-to-drafter loop so runtime/config drift is caught earlier.
+- Debt potentially added: workflow smoke assertions will remain contract-shape checks rather than deterministic model-output fixtures, which is acceptable for a small operator-facing smoke slice.
+- Refactor signal: if the smoke script takes on more workflow branches or reusable JSON extraction, split helpers into `scripts/lib/` rather than continuing to inline everything in one file.
+
 ## 2026-02-19
 
 ### Observed signals
