@@ -26,8 +26,10 @@ require_relative "app/services/retrieval/openai_semantic_ingestion_processor"
 require_relative "app/services/llm/local_workflow_planner_client"
 require_relative "app/services/llm/openai_workflow_planner_client"
 require_relative "app/services/llm/openai_workflow_patch_client"
+require_relative "app/services/llm/local_workflow_patch_client"
 require_relative "app/services/llm/workflow_planner"
 require_relative "app/services/llm/workflow_planner_client_factory"
+require_relative "app/services/llm/workflow_patch_client_factory"
 require_relative "app/services/llm/workflow_patch_drafter"
 require_relative "app/services/patch/patch_parser"
 require_relative "app/services/mcp/action_policy"
@@ -69,11 +71,13 @@ class App < Sinatra::Base
     set :mcp_local_semantic_configured, runtime_config.mcp_local_semantic_configured
     set :mcp_workflow_planner_enabled, runtime_config.mcp_workflow_planner_enabled
     set :mcp_workflow_planner_provider, runtime_config.mcp_workflow_planner_provider
+    set :mcp_workflow_drafter_provider, runtime_config.mcp_workflow_drafter_provider
     set :mcp_openai_workflow_model, runtime_config.mcp_openai_workflow_model
     set :mcp_openai_workflow_configured, runtime_config.mcp_openai_workflow_configured
     set :mcp_local_workflow_base_url, runtime_config.mcp_local_workflow_base_url
     set :mcp_local_workflow_configured, runtime_config.mcp_local_workflow_configured
     set :mcp_workflow_planner_configured, runtime_config.mcp_workflow_planner_configured
+    set :mcp_workflow_drafter_configured, runtime_config.mcp_workflow_drafter_configured
 
     semantic_ingestion_service = NullSemanticIngestionService.new
     if runtime_config.mcp_semantic_ingestion_enabled

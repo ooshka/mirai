@@ -122,6 +122,24 @@ RSpec.describe RuntimeConfig do
       expect(config.mcp_openai_workflow_configured).to eq(false)
     end
 
+    it "exposes local workflow drafter diagnostics when local provider is selected" do
+      config = described_class.from_env(
+        "NOTES_ROOT" => "/notes",
+        "MCP_POLICY_MODE" => "allow_all",
+        "MCP_RETRIEVAL_MODE" => "lexical",
+        "MCP_WORKFLOW_PLANNER_ENABLED" => "true",
+        "MCP_WORKFLOW_DRAFTER_PROVIDER" => "local",
+        "MCP_OPENAI_WORKFLOW_MODEL" => "qwen2.5:7b-instruct",
+        "MCP_LOCAL_WORKFLOW_BASE_URL" => "http://127.0.0.1:11434"
+      )
+
+      expect(config.mcp_workflow_drafter_provider).to eq("local")
+      expect(config.mcp_local_workflow_base_url).to eq("http://127.0.0.1:11434")
+      expect(config.mcp_local_workflow_configured).to eq(true)
+      expect(config.mcp_workflow_drafter_configured).to eq(true)
+      expect(config.mcp_openai_workflow_configured).to eq(false)
+    end
+
     it "raises on invalid workflow planner provider values" do
       expect do
         described_class.from_env(
@@ -131,6 +149,17 @@ RSpec.describe RuntimeConfig do
           "MCP_WORKFLOW_PLANNER_PROVIDER" => "dense"
         )
       end.to raise_error(Llm::WorkflowPlanner::InvalidProviderError, "invalid workflow planner provider: dense")
+    end
+
+    it "raises on invalid workflow drafter provider values" do
+      expect do
+        described_class.from_env(
+          "NOTES_ROOT" => "/notes",
+          "MCP_POLICY_MODE" => "allow_all",
+          "MCP_RETRIEVAL_MODE" => "lexical",
+          "MCP_WORKFLOW_DRAFTER_PROVIDER" => "dense"
+        )
+      end.to raise_error(Llm::WorkflowPatchDrafter::InvalidProviderError, "invalid workflow patch drafter provider: dense")
     end
   end
 end
