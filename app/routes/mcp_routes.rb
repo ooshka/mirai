@@ -122,19 +122,13 @@ module Routes
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH)
           payload = parsed_workflow_draft_patch_payload
-          draft_client = Llm::WorkflowPatchClientFactory.new(
+          drafter = Llm::WorkflowPatchClientFactory.new(
             provider: settings.mcp_workflow_drafter_provider,
             openai_api_key: ENV["OPENAI_API_KEY"],
             workflow_model: settings.mcp_openai_workflow_model,
             openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL),
             local_base_url: settings.mcp_local_workflow_base_url
-          ).build
-          drafter = Llm::WorkflowPatchDrafter.new(
-            enabled: settings.mcp_workflow_planner_enabled,
-            provider: settings.mcp_workflow_drafter_provider,
-            openai_client: draft_client,
-            local_client: draft_client
-          )
+          ).build_drafter(enabled: settings.mcp_workflow_planner_enabled)
 
           ::Mcp::WorkflowDraftPatchAction.new(
             notes_root: settings.notes_root,

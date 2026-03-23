@@ -24,19 +24,17 @@ module Llm
     def initialize(
       enabled: false,
       provider: DEFAULT_PROVIDER,
-      openai_client: OpenAiWorkflowPatchClient.new(api_key: nil),
-      local_client: LocalWorkflowPatchClient.new
+      client: nil
     )
       @enabled = enabled
       @provider = self.class.normalize_provider!(provider)
-      @openai_client = openai_client
-      @local_client = local_client
+      @client = client || default_client
     end
 
     def draft_patch(instruction:, path:, content:, context:)
       raise UnavailableError, "workflow patch drafter is unavailable" unless @enabled
 
-      patch = patch_client.draft_patch(
+      patch = @client.draft_patch(
         instruction: instruction,
         path: path,
         content: content,
@@ -59,10 +57,10 @@ module Llm
 
     private
 
-    def patch_client
-      return @local_client if @provider == LOCAL_PROVIDER
+    def default_client
+      return LocalWorkflowPatchClient.new if @provider == LOCAL_PROVIDER
 
-      @openai_client
+      OpenAiWorkflowPatchClient.new(api_key: nil)
     end
 
     def self.normalize_optional_string(value)

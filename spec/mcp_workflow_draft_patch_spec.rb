@@ -2,8 +2,21 @@
 
 require "tmpdir"
 require "fileutils"
+require_relative "../app/services/llm/workflow_patch_client_factory"
 
 RSpec.describe "MCP workflow draft patch endpoint" do
+  def stub_draft_factory(provider:, drafter:, local_base_url: nil, enabled: true)
+    draft_factory = instance_double("Llm::WorkflowPatchClientFactory")
+    expect(Llm::WorkflowPatchClientFactory).to receive(:new).with(
+      provider: provider,
+      openai_api_key: nil,
+      workflow_model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+      openai_base_url: Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL,
+      local_base_url: local_base_url
+    ).and_return(draft_factory)
+    expect(draft_factory).to receive(:build_drafter).with(enabled: enabled).and_return(drafter)
+  end
+
   around do |example|
     original_notes_root = App.settings.notes_root
     original_mcp_policy_mode = App.settings.mcp_policy_mode
@@ -48,6 +61,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     File.write(file_path, "alpha\n")
 
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
     allow(openai_client).to receive(:draft_patch).and_return(
       <<~PATCH
         --- a/notes/today.md
@@ -57,7 +75,6 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         +beta
       PATCH
     )
-    allow(Llm::OpenAiWorkflowPatchClient).to receive(:new).and_return(openai_client)
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
@@ -91,6 +108,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     File.write(file_path, "alpha\n")
 
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
     expect(openai_client).to receive(:draft_patch).with(
       instruction: "add beta",
       path: "notes/today.md",
@@ -105,7 +127,6 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         +beta
       PATCH
     )
-    allow(Llm::OpenAiWorkflowPatchClient).to receive(:new).and_return(openai_client)
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
@@ -143,6 +164,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     App.set :mcp_workflow_drafter_configured, true
 
     local_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: "http://127.0.0.1:11434",
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_client)
+    )
     expect(local_client).to receive(:draft_patch).with(
       instruction: "add beta",
       path: "notes/today.md",
@@ -157,7 +183,6 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         +beta
       PATCH
     )
-    allow(Llm::LocalWorkflowPatchClient).to receive(:new).and_return(local_client)
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
@@ -193,10 +218,14 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     App.set :mcp_workflow_drafter_configured, true
 
     local_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: "http://127.0.0.1:11434",
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_client)
+    )
     allow(local_client).to receive(:draft_patch).and_raise(
       Llm::LocalWorkflowPatchClient::ResponseError, "bad json"
     )
-    allow(Llm::LocalWorkflowPatchClient).to receive(:new).and_return(local_client)
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
@@ -228,10 +257,14 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     App.set :mcp_workflow_drafter_configured, true
 
     local_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: "http://127.0.0.1:11434",
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_client)
+    )
     allow(local_client).to receive(:draft_patch).and_raise(
       Llm::LocalWorkflowPatchClient::RequestError, "connection refused"
     )
-    allow(Llm::LocalWorkflowPatchClient).to receive(:new).and_return(local_client)
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
@@ -334,6 +367,16 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
     File.write(File.join(App.settings.notes_root, "notes/today.md"), "alpha\n")
     App.set :mcp_workflow_planner_enabled, false
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      enabled: false,
+      drafter: Llm::WorkflowPatchDrafter.new(
+        enabled: false,
+        provider: "openai",
+        client: instance_double("Llm::OpenAiWorkflowPatchClient")
+      )
+    )
     post "/mcp/workflow/draft_patch", JSON.generate(
       {
         action: "workflow.draft_patch",
@@ -361,6 +404,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     App.set :mcp_policy_mode, Mcp::ActionPolicy::MODE_READ_ONLY
 
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
     allow(openai_client).to receive(:draft_patch).and_return(
       <<~PATCH
         --- a/notes/today.md
@@ -370,7 +418,6 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         +beta
       PATCH
     )
-    allow(Llm::OpenAiWorkflowPatchClient).to receive(:new).and_return(openai_client)
 
     post "/mcp/workflow/draft_patch", JSON.generate(
       {

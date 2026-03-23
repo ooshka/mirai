@@ -15,7 +15,7 @@ RSpec.describe Llm::WorkflowPatchDrafter do
       PATCH
     )
 
-    drafter = described_class.new(enabled: true, provider: "local", local_client: local_client)
+    drafter = described_class.new(enabled: true, provider: "local", client: local_client)
 
     result = drafter.draft_patch(
       instruction: "add beta",
@@ -39,7 +39,7 @@ RSpec.describe Llm::WorkflowPatchDrafter do
       PATCH
     )
 
-    drafter = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+    drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
     result = drafter.draft_patch(
       instruction: "add beta",
       path: "notes/today.md",
@@ -51,7 +51,7 @@ RSpec.describe Llm::WorkflowPatchDrafter do
   end
 
   it "raises unavailable when disabled" do
-    drafter = described_class.new(enabled: false, openai_client: instance_double("Llm::OpenAiWorkflowPatchClient"))
+    drafter = described_class.new(enabled: false, client: instance_double("Llm::OpenAiWorkflowPatchClient"))
 
     expect do
       drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
@@ -61,7 +61,7 @@ RSpec.describe Llm::WorkflowPatchDrafter do
   it "maps malformed provider output to unavailable" do
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
     allow(openai_client).to receive(:draft_patch).and_return("   ")
-    drafter = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+    drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
 
     expect do
       drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
@@ -73,7 +73,7 @@ RSpec.describe Llm::WorkflowPatchDrafter do
     allow(openai_client).to receive(:draft_patch).and_raise(
       Llm::OpenAiWorkflowPatchClient::RequestError, "timeout"
     )
-    drafter = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+    drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
 
     expect do
       drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
@@ -88,7 +88,7 @@ RSpec.describe Llm::WorkflowPatchDrafter do
     drafter = described_class.new(
       enabled: true,
       provider: "local",
-      local_client: local_client
+      client: local_client
     )
 
     expect do

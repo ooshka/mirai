@@ -26,6 +26,14 @@ module Llm
       build_openai_client
     end
 
+    def build_drafter(enabled:)
+      WorkflowPatchDrafter.new(
+        enabled: enabled,
+        provider: @provider,
+        client: build
+      )
+    end
+
     private
 
     def build_openai_client
