@@ -107,8 +107,9 @@ Default container config:
 - `MCP_OPENAI_VECTOR_STORE_ID=<vector-store-id>` (required for OpenAI semantic retrieval)
 - `MCP_WORKFLOW_PLANNER_ENABLED=false` (when true, enables planning-only LLM workflow endpoint)
 - `MCP_WORKFLOW_PLANNER_PROVIDER=openai` (planner adapter selection; supported: `openai`, `local`)
+- `MCP_WORKFLOW_DRAFTER_PROVIDER=openai` (draft-patch adapter selection; supported: `openai`, `local`)
 - `MCP_OPENAI_WORKFLOW_MODEL=gpt-4.1-mini` (planner model name passed to the selected workflow planner adapter)
-- `MCP_LOCAL_WORKFLOW_BASE_URL=<base-url>` (required for `MCP_WORKFLOW_PLANNER_PROVIDER=local`; expected to expose an OpenAI-compatible `/v1/chat/completions` planner endpoint aligned with the `local_llm` planner smoke/parity contract)
+- `MCP_LOCAL_WORKFLOW_BASE_URL=<base-url>` (required for `MCP_WORKFLOW_PLANNER_PROVIDER=local` or `MCP_WORKFLOW_DRAFTER_PROVIDER=local`; expected to expose an OpenAI-compatible `/v1/chat/completions` workflow endpoint aligned with the `local_llm` planner and draft smoke contracts)
 - `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval/workflow planning; never exposed by `/config`)
 
 ## HTTP endpoints
@@ -116,7 +117,7 @@ Default container config:
 ### Health/config
 
 - `GET /health` -> `{ "ok": true }`
-- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_configured": false, "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false, "mcp_local_semantic_base_url": null, "mcp_local_semantic_configured": false, "mcp_workflow_planner_enabled": false, "mcp_workflow_planner_provider": "openai", "mcp_openai_workflow_model": "gpt-4.1-mini", "mcp_openai_workflow_configured": false, "mcp_local_workflow_base_url": null, "mcp_local_workflow_configured": false, "mcp_workflow_planner_configured": false }` (values depend on environment)
+- `GET /config` -> `{ "notes_root": "/notes", "mcp_policy_mode": "allow_all", "mcp_policy_modes_supported": ["allow_all", "read_only"], "mcp_retrieval_mode": "lexical", "mcp_retrieval_modes_supported": ["lexical", "semantic"], "mcp_semantic_provider_enabled": false, "mcp_semantic_provider": "openai", "mcp_semantic_configured": false, "mcp_semantic_ingestion_enabled": false, "mcp_openai_embedding_model": "text-embedding-3-small", "mcp_openai_vector_store_id": null, "mcp_openai_configured": false, "mcp_local_semantic_base_url": null, "mcp_local_semantic_configured": false, "mcp_workflow_planner_enabled": false, "mcp_workflow_planner_provider": "openai", "mcp_workflow_drafter_provider": "openai", "mcp_openai_workflow_model": "gpt-4.1-mini", "mcp_openai_workflow_configured": false, "mcp_local_workflow_base_url": null, "mcp_local_workflow_configured": false, "mcp_workflow_planner_configured": false, "mcp_workflow_drafter_configured": false }` (values depend on environment)
 
 ### Notes read APIs
 
@@ -207,7 +208,7 @@ Default container config:
   - Produces a dry-run single-file unified diff draft from an instruction and explicit target path.
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
   - Response: `{ "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." }`
-  - Provider note: this endpoint remains on the existing OpenAI-backed drafter path even when `MCP_WORKFLOW_PLANNER_PROVIDER=local`; local patch drafting is still future work.
+  - Provider note: the drafter path follows `MCP_WORKFLOW_DRAFTER_PROVIDER`. When set to `local`, `mirai` sends the same bounded request to `MCP_LOCAL_WORKFLOW_BASE_URL` and normalizes either a raw unified diff or a JSON `{ "patch": "..." }` response down to the existing patch string contract.
   - Safety note: this endpoint validates draft shape but does not apply/commit changes.
 
 ## Safety and error contracts

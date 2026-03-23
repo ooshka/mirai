@@ -5,6 +5,7 @@ require_relative "mcp/boolean_flag"
 require_relative "mcp/retrieval_mode"
 require_relative "mcp/semantic_provider"
 require_relative "llm/local_workflow_planner_client"
+require_relative "llm/workflow_patch_drafter"
 require_relative "llm/workflow_planner"
 require_relative "retrieval/local_semantic_client"
 require_relative "retrieval/openai_semantic_client"
@@ -17,7 +18,7 @@ class RuntimeConfig
     :mcp_openai_vector_store_id, :mcp_openai_configured, :mcp_local_semantic_base_url, :mcp_local_semantic_configured,
     :mcp_workflow_planner_enabled, :mcp_workflow_planner_provider, :mcp_openai_workflow_model,
     :mcp_openai_workflow_configured, :mcp_local_workflow_base_url, :mcp_local_workflow_configured,
-    :mcp_workflow_planner_configured
+    :mcp_workflow_planner_configured, :mcp_workflow_drafter_provider, :mcp_workflow_drafter_configured
 
   def self.from_env(env = ENV)
     new(
@@ -32,6 +33,7 @@ class RuntimeConfig
       mcp_local_semantic_base_url: env["MCP_LOCAL_SEMANTIC_BASE_URL"],
       mcp_workflow_planner_enabled: env.fetch("MCP_WORKFLOW_PLANNER_ENABLED", "false"),
       mcp_workflow_planner_provider: env.fetch("MCP_WORKFLOW_PLANNER_PROVIDER", Llm::WorkflowPlanner::DEFAULT_PROVIDER),
+      mcp_workflow_drafter_provider: env.fetch("MCP_WORKFLOW_DRAFTER_PROVIDER", Llm::WorkflowPatchDrafter::DEFAULT_PROVIDER),
       mcp_openai_workflow_model: env.fetch("MCP_OPENAI_WORKFLOW_MODEL", Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL),
       mcp_local_workflow_base_url: env["MCP_LOCAL_WORKFLOW_BASE_URL"],
       openai_api_key: env["OPENAI_API_KEY"]
@@ -50,6 +52,7 @@ class RuntimeConfig
     mcp_local_semantic_base_url:,
     mcp_workflow_planner_enabled:,
     mcp_workflow_planner_provider:,
+    mcp_workflow_drafter_provider:,
     mcp_openai_workflow_model:,
     mcp_local_workflow_base_url:,
     openai_api_key:
@@ -77,6 +80,12 @@ class RuntimeConfig
     @mcp_openai_workflow_configured = !normalize_string(openai_api_key).nil? && !@mcp_openai_workflow_model.nil?
     @mcp_local_workflow_configured = !@mcp_local_workflow_base_url.nil? && !@mcp_openai_workflow_model.nil?
     @mcp_workflow_planner_configured = if @mcp_workflow_planner_provider == Llm::WorkflowPlanner::LOCAL_PROVIDER
+      @mcp_local_workflow_configured
+    else
+      @mcp_openai_workflow_configured
+    end
+    @mcp_workflow_drafter_provider = Llm::WorkflowPatchDrafter.normalize_provider!(mcp_workflow_drafter_provider)
+    @mcp_workflow_drafter_configured = if @mcp_workflow_drafter_provider == Llm::WorkflowPatchDrafter::LOCAL_PROVIDER
       @mcp_local_workflow_configured
     else
       @mcp_openai_workflow_configured
