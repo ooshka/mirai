@@ -11,6 +11,7 @@ PATCH_APPLIED=0
 PATCH_REVERTED=0
 REVERT_PATCH_PAYLOAD=""
 SMOKE_MARKER="mirai-smoke-marker-$$"
+ORIGINAL_CONTENT=""
 
 log() {
   printf '[smoke] %s\n' "$*"
@@ -53,6 +54,12 @@ json_assert() {
   fi
 }
 
+json_read() {
+  local expression="$1"
+
+  printf '%s' "$RESP_BODY" | ruby -rjson -e 'data = JSON.parse(STDIN.read); value = eval(ARGV[0]); abort("json_read returned nil") if value.nil?; print value' "$expression"
+}
+
 cleanup() {
   local exit_code=$?
   set +e
@@ -83,6 +90,11 @@ log "checking config endpoint"
 request "GET" "/config"
 assert_status "200" "GET /config"
 json_assert 'data["notes_root"].is_a?(String) && !data["notes_root"].empty?' "config response missing notes_root"
+json_assert 'data["mcp_workflow_planner_enabled"] == true' "workflow smoke requires MCP_WORKFLOW_PLANNER_ENABLED=true"
+json_assert 'data["mcp_workflow_planner_provider"] == "local"' "workflow smoke requires mcp_workflow_planner_provider=local"
+json_assert 'data["mcp_workflow_drafter_provider"] == "local"' "workflow smoke requires mcp_workflow_drafter_provider=local"
+json_assert 'data["mcp_workflow_planner_configured"] == true' "workflow smoke requires configured local workflow planner"
+json_assert 'data["mcp_workflow_drafter_configured"] == true' "workflow smoke requires configured local workflow drafter"
 
 log "listing notes"
 request "GET" "/mcp/notes"
@@ -98,6 +110,7 @@ request "GET" "/mcp/notes/read?path=$ENCODED_NOTE_PATH"
 assert_status "200" "GET /mcp/notes/read"
 json_assert 'data["path"] == ENV.fetch("SMOKE_NOTE_PATH")' "read response path mismatch"
 ORIGINAL_CONTENT="$(printf '%s' "$RESP_BODY" | ruby -rjson -e 'data = JSON.parse(STDIN.read); print data.fetch("content")')"
+export SMOKE_ORIGINAL_CONTENT="$ORIGINAL_CONTENT"
 
 ORIGINAL_FILE="$WORK_DIR/original.md"
 MODIFIED_FILE="$WORK_DIR/modified.md"
@@ -134,6 +147,25 @@ json_assert 'data["present"] == true' "status should report artifact present aft
 json_assert 'data["stale"] == false || data["stale"] == true' "status stale field should be boolean when present"
 json_assert 'data["artifact_age_seconds"].is_a?(Integer) && data["artifact_age_seconds"] >= 0' "status missing artifact_age_seconds"
 json_assert 'data["notes_present"].is_a?(Integer) && data["notes_present"] >= 1' "status missing notes_present"
+
+WORKFLOW_PLAN_PAYLOAD="$(ruby -rjson -e 'print JSON.generate({intent: "add #{ARGV[1]} to #{ARGV[0]}", context: {path: ARGV[0]}})' "$NOTE_PATH" "$SMOKE_MARKER")"
+log "planning workflow draft handoff"
+request "POST" "/mcp/workflow/plan" "$WORKFLOW_PLAN_PAYLOAD"
+assert_status "200" "POST /mcp/workflow/plan"
+json_assert 'data["provider"] == "local"' "workflow plan did not use local provider"
+json_assert 'data["actions"].is_a?(Array) && data["actions"].any? { |action| action["action"] == "workflow.draft_patch" }' "workflow plan response missing workflow.draft_patch action"
+
+WORKFLOW_DRAFT_PAYLOAD="$(json_read 'JSON.generate(data.fetch("actions").find { |action| action["action"] == "workflow.draft_patch" })')"
+log "drafting patch directly from planner action"
+request "POST" "/mcp/workflow/draft_patch" "$WORKFLOW_DRAFT_PAYLOAD"
+assert_status "200" "POST /mcp/workflow/draft_patch"
+json_assert 'data["patch"].is_a?(String) && !data["patch"].strip.empty?' "workflow draft response missing patch"
+json_assert 'data["patch"].include?("+++ b/#{ENV.fetch(\"SMOKE_NOTE_PATH\")}")' "workflow draft patch targeted the wrong path"
+
+log "verifying draft-only step left note unchanged"
+request "GET" "/mcp/notes/read?path=$ENCODED_NOTE_PATH"
+assert_status "200" "GET /mcp/notes/read after draft patch"
+json_assert 'data["content"] == ENV.fetch("SMOKE_ORIGINAL_CONTENT")' "workflow draft should not mutate note content"
 
 log "proposing patch"
 request "POST" "/mcp/patch/propose" "$FORWARD_PATCH_PAYLOAD"

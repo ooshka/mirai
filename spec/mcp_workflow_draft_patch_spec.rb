@@ -5,16 +5,39 @@ require "fileutils"
 require_relative "../app/services/llm/workflow_patch_client_factory"
 
 RSpec.describe "MCP workflow draft patch endpoint" do
-  def stub_draft_factory(provider:, drafter:, local_base_url: nil, enabled: true)
+  def stub_draft_factory(
+    provider:,
+    drafter:,
+    local_base_url: nil,
+    enabled: true,
+    workflow_model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+  )
     draft_factory = instance_double("Llm::WorkflowPatchClientFactory")
     expect(Llm::WorkflowPatchClientFactory).to receive(:new).with(
       provider: provider,
       openai_api_key: nil,
-      workflow_model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+      workflow_model: workflow_model,
       openai_base_url: Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL,
       local_base_url: local_base_url
     ).and_return(draft_factory)
     expect(draft_factory).to receive(:build_drafter).with(enabled: enabled).and_return(drafter)
+  end
+
+  def stub_planner_factory(
+    provider:,
+    planner_client:,
+    local_base_url: nil,
+    workflow_model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+  )
+    planner_factory = instance_double("Llm::WorkflowPlannerClientFactory")
+    expect(Llm::WorkflowPlannerClientFactory).to receive(:new).with(
+      provider: provider,
+      openai_api_key: nil,
+      workflow_model: workflow_model,
+      openai_base_url: Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL,
+      local_base_url: local_base_url
+    ).and_return(planner_factory)
+    expect(planner_factory).to receive(:build).and_return(planner_client)
   end
 
   around do |example|
@@ -152,6 +175,109 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         PATCH
       }
     )
+  end
+
+  it "accepts a canonical local planner action directly in the draft endpoint" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    file_path = File.join(App.settings.notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    App.set :mcp_workflow_planner_provider, "local"
+    App.set :mcp_workflow_drafter_provider, "local"
+    App.set :mcp_openai_workflow_model, "qwen2.5:7b-instruct"
+    App.set :mcp_local_workflow_base_url, "http://127.0.0.1:11434"
+    App.set :mcp_local_workflow_configured, true
+    App.set :mcp_workflow_planner_configured, true
+    App.set :mcp_workflow_drafter_configured, true
+
+    local_planner_client = instance_double("Llm::LocalWorkflowPlannerClient")
+    stub_planner_factory(
+      provider: "local",
+      local_base_url: "http://127.0.0.1:11434",
+      workflow_model: "qwen2.5:7b-instruct",
+      planner_client: local_planner_client
+    )
+    expect(local_planner_client).to receive(:plan).with(
+      intent: "add beta",
+      context: hash_including(
+        input: {"path" => "notes/today.md"},
+        hints: {path: "notes/today.md"},
+        note_snapshot: hash_including(path: "notes/today.md", preview: "alpha\n")
+      )
+    ).and_return(
+      {
+        "rationale" => "draft with local workflow",
+        "actions" => [
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"}
+            }
+          }
+        ]
+      }
+    )
+
+    local_draft_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: "http://127.0.0.1:11434",
+      workflow_model: "qwen2.5:7b-instruct",
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_draft_client)
+    )
+    expect(local_draft_client).to receive(:draft_patch).with(
+      instruction: "add beta",
+      path: "notes/today.md",
+      content: "alpha\n",
+      context: {"source" => "planner"}
+    ).and_return(
+      <<~PATCH
+        --- a/notes/today.md
+        +++ b/notes/today.md
+        @@ -1 +1,2 @@
+         alpha
+        +beta
+      PATCH
+    )
+
+    post "/mcp/workflow/plan", JSON.generate(
+      {
+        intent: "add beta",
+        context: {path: "notes/today.md"}
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    workflow_action = JSON.parse(last_response.body).fetch("actions").find { |action| action.fetch("action") == "workflow.draft_patch" }
+    expect(workflow_action).to eq(
+      {
+        "action" => "workflow.draft_patch",
+        "reason" => "draft update",
+        "params" => {
+          "instruction" => "add beta",
+          "path" => "notes/today.md",
+          "context" => {"source" => "planner"}
+        }
+      }
+    )
+
+    post "/mcp/workflow/draft_patch", JSON.generate(workflow_action)
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "patch" => <<~PATCH.strip
+          --- a/notes/today.md
+          +++ b/notes/today.md
+          @@ -1 +1,2 @@
+           alpha
+          +beta
+        PATCH
+      }
+    )
+    expect(File.read(file_path)).to eq("alpha\n")
   end
 
   it "returns a validated dry-run patch for a local provider request" do

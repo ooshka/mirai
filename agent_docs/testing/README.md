@@ -183,6 +183,10 @@ Expected:
 Prerequisites:
 - App running locally (for example via `docker compose up`)
 - Notes mount contains at least one markdown file (script uses an existing note and reverts the content change)
+- `MCP_WORKFLOW_PLANNER_ENABLED=true`
+- `MCP_WORKFLOW_PLANNER_PROVIDER=local`
+- `MCP_WORKFLOW_DRAFTER_PROVIDER=local`
+- `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible local workflow runtime
 
 Canonical Docker run (recommended):
 
@@ -202,8 +206,11 @@ Note:
 What it covers:
 - Health/config checks
 - Notes list/read checks
+- Workflow plan -> canonical `workflow.draft_patch` handoff -> dry-run draft patch checks
 - Patch propose/apply and cleanup revert
 - Index rebuild/status/query lifecycle checks
+
+If workflow planning is disabled or the local workflow providers are not configured, the smoke script now fails early with a prerequisite error instead of silently skipping the workflow section.
 
 ## Agent Verification Workflow
 

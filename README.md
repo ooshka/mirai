@@ -55,7 +55,23 @@ docker compose run --rm dev bundle exec standardrb
 
 GitHub Actions runs the full `bundle exec rspec` suite and `bundle exec standardrb` on every branch push and via manual dispatch. This is the independent clean-environment verification signal for the current branch/reviewer workflow; local Docker-based commands remain the canonical development path.
 
-Run local smoke workflow.
+Run local workflow smoke.
+
+Prerequisites:
+- App running via `docker compose up` (or equivalent).
+- Notes mount contains at least one markdown file.
+- Workflow planning is enabled and both workflow providers are set to `local`.
+- `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible workflow runtime.
+
+Example app startup for the self-hosted workflow smoke path:
+
+```bash
+MCP_WORKFLOW_PLANNER_ENABLED=true \
+MCP_WORKFLOW_PLANNER_PROVIDER=local \
+MCP_WORKFLOW_DRAFTER_PROVIDER=local \
+MCP_LOCAL_WORKFLOW_BASE_URL=http://<workflow-host>:<port> \
+docker compose up
+```
 
 Canonical Docker command (with app running via `docker compose up`):
 
@@ -68,6 +84,8 @@ Optional host command:
 ```bash
 BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
 ```
+
+The smoke script now validates the local workflow planner-to-drafter handoff before the existing patch apply path. It fails fast when workflow planning is disabled or the planner/drafter providers are not configured for the self-hosted path.
 
 Upload notes chunks to an OpenAI vector store (for semantic E2E tests):
 
