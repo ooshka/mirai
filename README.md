@@ -62,6 +62,7 @@ Prerequisites:
 - Notes mount contains at least one markdown file.
 - Workflow planning is enabled and both workflow providers are set to `local`.
 - `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible workflow runtime.
+- `MCP_OPENAI_WORKFLOW_MODEL` is set to a local workflow model name available on that runtime (for example `qwen2.5:7b-instruct`).
 
 Example app startup for the self-hosted workflow smoke path:
 
@@ -69,6 +70,7 @@ Example app startup for the self-hosted workflow smoke path:
 MCP_WORKFLOW_PLANNER_ENABLED=true \
 MCP_WORKFLOW_PLANNER_PROVIDER=local \
 MCP_WORKFLOW_DRAFTER_PROVIDER=local \
+MCP_OPENAI_WORKFLOW_MODEL=qwen2.5:7b-instruct \
 MCP_LOCAL_WORKFLOW_BASE_URL=http://<workflow-host>:<port> \
 docker compose up
 ```

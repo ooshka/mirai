@@ -186,6 +186,7 @@ Prerequisites:
 - `MCP_WORKFLOW_PLANNER_ENABLED=true`
 - `MCP_WORKFLOW_PLANNER_PROVIDER=local`
 - `MCP_WORKFLOW_DRAFTER_PROVIDER=local`
+- `MCP_OPENAI_WORKFLOW_MODEL` is set to a local workflow model name that exists on the configured runtime (for example `qwen2.5:7b-instruct`)
 - `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible local workflow runtime
 
 Canonical Docker run (recommended):
