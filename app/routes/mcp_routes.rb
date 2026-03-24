@@ -140,6 +140,35 @@ module Routes
           ).to_json
         end
       end
+
+      app.post "/mcp/workflow/apply_patch" do
+        with_mcp_error_handling do
+          enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_PATCH_APPLY)
+          payload = parsed_workflow_draft_patch_payload
+          drafter = Llm::WorkflowPatchClientFactory.new(
+            provider: settings.mcp_workflow_drafter_provider,
+            openai_api_key: ENV["OPENAI_API_KEY"],
+            workflow_model: settings.mcp_openai_workflow_model,
+            openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL),
+            local_base_url: settings.mcp_local_workflow_base_url
+          ).build_drafter(enabled: settings.mcp_workflow_planner_enabled)
+
+          ::Mcp::WorkflowDraftApplyAction.new(
+            workflow_draft_patch_action: ::Mcp::WorkflowDraftPatchAction.new(
+              notes_root: settings.notes_root,
+              drafter: drafter
+            ),
+            patch_apply_action: ::Mcp::PatchApplyAction.new(
+              notes_root: settings.notes_root,
+              semantic_ingestion_service: settings.semantic_ingestion_service
+            )
+          ).call(
+            instruction: payload["instruction"],
+            path: payload["path"],
+            context: payload["context"]
+          ).to_json
+        end
+      end
     end
   end
 end
