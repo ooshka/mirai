@@ -231,6 +231,13 @@ Default container config:
   - Provider note: the drafter path follows `MCP_WORKFLOW_DRAFTER_PROVIDER`. When set to `local`, `mirai` sends the same bounded request to `MCP_LOCAL_WORKFLOW_BASE_URL` and normalizes either a raw unified diff or a JSON `{ "patch": "..." }` response down to the existing patch string contract.
   - Safety note: this endpoint validates draft shape but does not apply/commit changes.
 
+- `POST /mcp/workflow/apply_patch`
+  - Produces and applies a single-file unified diff from the canonical `workflow.draft_patch` action envelope.
+  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." }`
+  - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; operators can apply a planner-produced `workflow.draft_patch` action without reshaping the payload.
+  - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
+
 ## Safety and error contracts
 
 Filesystem/path safety:

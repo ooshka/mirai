@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Workflow Draft Apply Operator Loop Case
-- Type: `feature`
-- Value: enables one explicit operator-run follow-on from planner/drafter output into patch apply without forcing consumers to invent glue around the canonical workflow action payload.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 
