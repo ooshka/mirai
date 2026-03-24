@@ -5,11 +5,16 @@
 1. Workflow Draft Apply Operator Loop Case
 - Type: `feature`
 - Value: enables one explicit operator-run follow-on from planner/drafter output into patch apply without forcing consumers to invent glue around the canonical workflow action payload.
-- Size: ~1-2 days.
+- Size: ~1 day.
 
 ## Next
 
-1. Policy Identity Plumbing Spec Without `any_instance`
+1. Workflow Apply Response Contract Tightening
+- Type: `feature`
+- Value: keeps the first workflow apply loop reviewable by tightening its returned audit fields before other workflow consumers depend on an ad hoc response shape.
+- Size: ~0.5-1 day.
+
+2. Policy Identity Plumbing Spec Without `any_instance`
 - Type: `hardening`
 - Value: reduces brittle request-spec behavior and keeps policy plumbing tests reliable.
 - Size: ~0.5 day.

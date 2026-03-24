@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-03-23 (workflow draft apply operator-loop planning pass)
+
+### Observed signals
+- The canonical `workflow.draft_patch` planner action now hands directly into `/mcp/workflow/draft_patch`, but there is still no server-owned operator path from that same action payload into a committed note update.
+- Current workflow contracts stop at dry-run draft generation, which pressures consumers to assemble their own draft-to-apply glue if they want an end-to-end operator loop.
+- `/mcp/patch/apply` already owns raw unified-diff mutation semantics, so overloading it with workflow-specific request envelopes would blur the boundary between workflow orchestration and patch mutation.
+
+### Debt posture for next slice
+- Debt paid down next: add one explicit workflow-owned apply seam so the first operator-run loop remains canonical and server-owned instead of fragmenting across clients.
+- Debt potentially added: the first workflow apply response will likely be intentionally narrow and may need a small contract-tightening follow-on once real operator usage clarifies which audit fields matter most.
+- Refactor signal: if additional executable workflow actions appear, extract a small workflow dispatcher/executor object rather than duplicating orchestration in route handlers.
+
 ## 2026-03-22 (local workflow smoke-loop planning pass)
 
 ### Observed signals
