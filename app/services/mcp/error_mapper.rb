@@ -9,6 +9,7 @@ require_relative "index_query_action"
 require_relative "notes_batch_read_action"
 require_relative "workflow_plan_action"
 require_relative "workflow_draft_patch_action"
+require_relative "workflow_execute_action"
 require_relative "../llm/workflow_planner"
 require_relative "../llm/workflow_patch_drafter"
 
@@ -38,6 +39,8 @@ module Mcp
         {status: 400, code: "invalid_workflow_intent", message: error.message}
       when Mcp::WorkflowDraftPatchAction::InvalidDraftRequestError
         {status: 400, code: "invalid_workflow_draft", message: error.message}
+      when Mcp::WorkflowExecuteAction::InvalidExecuteRequestError
+        {status: 400, code: "invalid_workflow_execute", message: error.message}
       when Llm::WorkflowPlanner::UnavailableError
         {status: 503, code: "planner_unavailable", message: error.message}
       when Llm::WorkflowPatchDrafter::UnavailableError
