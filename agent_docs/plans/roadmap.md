@@ -37,14 +37,19 @@ Early-stage contract policy:
 - During the current pre-broad-adoption phase, breaking API changes are acceptable when they simplify the contract and can be propagated to the known consumers in the same work cycle.
 - Compatibility layers are a tool, not a default; use them only when the coordination cost is genuinely higher than the ongoing contract debt they introduce.
 - `mirai` remains the contract owner, so `local_llm` and any hosted-provider fixtures should be refactored to match cleaner `mirai` contracts rather than freezing early awkward shapes.
+- With no active external consumers yet, prefer collapsing multi-step workflow experiments into a clearer server-owned flow when that removes client stitching or audit ambiguity.
 
 ## Near-Term Follow-ons
 
-7. Retrieval query response quality enhancements
+7. Canonical workflow execution path
+- Reduce client-side orchestration across `/mcp/workflow/plan`, `/mcp/workflow/draft_patch`, and `/mcp/workflow/apply_patch` by converging toward one clearer server-owned workflow run/apply flow.
+- Use the current low-consumer phase to rework endpoint boundaries if that produces a simpler operator path with better audit semantics.
+
+8. Retrieval query response quality enhancements
 - Add bounded match-explanation metadata to query results for better operator trust and downstream UX
 - Preserve the bounded explainability contract while deferring any richer provider-specific rationale until retrieval policy ownership is clearer
 
-8. Planning artifact hygiene
+9. Planning artifact hygiene
 - Reconcile superseded/open planning case artifacts to keep execution context unambiguous
 - Preserve lightweight backlog cadence without expanding implementation scope
 
