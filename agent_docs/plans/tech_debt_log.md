@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-03-29 (canonical workflow execute endpoint planning pass)
+
+### Observed signals
+- `mirai` now has stable but separate `/mcp/workflow/plan`, `/mcp/workflow/draft_patch`, and `/mcp/workflow/apply_patch` endpoints, which still requires thin clients to know endpoint sequencing and payload translation rules for one note-update run.
+- The planner handoff and workflow-apply response seams are now explicit enough that a narrow convergence slice can reuse existing action contracts instead of inventing a new generic workflow protocol.
+- Route wiring currently duplicates drafter construction across draft/apply paths in `app/routes/mcp_routes.rb`, so adding execution by copy/paste would increase orchestration debt.
+
+### Debt posture for next slice
+- Debt paid down next: establish one canonical server-owned execution path for the existing `workflow.draft_patch` action so end-to-end workflow updates stop depending on client-side stitching.
+- Debt potentially added: the first execute endpoint may still leave the lower-level draft/apply endpoints in place and may use a narrow single-action validator rather than a reusable workflow executor registry.
+- Refactor signal: if more executable workflow actions appear, extract a dedicated workflow executor/registry object instead of growing route-local action dispatch logic.
+
 ## 2026-03-29 (workflow apply response contract tightening planning pass)
 
 ### Observed signals

@@ -2,23 +2,26 @@
 
 ## Now
 
-No currently tracked items.
+1. Canonical Workflow Execute Endpoint
+- Type: `feature`
+- Value: gives `mirai` one server-owned path that can accept the planned `workflow.draft_patch` action and carry it through draft generation plus patch apply without client-side stitching.
+- Size: ~1 day.
 
 ## Next
 
-1. Canonical Workflow Execute Endpoint
-- Type: `feature`
-- Value: reduces client-side stitching across planning, drafting, and applying by giving `mirai` one server-owned workflow path from intent to committed note update with explicit audit output.
-- Size: ~1 day.
-
-2. Workflow Apply Response Action Echo
+1. Workflow Apply Response Action Echo
 - Type: `hardening`
 - Value: gives thin workflow clients one explicit action-identity field in apply responses so they can correlate planner output with execution results without inferring it from endpoint choice alone.
 - Size: ~0.5 day.
 
-3. Policy Identity Plumbing Spec Without `any_instance`
+2. Policy Identity Plumbing Spec Without `any_instance`
 - Type: `hardening`
 - Value: reduces brittle request-spec behavior and keeps policy plumbing tests reliable.
+- Size: ~0.5 day.
+
+3. Workflow Execute Request Envelope Cleanup
+- Type: `feature`
+- Value: trims any temporary wrapper or validation awkwardness left by the first canonical execute endpoint so planner action payloads stay the single obvious client contract.
 - Size: ~0.5 day.
 
 ## Later

@@ -44,6 +44,7 @@ Early-stage contract policy:
 7. Canonical workflow execution path
 - Reduce client-side orchestration across `/mcp/workflow/plan`, `/mcp/workflow/draft_patch`, and `/mcp/workflow/apply_patch` by converging toward one clearer server-owned workflow run/apply flow.
 - Use the current low-consumer phase to rework endpoint boundaries if that produces a simpler operator path with better audit semantics.
+- Immediate next slice: introduce a first execute endpoint for canonical `workflow.draft_patch` actions before considering any broader workflow action dispatcher.
 
 8. Retrieval query response quality enhancements
 - Add bounded match-explanation metadata to query results for better operator trust and downstream UX
