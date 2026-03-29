@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-03-29 (workflow apply response contract tightening planning pass)
+
+### Observed signals
+- `/mcp/workflow/apply_patch` currently returns the `PatchApplyAction` summary merged with a top-level drafted `patch` string, so the response shape does not clearly separate mutation result fields from workflow-owned audit data.
+- The current workflow consumer set is still small, but the README and request specs now document the flat response, which means delay will harden a shortcut contract into downstream assumptions.
+- The workflow apply seam is otherwise behaving as intended; the main risk is response ownership ambiguity, not missing execution capability.
+
+### Debt posture for next slice
+- Debt paid down next: isolate drafted unified-diff audit data under a workflow-owned response envelope so workflow apply remains explicit and easier to evolve.
+- Debt potentially added: the first tightened contract will still be modest and may not yet expose richer execution metadata beyond the drafted diff.
+- Refactor signal: if workflow execution returns more audit metadata later, add it inside a nested audit object rather than growing a second flat response contract.
+
 ## 2026-03-23 (workflow draft apply operator-loop planning pass)
 
 ### Observed signals

@@ -2,14 +2,17 @@
 
 ## Now
 
-No currently tracked items.
-
-## Next
-
 1. Workflow Apply Response Contract Tightening
 - Type: `feature`
 - Value: keeps the first workflow apply loop reviewable by tightening its returned audit fields before other workflow consumers depend on an ad hoc response shape.
 - Size: ~0.5-1 day.
+
+## Next
+
+1. Workflow Apply Response Action Echo
+- Type: `feature`
+- Value: gives thin workflow clients one explicit action-identity field in apply responses so they can correlate planner output with execution results without inferring it from endpoint choice alone.
+- Size: ~0.5 day.
 
 2. Policy Identity Plumbing Spec Without `any_instance`
 - Type: `hardening`
