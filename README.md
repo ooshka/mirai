@@ -64,6 +64,8 @@ Prerequisites:
 - `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible workflow runtime.
 - `MCP_OPENAI_WORKFLOW_MODEL` is set to a local workflow model name available on that runtime (for example `qwen2.5:7b-instruct`).
 
+Docker Compose defaults `MCP_LOCAL_WORKFLOW_BASE_URL` to `http://host.docker.internal:11434` and maps `host.docker.internal` to the host gateway so the `dev` container can reach a locally running Ollama instance without extra setup. Override the env var if your runtime is elsewhere.
+
 Example app startup for the self-hosted workflow smoke path:
 
 ```bash
@@ -71,7 +73,6 @@ MCP_WORKFLOW_PLANNER_ENABLED=true \
 MCP_WORKFLOW_PLANNER_PROVIDER=local \
 MCP_WORKFLOW_DRAFTER_PROVIDER=local \
 MCP_OPENAI_WORKFLOW_MODEL=qwen2.5:7b-instruct \
-MCP_LOCAL_WORKFLOW_BASE_URL=http://<workflow-host>:<port> \
 docker compose up
 ```
 
@@ -129,7 +130,7 @@ Default container config:
 - `MCP_WORKFLOW_PLANNER_PROVIDER=openai` (planner adapter selection; supported: `openai`, `local`)
 - `MCP_WORKFLOW_DRAFTER_PROVIDER=openai` (draft-patch adapter selection; supported: `openai`, `local`)
 - `MCP_OPENAI_WORKFLOW_MODEL=gpt-4.1-mini` (planner model name passed to the selected workflow planner adapter)
-- `MCP_LOCAL_WORKFLOW_BASE_URL=<base-url>` (required for `MCP_WORKFLOW_PLANNER_PROVIDER=local` or `MCP_WORKFLOW_DRAFTER_PROVIDER=local`; expected to expose an OpenAI-compatible `/v1/chat/completions` workflow endpoint aligned with the `local_llm` planner and draft smoke contracts)
+- `MCP_LOCAL_WORKFLOW_BASE_URL=http://host.docker.internal:11434` by default in Docker Compose (override as needed for `MCP_WORKFLOW_PLANNER_PROVIDER=local` or `MCP_WORKFLOW_DRAFTER_PROVIDER=local`; expected to expose an OpenAI-compatible `/v1/chat/completions` workflow endpoint aligned with the `local_llm` planner and draft smoke contracts)
 - `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval/workflow planning; never exposed by `/config`)
 
 ## HTTP endpoints

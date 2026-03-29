@@ -189,6 +189,8 @@ Prerequisites:
 - `MCP_OPENAI_WORKFLOW_MODEL` is set to a local workflow model name that exists on the configured runtime (for example `qwen2.5:7b-instruct`)
 - `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible local workflow runtime
 
+Docker Compose defaults `MCP_LOCAL_WORKFLOW_BASE_URL` to `http://host.docker.internal:11434` and maps `host.docker.internal` to the host gateway so the `dev` container can reach a locally running Ollama instance. Override the env var if your runtime is elsewhere.
+
 Canonical Docker run (recommended):
 
 ```bash

@@ -15,11 +15,14 @@ services:
       GIT_AUTHOR_EMAIL: mirai-dev@example.local
       GIT_COMMITTER_NAME: mirai-dev
       GIT_COMMITTER_EMAIL: mirai-dev@example.local
+      MCP_LOCAL_WORKFLOW_BASE_URL: ${MCP_LOCAL_WORKFLOW_BASE_URL:-http://host.docker.internal:11434}
     volumes:
       - .:/workspace:cached
       - ../notes_repo:/notes_repo:cached
       - dev-home:/home/dev
       - bundler-cache:/home/dev/.bundle
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     working_dir: /workspace
     command: bundle exec puma -b tcp://0.0.0.0:4567 config.ru
     tty: true
