@@ -239,6 +239,14 @@ Default container config:
   - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; apply summary fields stay top-level while workflow-owned audit data is nested under `audit`.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
 
+- `POST /mcp/workflow/execute`
+  - Canonical end-to-end workflow execution path for supported planner actions.
+  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." } }`
+  - Contract note: this endpoint currently supports only the canonical `workflow.draft_patch` planner action and reuses the same apply summary plus workflow audit response contract as `/mcp/workflow/apply_patch`.
+  - Usage note: thin clients that want one server-owned execution step should prefer this endpoint; use `/mcp/workflow/draft_patch` for dry-run patch generation and `/mcp/workflow/apply_patch` when calling the lower-level apply seam directly.
+  - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
+
 ## Safety and error contracts
 
 Filesystem/path safety:

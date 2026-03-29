@@ -41,6 +41,33 @@ module Routes
       params
     end
 
+    def parsed_workflow_execute_payload
+      parsed_json_payload(error_code: "invalid_workflow_execute", error_message: "action and params are required")
+    end
+
+    def build_workflow_drafter
+      Llm::WorkflowPatchClientFactory.new(
+        provider: settings.mcp_workflow_drafter_provider,
+        openai_api_key: ENV["OPENAI_API_KEY"],
+        workflow_model: settings.mcp_openai_workflow_model,
+        openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL),
+        local_base_url: settings.mcp_local_workflow_base_url
+      ).build_drafter(enabled: settings.mcp_workflow_planner_enabled)
+    end
+
+    def build_workflow_draft_apply_action
+      ::Mcp::WorkflowDraftApplyAction.new(
+        workflow_draft_patch_action: ::Mcp::WorkflowDraftPatchAction.new(
+          notes_root: settings.notes_root,
+          drafter: build_workflow_drafter
+        ),
+        patch_apply_action: ::Mcp::PatchApplyAction.new(
+          notes_root: settings.notes_root,
+          semantic_ingestion_service: settings.semantic_ingestion_service
+        )
+      )
+    end
+
     def with_mcp_error_handling
       yield
     rescue => e
