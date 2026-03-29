@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Canonical Workflow Execute Endpoint
-- Type: `feature`
-- Value: gives `mirai` one server-owned path that can accept the planned `workflow.draft_patch` action and carry it through draft generation plus patch apply without client-side stitching.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 
