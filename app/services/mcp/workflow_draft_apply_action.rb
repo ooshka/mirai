@@ -19,7 +19,7 @@ module Mcp
       patch = draft_result.fetch(:patch)
       apply_result = @patch_apply_action.call(patch: patch)
 
-      apply_result.merge(patch: patch)
+      apply_result.merge(audit: {patch: patch})
     end
   end
 end

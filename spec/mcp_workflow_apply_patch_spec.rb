@@ -30,6 +30,7 @@ RSpec.describe "MCP workflow apply patch endpoint" do
     original_mcp_workflow_planner_enabled = App.settings.mcp_workflow_planner_enabled
     original_mcp_workflow_drafter_provider = App.settings.mcp_workflow_drafter_provider
     original_mcp_openai_workflow_model = App.settings.mcp_openai_workflow_model
+    original_mcp_local_workflow_base_url = App.settings.mcp_local_workflow_base_url
     original_semantic_ingestion_service = App.settings.semantic_ingestion_service
 
     Dir.mktmpdir("notes-root") do |notes_root|
@@ -40,6 +41,7 @@ RSpec.describe "MCP workflow apply patch endpoint" do
       App.set :mcp_workflow_planner_enabled, true
       App.set :mcp_workflow_drafter_provider, "openai"
       App.set :mcp_openai_workflow_model, Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+      App.set :mcp_local_workflow_base_url, nil
       App.set :semantic_ingestion_service, NullSemanticIngestionService.new
       example.run
     end
@@ -49,6 +51,7 @@ RSpec.describe "MCP workflow apply patch endpoint" do
     App.set :mcp_workflow_planner_enabled, original_mcp_workflow_planner_enabled
     App.set :mcp_workflow_drafter_provider, original_mcp_workflow_drafter_provider
     App.set :mcp_openai_workflow_model, original_mcp_openai_workflow_model
+    App.set :mcp_local_workflow_base_url, original_mcp_local_workflow_base_url
     App.set :semantic_ingestion_service, original_semantic_ingestion_service
   end
 
@@ -98,13 +101,15 @@ RSpec.describe "MCP workflow apply patch endpoint" do
         "path" => "notes/today.md",
         "hunk_count" => 1,
         "net_line_delta" => 1,
-        "patch" => <<~PATCH.strip
-          --- a/notes/today.md
-          +++ b/notes/today.md
-          @@ -1 +1,2 @@
-           alpha
-          +beta
-        PATCH
+        "audit" => {
+          "patch" => <<~PATCH.strip
+            --- a/notes/today.md
+            +++ b/notes/today.md
+            @@ -1 +1,2 @@
+             alpha
+            +beta
+          PATCH
+        }
       }
     )
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
@@ -129,6 +134,45 @@ RSpec.describe "MCP workflow apply patch endpoint" do
         }
       }
     )
+  end
+
+  it "does not expose a top-level patch field in workflow apply responses" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
+    expect(openai_client).to receive(:draft_patch).and_return(
+      <<~PATCH
+        --- a/notes/today.md
+        +++ b/notes/today.md
+        @@ -1 +1,2 @@
+         alpha
+        +beta
+      PATCH
+    )
+
+    post "/mcp/workflow/apply_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md"
+        }
+      }
+    )
+
+    body = JSON.parse(last_response.body)
+    expect(body).not_to have_key("patch")
+    expect(body.fetch("audit")).to include("patch")
+    expect(File.read(file_path)).to eq("alpha\nbeta\n")
   end
 
   it "returns policy_denied for workflow apply in read_only policy mode" do

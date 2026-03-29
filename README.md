@@ -235,8 +235,8 @@ Default container config:
 - `POST /mcp/workflow/apply_patch`
   - Produces and applies a single-file unified diff from the canonical `workflow.draft_patch` action envelope.
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
-  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." }`
-  - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; operators can apply a planner-produced `workflow.draft_patch` action without reshaping the payload.
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." } }`
+  - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; apply summary fields stay top-level while workflow-owned audit data is nested under `audit`.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
 
 ## Safety and error contracts
