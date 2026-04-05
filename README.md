@@ -36,7 +36,15 @@ The runtime model is treated as untrusted and can only mutate notes through cons
 Start the app:
 
 ```bash
-docker compose up
+docker compose --env-file .env.local up
+```
+
+For repeatable local startup without committing machine-specific values, copy the local example and set `UID` / `GID` for your WSL user:
+
+```bash
+cp .env.local.example .env.local
+id -u
+id -g
 ```
 
 Run tests:
@@ -58,13 +66,13 @@ GitHub Actions runs the full `bundle exec rspec` suite and `bundle exec standard
 Run local workflow smoke.
 
 Prerequisites:
-- App running via `docker compose up` (or equivalent).
+- App running via `docker compose --env-file .env.local up` (or equivalent).
 - Notes mount contains at least one markdown file.
 - Workflow planning is enabled and both workflow providers are set to `local`.
 - `MCP_LOCAL_WORKFLOW_BASE_URL` points at a reachable OpenAI-compatible workflow runtime.
-- `MCP_OPENAI_WORKFLOW_MODEL` is set to a local workflow model name available on that runtime (for example `qwen2.5:7b-instruct`).
+- `MCP_OPENAI_WORKFLOW_MODEL` is set to a local workflow model name available on that runtime (for example `qwen3:8b`).
 
-Docker Compose defaults `MCP_LOCAL_WORKFLOW_BASE_URL` to `http://host.docker.internal:11434` and maps `host.docker.internal` to the host gateway so the `dev` container can reach a locally running Ollama instance without extra setup. Override the env var if your runtime is elsewhere.
+Docker Compose now runs the `dev` service with `network_mode: host`, so the container shares the WSL network namespace and reaches the local workflow runtime at `http://localhost:11434` by default. Override `MCP_LOCAL_WORKFLOW_BASE_URL` only if your runtime is elsewhere.
 
 Example app startup for the self-hosted workflow smoke path:
 
@@ -72,14 +80,14 @@ Example app startup for the self-hosted workflow smoke path:
 MCP_WORKFLOW_PLANNER_ENABLED=true \
 MCP_WORKFLOW_PLANNER_PROVIDER=local \
 MCP_WORKFLOW_DRAFTER_PROVIDER=local \
-MCP_OPENAI_WORKFLOW_MODEL=qwen2.5:7b-instruct \
-docker compose up
+MCP_OPENAI_WORKFLOW_MODEL=qwen3:8b \
+docker compose --env-file .env.local up
 ```
 
-Canonical Docker command (with app running via `docker compose up`):
+Canonical Docker command (with app running via `docker compose --env-file .env.local up`):
 
 ```bash
-docker compose exec -T dev bash -lc 'BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh'
+docker compose --env-file .env.local exec -T dev bash -lc 'BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh'
 ```
 
 Optional host command:
@@ -130,7 +138,7 @@ Default container config:
 - `MCP_WORKFLOW_PLANNER_PROVIDER=openai` (planner adapter selection; supported: `openai`, `local`)
 - `MCP_WORKFLOW_DRAFTER_PROVIDER=openai` (draft-patch adapter selection; supported: `openai`, `local`)
 - `MCP_OPENAI_WORKFLOW_MODEL=gpt-4.1-mini` (planner model name passed to the selected workflow planner adapter)
-- `MCP_LOCAL_WORKFLOW_BASE_URL=http://host.docker.internal:11434` by default in Docker Compose (override as needed for `MCP_WORKFLOW_PLANNER_PROVIDER=local` or `MCP_WORKFLOW_DRAFTER_PROVIDER=local`; expected to expose an OpenAI-compatible `/v1/chat/completions` workflow endpoint aligned with the `local_llm` planner and draft smoke contracts)
+- `MCP_LOCAL_WORKFLOW_BASE_URL=http://localhost:11434` by default in Docker Compose (the `dev` service uses host networking in local development; override as needed for `MCP_WORKFLOW_PLANNER_PROVIDER=local` or `MCP_WORKFLOW_DRAFTER_PROVIDER=local`; expected to expose an OpenAI-compatible `/v1/chat/completions` workflow endpoint aligned with the `local_llm` planner and draft smoke contracts)
 - `OPENAI_API_KEY=<secret>` (required for OpenAI semantic retrieval/workflow planning; never exposed by `/config`)
 
 ## HTTP endpoints

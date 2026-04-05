@@ -10,25 +10,34 @@ services:
     user: "${UID}:${GID}"
     environment:
       HOME: /home/dev
-      NOTES_ROOT: /notes_repo/notes
+      NOTES_ROOT: ${NOTES_ROOT:-/notes_repo/notes}
+      PORT: ${PORT:-4567}
       GIT_AUTHOR_NAME: mirai-dev
       GIT_AUTHOR_EMAIL: mirai-dev@example.local
       GIT_COMMITTER_NAME: mirai-dev
       GIT_COMMITTER_EMAIL: mirai-dev@example.local
-      MCP_LOCAL_WORKFLOW_BASE_URL: ${MCP_LOCAL_WORKFLOW_BASE_URL:-http://host.docker.internal:11434}
+      MCP_POLICY_MODE: ${MCP_POLICY_MODE:-allow_all}
+      MCP_RETRIEVAL_MODE: ${MCP_RETRIEVAL_MODE:-lexical}
+      MCP_SEMANTIC_PROVIDER_ENABLED: ${MCP_SEMANTIC_PROVIDER_ENABLED:-false}
+      MCP_SEMANTIC_PROVIDER: ${MCP_SEMANTIC_PROVIDER:-openai}
+      MCP_SEMANTIC_INGESTION_ENABLED: ${MCP_SEMANTIC_INGESTION_ENABLED:-false}
+      MCP_OPENAI_EMBEDDING_MODEL: ${MCP_OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      MCP_OPENAI_VECTOR_STORE_ID: ${MCP_OPENAI_VECTOR_STORE_ID:-}
+      MCP_WORKFLOW_PLANNER_ENABLED: ${MCP_WORKFLOW_PLANNER_ENABLED:-false}
+      MCP_WORKFLOW_PLANNER_PROVIDER: ${MCP_WORKFLOW_PLANNER_PROVIDER:-openai}
+      MCP_WORKFLOW_DRAFTER_PROVIDER: ${MCP_WORKFLOW_DRAFTER_PROVIDER:-openai}
+      MCP_LOCAL_WORKFLOW_BASE_URL: ${MCP_LOCAL_WORKFLOW_BASE_URL:-http://localhost:11434}
+      MCP_OPENAI_WORKFLOW_MODEL: ${MCP_OPENAI_WORKFLOW_MODEL:-gpt-4.1-mini}
     volumes:
       - .:/workspace:cached
       - ../notes_repo:/notes_repo:cached
       - dev-home:/home/dev
       - bundler-cache:/home/dev/.bundle
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     working_dir: /workspace
     command: bundle exec puma -b tcp://0.0.0.0:4567 config.ru
     tty: true
     stdin_open: true
-    ports:
-      - "4567:4567"
+    network_mode: host
 volumes:
   dev-home:
   bundler-cache:
