@@ -2,11 +2,7 @@
 
 ## Now
 
-1. Local Workflow Draft Prompt Contract Hardening
-- Type: `hardening`
-- Value: turns the current self-hosted draft failure into a bounded prompt-contract fix without weakening patch safety rules.
-- Size: ~0.5 day.
-- Trigger/why now: immediate unblocker for the active local workflow feature path after connectivity and model wiring were validated.
+No currently tracked items.
 
 ## Next
 
@@ -24,11 +20,6 @@
 - Type: `feature`
 - Value: trims any temporary wrapper or validation awkwardness left by the first canonical execute endpoint so planner action payloads stay the single obvious client contract.
 - Size: ~0.5 day.
-
-4. Local Workflow Draft Contract Alignment Follow-through
-- Type: `feature`
-- Value: completes the first self-hosted workflow happy path once the drafter emits a valid full unified diff, keeping the local operator loop usable rather than smoke-only.
-- Size: ~0.5-1 day.
 
 ## Later
 

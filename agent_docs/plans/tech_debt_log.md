@@ -1,17 +1,5 @@
 # Tech Debt Log
 
-## 2026-04-04 (local workflow draft prompt-contract planning pass)
-
-### Observed signals
-- The current host-networked local workflow path now reaches the Windows-hosted Ollama runtime successfully from the `dev` container, so connectivity is no longer the blocker.
-- Live smoke evidence shows the local planner succeeds, but the drafter returns a JSON `patch` value containing only a hunk body and no `--- a/<path>` / `+++ b/<path>` headers.
-- The same malformed draft shape also fails `../local_llm/scripts/ollama/smoke.py --draft-patch-only`, which means the contract miss is shared across repos and belongs at the producer prompt boundary rather than inside `mirai`'s parser.
-
-### Debt posture for next slice
-- Debt paid down next: make the local draft prompt explicitly specify the full unified-diff header contract so the existing strict patch parser can remain the safety source of truth.
-- Debt potentially added: prompt-contract knowledge remains embedded in the local draft client and may still need a shared prompt-policy extraction later if planner/drafter tuning expands.
-- Refactor signal: if local and hosted drafter prompts continue to diverge or require repeated tuning, extract shared prompt builders or contract constants instead of duplicating string policy across clients.
-
 ## 2026-03-29 (canonical workflow execute endpoint planning pass)
 
 ### Observed signals
