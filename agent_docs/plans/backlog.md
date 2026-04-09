@@ -2,7 +2,11 @@
 
 ## Now
 
-No currently tracked items.
+1. Workflow Edit Intent Contract
+- Case: `agent_docs/cases/CASE_workflow_edit_intent_contract.md`
+- Type: `feature`
+- Value: moves workflow drafting off brittle model-authored unified diffs onto a `mirai`-owned JSON `edit_intent` contract that both hosted and local providers can satisfy more reliably.
+- Size: ~1 day.
 
 ## Next
 
@@ -16,7 +20,17 @@ No currently tracked items.
 - Value: reduces brittle request-spec behavior and keeps policy plumbing tests reliable.
 - Size: ~0.5 day.
 
-3. Workflow Execute Request Envelope Cleanup
+3. Workflow Edit Intent Execution Bridge
+- Type: `feature`
+- Value: lets the canonical workflow execute/apply path consume provider `edit_intent` JSON through one server-owned conversion or application seam without re-exposing patch formatting requirements to the model.
+- Size: ~1 day.
+
+4. Workflow Planner Intent Contract Simplification
+- Type: `feature`
+- Value: reduces local-model contract pressure further by letting planners emit a smaller semantic intent payload that `mirai` expands into the canonical execution action shape.
+- Size: ~1 day.
+
+5. Workflow Execute Request Envelope Cleanup
 - Type: `feature`
 - Value: trims any temporary wrapper or validation awkwardness left by the first canonical execute endpoint so planner action payloads stay the single obvious client contract.
 - Size: ~0.5 day.

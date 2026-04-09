@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-08 (workflow edit-intent contract planning pass)
+
+### Observed signals
+- The current workflow drafting seam still asks providers to author a valid single-file unified diff, which is a syntax-heavy contract for both hosted and self-hosted models relative to the smaller semantic intent `mirai` actually needs.
+- `mirai` already owns patch validation, patch application, and workflow execution boundaries, so keeping unified-diff authorship at the model boundary duplicates responsibility and makes local-provider reliability hinge on formatting rather than intent.
+- The current planner and execute contracts are already action-shaped and can remain stable for one more slice, which means the next smallest move is to simplify only the drafter/provider seam first and defer broader planner-envelope cleanup to the follow-on backlog item.
+
+### Debt posture for next slice
+- Debt paid down next: replace model-authored patch formatting pressure with a typed `edit_intent` contract that `mirai` can validate and translate deterministically.
+- Debt potentially added: the first edit-intent slice may temporarily preserve current workflow endpoint request shapes or internal conversion seams while execute/apply paths still bridge back into the existing patch pipeline.
+- Refactor signal: if `edit_intent` translation logic starts leaking across drafter, execute, and apply paths, extract a dedicated workflow edit-intent translator/value object instead of growing endpoint-local conversion code.
+
 ## 2026-03-29 (canonical workflow execute endpoint planning pass)
 
 ### Observed signals

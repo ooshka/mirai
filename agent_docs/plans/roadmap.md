@@ -46,21 +46,26 @@ Early-stage contract policy:
 - Use the current low-consumer phase to rework endpoint boundaries if that produces a simpler operator path with better audit semantics.
 - Immediate next slice: introduce a first execute endpoint for canonical `workflow.draft_patch` actions before considering any broader workflow action dispatcher.
 
-8. Retrieval query response quality enhancements
+8. Workflow edit-intent contract pivot
+- Replace the fragile model-authored unified-diff boundary with a typed `edit_intent` JSON contract that `mirai` owns and can validate deterministically across hosted and self-hosted workflow providers.
+- Keep the workflow surface server-owned: providers should propose bounded file edit operations, while `mirai` remains responsible for converting or applying those operations through existing patch-policy and audit seams.
+- Sequence the pivot as small slices: contract definition first, execute/drafter translation second, local-provider/OpenAI fixture updates third.
+
+9. Retrieval query response quality enhancements
 - Add bounded match-explanation metadata to query results for better operator trust and downstream UX
 - Preserve the bounded explainability contract while deferring any richer provider-specific rationale until retrieval policy ownership is clearer
 
-9. Planning artifact hygiene
+10. Planning artifact hygiene
 - Reconcile superseded/open planning case artifacts to keep execution context unambiguous
 - Preserve lightweight backlog cadence without expanding implementation scope
 
 ## Later (After Contracts Stabilize)
 
-10. Retrieval quality and policy extensions
+11. Retrieval quality and policy extensions
 - Add richer ranking/selection controls only after fallback policy ownership is explicit
 - Preserve deterministic request contracts while evolving retrieval internals
 
-11. Hosted web frontend for operator workflows
+12. Hosted web frontend for operator workflows
 - Build a web UI to direct retrieval, note updates, and management actions through MCP-backed services
 - Include flows for dictated knowledge capture, knowledge Q&A, repository statistics/metadata inspection, and explicit edit application
 - Roll out after model-provider abstractions and backend contracts are stable enough to avoid frontend churn
