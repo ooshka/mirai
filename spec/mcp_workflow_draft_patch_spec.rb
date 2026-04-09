@@ -358,6 +358,45 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     )
   end
 
+  it "returns draft_unavailable when provider edit_intent content type is invalid" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    File.write(File.join(App.settings.notes_root, "notes/today.md"), "alpha\n")
+
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
+    allow(openai_client).to receive(:draft_patch).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: 123
+      }
+    )
+
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(503)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "draft_unavailable",
+          "message" => "workflow patch drafter is unavailable"
+        }
+      }
+    )
+  end
+
   it "returns draft_unavailable when local drafter response is malformed" do
     FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
     File.write(File.join(App.settings.notes_root, "notes/today.md"), "alpha\n")

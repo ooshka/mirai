@@ -35,16 +35,14 @@ module Llm
     def draft_patch(instruction:, path:, content:, context:)
       raise UnavailableError, "workflow patch drafter is unavailable" unless @enabled
 
-      edit_intent = @client.draft_patch(
+      provider_edit_intent = @client.draft_patch(
         instruction: instruction,
         path: path,
         content: content,
         context: context
       )
 
-      validate_edit_intent(edit_intent)
-
-      edit_intent
+      validate_edit_intent(provider_edit_intent)
     rescue OpenAiWorkflowPatchClient::ConfigError,
       OpenAiWorkflowPatchClient::RequestError,
       OpenAiWorkflowPatchClient::ResponseError,
@@ -64,10 +62,11 @@ module Llm
     end
 
     def validate_edit_intent(edit_intent)
-      raise InvalidDraftError, "workflow patch drafter returned invalid edit_intent" unless edit_intent.is_a?(Hash)
-
-      WorkflowEditIntent.as_json(edit_intent)
-    rescue KeyError
+      WorkflowEditIntent.normalize_hash(
+        edit_intent,
+        error_prefix: "workflow patch drafter"
+      )
+    rescue WorkflowEditIntent::Error
       raise InvalidDraftError, "workflow patch drafter returned invalid edit_intent"
     end
 

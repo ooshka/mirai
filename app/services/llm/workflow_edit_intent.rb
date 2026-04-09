@@ -19,6 +19,15 @@ module Llm
       raise Error, "#{error_prefix} response was not valid json: #{e.message}"
     end
 
+    def self.normalize_hash(edit_intent, error_prefix:)
+      raise Error, "#{error_prefix} response missing edit_intent object" unless edit_intent.is_a?(Hash)
+
+      normalize_payload(
+        {"edit_intent" => stringify_keys(edit_intent)},
+        error_prefix: error_prefix
+      )
+    end
+
     def self.normalize_payload(payload, error_prefix:)
       edit_intent = payload["edit_intent"]
       raise Error, "#{error_prefix} response missing edit_intent object" unless edit_intent.is_a?(Hash)
@@ -74,5 +83,12 @@ module Llm
       "#{normalized}\n"
     end
     private_class_method :normalize_note_content
+
+    def self.stringify_keys(hash)
+      hash.each_with_object({}) do |(key, value), result|
+        result[key.to_s] = value
+      end
+    end
+    private_class_method :stringify_keys
   end
 end

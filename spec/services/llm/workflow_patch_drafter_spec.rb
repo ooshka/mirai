@@ -76,6 +76,22 @@ RSpec.describe Llm::WorkflowPatchDrafter do
     end.to raise_error(described_class::UnavailableError, "workflow patch drafter is unavailable")
   end
 
+  it "maps invalid edit_intent field types to unavailable" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    allow(openai_client).to receive(:draft_patch).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: 123
+      }
+    )
+    drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
+
+    expect do
+      drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow patch drafter is unavailable")
+  end
+
   it "maps provider request errors to unavailable" do
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
     allow(openai_client).to receive(:draft_patch).and_raise(
