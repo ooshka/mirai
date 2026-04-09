@@ -2,11 +2,7 @@
 
 ## Now
 
-1. Workflow Edit Intent Contract
-- Case: `agent_docs/cases/CASE_workflow_edit_intent_contract.md`
-- Type: `feature`
-- Value: moves workflow drafting off brittle model-authored unified diffs onto a `mirai`-owned JSON `edit_intent` contract that both hosted and local providers can satisfy more reliably.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 

@@ -12,7 +12,7 @@ RSpec.describe Mcp::WorkflowDraftApplyAction do
       patch_apply_action: patch_apply_action
     )
 
-    expect(workflow_draft_patch_action).to receive(:call).with(
+    expect(workflow_draft_patch_action).to receive(:call_with_patch).with(
       instruction: "add beta",
       path: "notes/today.md",
       context: {"source" => "planner"}

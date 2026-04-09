@@ -3,16 +3,14 @@
 require_relative "../../../app/services/llm/workflow_patch_drafter"
 
 RSpec.describe Llm::WorkflowPatchDrafter do
-  it "supports the local provider with the same normalized patch contract" do
+  it "supports the local provider with the same normalized edit_intent contract" do
     local_client = instance_double("Llm::LocalWorkflowPatchClient")
     allow(local_client).to receive(:draft_patch).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     drafter = described_class.new(enabled: true, provider: "local", client: local_client)
@@ -24,19 +22,23 @@ RSpec.describe Llm::WorkflowPatchDrafter do
       context: {scope: "notes/today.md"}
     )
 
-    expect(result).to include("--- a/notes/today.md")
+    expect(result).to eq(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
   end
 
-  it "returns a normalized patch when enabled and provider output is valid" do
+  it "returns a normalized edit_intent when enabled and provider output is valid" do
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
     allow(openai_client).to receive(:draft_patch).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
@@ -47,7 +49,13 @@ RSpec.describe Llm::WorkflowPatchDrafter do
       context: {scope: "notes/today.md"}
     )
 
-    expect(result).to include("--- a/notes/today.md")
+    expect(result).to eq(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
   end
 
   it "raises unavailable when disabled" do
@@ -60,7 +68,23 @@ RSpec.describe Llm::WorkflowPatchDrafter do
 
   it "maps malformed provider output to unavailable" do
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
-    allow(openai_client).to receive(:draft_patch).and_return("   ")
+    allow(openai_client).to receive(:draft_patch).and_return({"path" => "notes/today.md"})
+    drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
+
+    expect do
+      drafter.draft_patch(instruction: "x", path: "notes/today.md", content: "alpha", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow patch drafter is unavailable")
+  end
+
+  it "maps invalid edit_intent field types to unavailable" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    allow(openai_client).to receive(:draft_patch).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: 123
+      }
+    )
     drafter = described_class.new(enabled: true, provider: "openai", client: openai_client)
 
     expect do

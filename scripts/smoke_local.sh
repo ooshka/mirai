@@ -159,8 +159,10 @@ WORKFLOW_DRAFT_PAYLOAD="$(json_read 'JSON.generate(data.fetch("actions").find { 
 log "drafting patch directly from planner action"
 request "POST" "/mcp/workflow/draft_patch" "$WORKFLOW_DRAFT_PAYLOAD"
 assert_status "200" "POST /mcp/workflow/draft_patch"
-json_assert 'data["patch"].is_a?(String) && !data["patch"].strip.empty?' "workflow draft response missing patch"
-json_assert 'data["patch"].include?("+++ b/#{ENV.fetch(\"SMOKE_NOTE_PATH\")}")' "workflow draft patch targeted the wrong path"
+json_assert 'data["edit_intent"].is_a?(Hash)' "workflow draft response missing edit_intent"
+json_assert 'data["edit_intent"]["path"] == ENV.fetch("SMOKE_NOTE_PATH")' "workflow draft edit_intent targeted the wrong path"
+json_assert 'data["edit_intent"]["operation"] == "replace_content"' "workflow draft edit_intent used an unsupported operation"
+json_assert 'data["edit_intent"]["content"].is_a?(String) && data["edit_intent"]["content"].include?(ENV.fetch("SMOKE_MARKER"))' "workflow draft edit_intent content missing marker"
 
 log "verifying draft-only step left note unchanged"
 request "GET" "/mcp/notes/read?path=$ENCODED_NOTE_PATH"

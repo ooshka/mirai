@@ -4,6 +4,7 @@ require "json"
 require "net/http"
 require "uri"
 require_relative "openai_workflow_patch_client"
+require_relative "workflow_edit_intent"
 
 module Llm
   class LocalWorkflowPatchClient
@@ -34,7 +35,7 @@ module Llm
           messages: [
             {
               role: "system",
-              content: "Return only JSON with a single key 'patch' whose value is a single-file unified diff for the provided markdown note."
+              content: "Return only JSON with an edit_intent object. The edit_intent must include path, operation, and content. Use operation replace_content and set content to the full resulting markdown note text."
             },
             {
               role: "user",
@@ -44,9 +45,10 @@ module Llm
                 content: content,
                 context: context,
                 constraints: [
-                  "return a single-file unified diff only",
-                  "target the provided markdown path",
-                  "keep the patch minimal"
+                  "return a json object with an edit_intent field only",
+                  "set edit_intent.path to the provided markdown path",
+                  "use operation replace_content",
+                  "set edit_intent.content to the complete updated markdown note text"
                 ]
               )
             }
@@ -54,35 +56,23 @@ module Llm
         }
       )
 
-      content = response
+      message_content = response
         .fetch("choices")
         .first
         .fetch("message")
         .fetch("content")
 
-      extract_patch(content)
+      WorkflowEditIntent.parse_message_content(
+        message_content,
+        error_prefix: "local workflow patch drafter"
+      )
     rescue KeyError, NoMethodError
       raise ResponseError, "local workflow patch drafter response is malformed"
+    rescue WorkflowEditIntent::Error => e
+      raise ResponseError, e.message
     end
 
     private
-
-    def extract_patch(content)
-      normalized_content = normalize_string(content)
-      raise ResponseError, "local workflow patch drafter response missing message content" if normalized_content.nil?
-
-      return normalized_content if normalized_content.start_with?("--- ")
-
-      payload = JSON.parse(normalized_content)
-      raise ResponseError, "local workflow patch drafter response must be a json object or unified diff text" unless payload.is_a?(Hash)
-
-      patch = normalize_string(payload["patch"])
-      raise ResponseError, "local workflow patch drafter response missing non-empty patch string" if patch.nil?
-
-      patch
-    rescue JSON::ParserError => e
-      raise ResponseError, "local workflow patch drafter response was not valid json or unified diff text: #{e.message}"
-    end
 
     def post_json(path:, payload:)
       request = Net::HTTP::Post.new(request_uri(path))
