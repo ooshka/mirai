@@ -10,12 +10,22 @@ RSpec.describe Llm::LocalWorkflowPatchClient do
     response
   end
 
-  it "returns a raw unified diff response directly" do
+  it "returns a normalized edit_intent response" do
     client = described_class.new(model: "qwen2.5:7b-instruct", base_url: "http://127.0.0.1:11434")
     requests = []
     response = ok_response(
       "choices" => [
-        {"message" => {"content" => "--- a/notes/today.md\n+++ b/notes/today.md\n@@ -1 +1,2 @@\n alpha\n+beta"}}
+        {
+          "message" => {
+            "content" => JSON.generate(
+              edit_intent: {
+                path: "notes/today.md",
+                operation: "replace_content",
+                content: "alpha\nbeta"
+              }
+            )
+          }
+        }
       ]
     )
 
@@ -42,17 +52,27 @@ RSpec.describe Llm::LocalWorkflowPatchClient do
       "model" => "qwen2.5:7b-instruct",
       "response_format" => {"type" => "json_object"}
     )
-    expect(result).to include("--- a/notes/today.md")
+    expect(result).to eq(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
   end
 
-  it "extracts a non-empty patch from a json message content payload" do
+  it "extracts a non-empty edit_intent from a json message content payload" do
     client = described_class.new(model: "qwen2.5:7b-instruct", base_url: "http://127.0.0.1:11434")
     response = ok_response(
       "choices" => [
         {
           "message" => {
             "content" => JSON.generate(
-              patch: "--- a/notes/today.md\n+++ b/notes/today.md\n@@ -1 +1,2 @@\n alpha\n+beta"
+              edit_intent: {
+                path: "notes/today.md",
+                operation: "replace_content",
+                content: "alpha\nbeta\n"
+              }
             )
           }
         }
@@ -73,7 +93,13 @@ RSpec.describe Llm::LocalWorkflowPatchClient do
       context: {}
     )
 
-    expect(result).to include("--- a/notes/today.md")
+    expect(result).to eq(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
   end
 
   it "raises response error when the provider payload is missing message content" do
@@ -92,13 +118,18 @@ RSpec.describe Llm::LocalWorkflowPatchClient do
     end.to raise_error(described_class::ResponseError, "local workflow patch drafter response is malformed")
   end
 
-  it "raises response error when the provider patch content is empty" do
+  it "raises response error when the provider edit_intent is missing content" do
     client = described_class.new(model: "qwen2.5:7b-instruct", base_url: "http://127.0.0.1:11434")
     response = ok_response(
       "choices" => [
         {
           "message" => {
-            "content" => JSON.generate(patch: "   ")
+            "content" => JSON.generate(
+              edit_intent: {
+                path: "notes/today.md",
+                operation: "replace_content"
+              }
+            )
           }
         }
       ]
@@ -113,10 +144,10 @@ RSpec.describe Llm::LocalWorkflowPatchClient do
 
     expect do
       client.draft_patch(instruction: "add beta", path: "notes/today.md", content: "alpha\n", context: {})
-    end.to raise_error(described_class::ResponseError, "local workflow patch drafter response missing non-empty patch string")
+    end.to raise_error(described_class::ResponseError, "local workflow patch drafter edit_intent.content must be a string")
   end
 
-  it "raises response error when message content is neither a unified diff nor valid json" do
+  it "raises response error when message content is not valid json" do
     client = described_class.new(model: "qwen2.5:7b-instruct", base_url: "http://127.0.0.1:11434")
     response = ok_response(
       "choices" => [
@@ -137,7 +168,7 @@ RSpec.describe Llm::LocalWorkflowPatchClient do
 
     expect do
       client.draft_patch(instruction: "add beta", path: "notes/today.md", content: "alpha\n", context: {})
-    end.to raise_error(described_class::ResponseError, /local workflow patch drafter response was not valid json or unified diff text:/)
+    end.to raise_error(described_class::ResponseError, /local workflow patch drafter response was not valid json:/)
   end
 
   it "raises request error when the provider is unreachable" do

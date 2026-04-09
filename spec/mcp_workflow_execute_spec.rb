@@ -74,13 +74,11 @@ RSpec.describe "MCP workflow execute endpoint" do
       content: "alpha\n",
       context: {"source" => "planner"}
     ).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     post "/mcp/workflow/execute", JSON.generate(
@@ -102,11 +100,12 @@ RSpec.describe "MCP workflow execute endpoint" do
         "hunk_count" => 1,
         "net_line_delta" => 1,
         "audit" => {
-          "patch" => <<~PATCH.strip
+          "patch" => <<~PATCH
             --- a/notes/today.md
             +++ b/notes/today.md
-            @@ -1 +1,2 @@
-             alpha
+            @@ -1,1 +1,2 @@
+            -alpha
+            +alpha
             +beta
           PATCH
         }

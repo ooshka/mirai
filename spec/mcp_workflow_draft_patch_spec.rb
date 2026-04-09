@@ -90,13 +90,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
     )
     allow(openai_client).to receive(:draft_patch).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     post "/mcp/workflow/draft_patch", JSON.generate(
@@ -113,13 +111,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
       {
-        "patch" => <<~PATCH.strip
-          --- a/notes/today.md
-          +++ b/notes/today.md
-          @@ -1 +1,2 @@
-           alpha
-          +beta
-        PATCH
+        "edit_intent" => {
+          "path" => "notes/today.md",
+          "operation" => "replace_content",
+          "content" => "alpha\nbeta\n"
+        }
       }
     )
     expect(File.read(file_path)).to eq("alpha\n")
@@ -142,13 +138,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       content: "alpha\n",
       context: {"source" => "planner"}
     ).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     post "/mcp/workflow/draft_patch", JSON.generate(
@@ -166,13 +160,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
       {
-        "patch" => <<~PATCH.strip
-          --- a/notes/today.md
-          +++ b/notes/today.md
-          @@ -1 +1,2 @@
-           alpha
-          +beta
-        PATCH
+        "edit_intent" => {
+          "path" => "notes/today.md",
+          "operation" => "replace_content",
+          "content" => "alpha\nbeta\n"
+        }
       }
     )
   end
@@ -233,13 +225,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       content: "alpha\n",
       context: {"source" => "planner"}
     ).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     post "/mcp/workflow/plan", JSON.generate(
@@ -268,13 +258,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
       {
-        "patch" => <<~PATCH.strip
-          --- a/notes/today.md
-          +++ b/notes/today.md
-          @@ -1 +1,2 @@
-           alpha
-          +beta
-        PATCH
+        "edit_intent" => {
+          "path" => "notes/today.md",
+          "operation" => "replace_content",
+          "content" => "alpha\nbeta\n"
+        }
       }
     )
     expect(File.read(file_path)).to eq("alpha\n")
@@ -301,13 +289,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       content: "alpha\n",
       context: {}
     ).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     post "/mcp/workflow/draft_patch", JSON.generate(
@@ -323,16 +309,53 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
       {
-        "patch" => <<~PATCH.strip
-          --- a/notes/today.md
-          +++ b/notes/today.md
-          @@ -1 +1,2 @@
-           alpha
-          +beta
-        PATCH
+        "edit_intent" => {
+          "path" => "notes/today.md",
+          "operation" => "replace_content",
+          "content" => "alpha\nbeta\n"
+        }
       }
     )
     expect(File.read(file_path)).to eq("alpha\n")
+  end
+
+  it "returns invalid_workflow_draft when edit_intent path does not match requested path" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    File.write(File.join(App.settings.notes_root, "notes/today.md"), "alpha\n")
+
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
+    allow(openai_client).to receive(:draft_patch).and_return(
+      {
+        path: "notes/other.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
+
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_draft",
+          "message" => "edit_intent path must match requested path"
+        }
+      }
+    )
   end
 
   it "returns draft_unavailable when local drafter response is malformed" do
@@ -536,13 +559,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
     )
     allow(openai_client).to receive(:draft_patch).and_return(
-      <<~PATCH
-        --- a/notes/today.md
-        +++ b/notes/today.md
-        @@ -1 +1,2 @@
-         alpha
-        +beta
-      PATCH
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
     )
 
     post "/mcp/workflow/draft_patch", JSON.generate(

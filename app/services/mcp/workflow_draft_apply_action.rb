@@ -11,7 +11,7 @@ module Mcp
     end
 
     def call(instruction:, path:, context: nil)
-      draft_result = @workflow_draft_patch_action.call(
+      draft_result = @workflow_draft_patch_action.call_with_patch(
         instruction: instruction,
         path: path,
         context: context

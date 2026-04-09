@@ -2,6 +2,7 @@
 
 require_relative "openai_workflow_patch_client"
 require_relative "local_workflow_patch_client"
+require_relative "workflow_edit_intent"
 require_relative "workflow_planner"
 
 module Llm
@@ -34,17 +35,16 @@ module Llm
     def draft_patch(instruction:, path:, content:, context:)
       raise UnavailableError, "workflow patch drafter is unavailable" unless @enabled
 
-      patch = @client.draft_patch(
+      edit_intent = @client.draft_patch(
         instruction: instruction,
         path: path,
         content: content,
         context: context
       )
 
-      normalized_patch = normalize_optional_string(patch)
-      raise InvalidDraftError, "workflow patch drafter returned empty patch" if normalized_patch.nil?
+      validate_edit_intent(edit_intent)
 
-      normalized_patch
+      edit_intent
     rescue OpenAiWorkflowPatchClient::ConfigError,
       OpenAiWorkflowPatchClient::RequestError,
       OpenAiWorkflowPatchClient::ResponseError,
@@ -61,6 +61,14 @@ module Llm
       return LocalWorkflowPatchClient.new if @provider == LOCAL_PROVIDER
 
       OpenAiWorkflowPatchClient.new(api_key: nil)
+    end
+
+    def validate_edit_intent(edit_intent)
+      raise InvalidDraftError, "workflow patch drafter returned invalid edit_intent" unless edit_intent.is_a?(Hash)
+
+      WorkflowEditIntent.as_json(edit_intent)
+    rescue KeyError
+      raise InvalidDraftError, "workflow patch drafter returned invalid edit_intent"
     end
 
     def self.normalize_optional_string(value)

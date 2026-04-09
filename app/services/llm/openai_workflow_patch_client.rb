@@ -4,6 +4,7 @@ require "json"
 require "net/http"
 require "uri"
 require_relative "openai_workflow_planner_client"
+require_relative "workflow_edit_intent"
 
 module Llm
   class OpenAiWorkflowPatchClient
@@ -32,10 +33,11 @@ module Llm
         payload: {
           model: @model,
           temperature: 0,
+          response_format: {type: "json_object"},
           messages: [
             {
               role: "system",
-              content: "Return only a single-file unified diff. No markdown fences. No commentary."
+              content: "Return only JSON with an edit_intent object. The edit_intent must include path, operation, and content. Use operation replace_content and set content to the full resulting markdown note text."
             },
             {
               role: "user",
@@ -50,18 +52,20 @@ module Llm
         }
       )
 
-      patch = response
+      message_content = response
         .fetch("choices")
         .first
         .fetch("message")
         .fetch("content")
 
-      normalized_patch = normalize_string(patch)
-      raise ResponseError, "openai workflow patch drafter returned empty patch" if normalized_patch.nil?
-
-      normalized_patch
+      WorkflowEditIntent.parse_message_content(
+        message_content,
+        error_prefix: "openai workflow patch drafter"
+      )
     rescue KeyError, NoMethodError
       raise ResponseError, "openai workflow patch drafter response is malformed"
+    rescue WorkflowEditIntent::Error => e
+      raise ResponseError, e.message
     end
 
     private
