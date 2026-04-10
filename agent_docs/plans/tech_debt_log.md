@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-10 (workflow dry-run trace planning pass)
+
+### Observed signals
+- `WorkflowDraftPatchAction` now validates provider `edit_intent` output by building and proposing a server-owned patch, but the public dry-run endpoint only returns the normalized `edit_intent`.
+- The apply and execute paths already consume the hidden patch translation result, so the original "Workflow Edit Intent Execution Bridge" backlog item is effectively superseded by current implementation state.
+- The next MVP operator loop needs a stable trace contract before it can safely present a real-notes apply decision.
+
+### Debt posture for next slice
+- Debt paid down next: expose the existing dry-run validation artifacts through a server-owned trace instead of forcing CLI or thin clients to reconstruct patch/readiness state.
+- Debt potentially added: the first trace shape may be intentionally modest and may need to evolve when request/session model profile selection lands.
+- Refactor signal: if trace metadata starts spreading into apply/execute response assembly, extract a small workflow trace/value object rather than duplicating endpoint-local hashes.
+
 ## 2026-04-08 (workflow edit-intent contract planning pass)
 
 ### Observed signals
