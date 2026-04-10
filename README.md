@@ -1,6 +1,6 @@
 # mirai
 
-Experimental Sinatra backend for safe, git-backed markdown note operations and deterministic retrieval primitives.
+Experimental Sinatra backend for safe, git-backed markdown note operations, deterministic retrieval primitives, and constrained agent workflow execution.
 
 ## Contract posture
 
@@ -16,8 +16,20 @@ This project is still in an early contract-shaping phase.
 - Reads markdown notes from a separate notes repository mounted at `NOTES_ROOT` (app default: `/notes`; Docker Compose sets `/notes_repo/notes`).
 - Applies validated unified-diff patches to notes and commits changes in the notes repo.
 - Builds and queries a deterministic lexical index, persisted as an artifact under `NOTES_ROOT/.mirai/index.json`.
+- Orchestrates bounded model-backed workflows where providers plan or draft typed note-edit intents and `mirai` owns validation, patch construction, commit, audit, and index lifecycle.
 
 The runtime model is treated as untrusted and can only mutate notes through constrained endpoints.
+
+## Runtime model posture
+
+`mirai` is primarily a safety and workflow harness for model-mediated knowledge-state changes. The markdown notes repository remains the first domain and durable source of truth, but the core service should not assume one fixed model is responsible for every workflow stage.
+
+Model/provider selection should evolve toward request- or session-level routing:
+- smaller local models can handle scoped workflow stages such as strict JSON `edit_intent` drafting, single-note edits, and bounded planner/drafter loops when context is already selected
+- stronger hosted models can be used for broader planning, multi-note synthesis, larger-context reasoning, and recovery from failed local attempts
+- all models share the same server-owned safety path: path validation, typed contract validation, patch construction, git commit, audit output, approval policy, and index lifecycle
+
+Capability policy should be expressed in terms of supported behavior, not raw model size alone. Useful capability names include `strict_json_edit_intent`, `single_note_edit`, `multi_step_planning`, `multi_note_plan`, `large_context_synthesis`, and `autonomous_apply_allowed`.
 
 ## Stack
 

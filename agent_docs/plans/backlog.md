@@ -31,6 +31,11 @@ No currently tracked items.
 - Value: trims any temporary wrapper or validation awkwardness left by the first canonical execute endpoint so planner action payloads stay the single obvious client contract.
 - Size: ~0.5 day.
 
+6. Workflow Model Selection Profile Seam
+- Type: `feature`
+- Value: introduces a server-owned provider/model/profile selection boundary for workflow runs so callers or later automatic routing can choose local versus hosted planner/drafter models without process-wide config changes.
+- Size: ~1 day.
+
 ## Later
 
 1. LockSpy Namespacing In Index Lifecycle Locking Spec
