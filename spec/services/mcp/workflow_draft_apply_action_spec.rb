@@ -18,13 +18,17 @@ RSpec.describe Mcp::WorkflowDraftApplyAction do
       context: {"source" => "planner"}
     ).and_return(
       {
-        patch: <<~PATCH.strip
+        patch: <<~PATCH.strip,
           --- a/notes/today.md
           +++ b/notes/today.md
           @@ -1 +1,2 @@
            alpha
           +beta
         PATCH
+        trace: {
+          provider: "openai",
+          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+        }
       }
     )
     expect(patch_apply_action).to receive(:call).with(
@@ -49,13 +53,15 @@ RSpec.describe Mcp::WorkflowDraftApplyAction do
         hunk_count: 1,
         net_line_delta: 1,
         audit: {
-          patch: <<~PATCH.strip
+          patch: <<~PATCH.strip,
             --- a/notes/today.md
             +++ b/notes/today.md
             @@ -1 +1,2 @@
              alpha
             +beta
           PATCH
+          provider: "openai",
+          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
         }
       }
     )

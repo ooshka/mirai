@@ -88,8 +88,13 @@ module Routes
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_PLAN)
           payload = parsed_workflow_plan_payload
+          profile = workflow_model_profile(
+            payload["profile"],
+            error_code: "invalid_workflow_intent",
+            error_message: "workflow model profile must be hosted, local, or auto"
+          )
           planner_client = Llm::WorkflowPlannerClientFactory.new(
-            provider: settings.mcp_workflow_planner_provider,
+            provider: profile.planner_provider,
             openai_api_key: ENV["OPENAI_API_KEY"],
             workflow_model: settings.mcp_openai_workflow_model,
             openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL),
@@ -97,7 +102,7 @@ module Routes
           ).build
           planner = Llm::WorkflowPlanner.new(
             enabled: settings.mcp_workflow_planner_enabled,
-            provider: settings.mcp_workflow_planner_provider,
+            provider: profile.planner_provider,
             openai_client: planner_client,
             local_client: planner_client
           )
@@ -111,7 +116,11 @@ module Routes
             semantic_configured: settings.mcp_semantic_configured
           )
 
-          ::Mcp::WorkflowPlanAction.new(planner: planner, context_builder: context_builder).call(
+          ::Mcp::WorkflowPlanAction.new(
+            planner: planner,
+            context_builder: context_builder,
+            profile: profile.profile
+          ).call(
             intent: payload["intent"],
             context: payload["context"]
           ).to_json
@@ -123,7 +132,7 @@ module Routes
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH)
           payload = parsed_workflow_draft_patch_payload
 
-          build_workflow_draft_patch_action.call(
+          build_workflow_draft_patch_action(profile: payload["profile"]).call(
             instruction: payload["instruction"],
             path: payload["path"],
             context: payload["context"]
@@ -137,7 +146,10 @@ module Routes
           payload = parsed_workflow_execute_payload
 
           ::Mcp::WorkflowExecuteAction.new(
-            workflow_draft_apply_action: build_workflow_draft_apply_action
+            workflow_draft_apply_action: build_workflow_draft_apply_action(
+              profile: payload["params"].is_a?(Hash) ? payload["params"]["profile"] : nil,
+              error_code: "invalid_workflow_execute"
+            )
           ).call(
             action: payload["action"],
             params: payload["params"]
@@ -149,7 +161,7 @@ module Routes
         with_mcp_error_handling do
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_PATCH_APPLY)
           payload = parsed_workflow_draft_patch_payload
-          build_workflow_draft_apply_action.call(
+          build_workflow_draft_apply_action(profile: payload["profile"]).call(
             instruction: payload["instruction"],
             path: payload["path"],
             context: payload["context"]

@@ -353,6 +353,120 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(File.read(file_path)).to eq("alpha\n")
   end
 
+  it "uses an explicit local workflow profile for draft selection" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    file_path = File.join(App.settings.notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+
+    local_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_client)
+    )
+    expect(local_client).to receive(:draft_patch).with(
+      instruction: "add beta",
+      path: "notes/today.md",
+      content: "alpha\n",
+      context: {}
+    ).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
+
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          profile: "local"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      expected_dry_run_response(
+        provider: "local",
+        model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+        context: {}
+      )
+    )
+  end
+
+  it "uses an explicit hosted workflow profile for draft selection" do
+    FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
+    file_path = File.join(App.settings.notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    App.set :mcp_workflow_drafter_provider, "local"
+
+    openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "openai",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "openai", client: openai_client)
+    )
+    expect(openai_client).to receive(:draft_patch).with(
+      instruction: "add beta",
+      path: "notes/today.md",
+      content: "alpha\n",
+      context: {}
+    ).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
+
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          profile: "hosted"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      expected_dry_run_response(
+        provider: "openai",
+        model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+        context: {}
+      )
+    )
+  end
+
+  it "returns invalid_workflow_draft for invalid workflow profiles" do
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          profile: "dense"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_draft",
+          "message" => "workflow model profile must be hosted, local, or auto"
+        }
+      }
+    )
+  end
+
   it "returns invalid_workflow_draft when edit_intent path does not match requested path" do
     FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
     File.write(File.join(App.settings.notes_root, "notes/today.md"), "alpha\n")

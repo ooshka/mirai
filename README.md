@@ -239,30 +239,31 @@ Default container config:
 
 - `POST /mcp/workflow/plan`
   - Produces a planning-only MCP action sequence for a natural-language intent.
-  - Request: `{ "intent": "update today's note", "context": { ...optional object... } }`
+  - Request: `{ "intent": "update today's note", "context": { ...optional object... }, "profile": "hosted|local|auto" }`
   - Optional context hint: `context.path` (`.md` relative path) asks the server to include a bounded note preview and retrieval/index status snapshot in planner context.
-  - Canonical draft handoff action: `{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{...optional object...}}}`
+  - Optional `profile` selects the workflow provider profile for this request. `hosted` resolves to the OpenAI workflow provider, `local` resolves to the local OpenAI-compatible workflow provider, and `auto` currently resolves once to the configured environment defaults rather than retrying or falling back adaptively.
+  - Canonical draft handoff action: `{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{...optional object...}}}`. When `profile` is supplied on the plan request, the same selector is included in the generated `workflow.draft_patch` params for thin-client handoff.
   - Response: `{ "intent": "...", "provider": "openai|local", "rationale": "...", "actions": [{"action":"notes.read","reason":"...","params":{"path":"notes/today.md"}},{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{"source":"planner"}}}] }`
   - Safety note: this endpoint does not execute actions; it returns proposed steps only.
 
 - `POST /mcp/workflow/draft_patch`
   - Produces a dry-run `edit_intent` draft from an instruction and explicit target path.
-  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
+  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... }, "profile": "hosted|local|auto" } }`
   - Response: `{ "edit_intent": { "path": "notes/today.md", "operation": "replace_content", "content": "# Today\n..." }, "trace": { "provider": "openai", "model": "gpt-4.1-mini", "target": { "path": "notes/today.md", "content_bytes": 12 }, "context": { ... }, "validation": { "status": "valid", "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 3 }, "apply_ready": true, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." } } }`
-  - Provider note: the drafter path follows `MCP_WORKFLOW_DRAFTER_PROVIDER`. Both hosted and local providers are expected to return the same `edit_intent` JSON shape, and `mirai` remains responsible for translating that intent into a validated unified diff for internal patch-policy enforcement.
+  - Provider note: without a per-request `profile`, the drafter path follows `MCP_WORKFLOW_DRAFTER_PROVIDER`. Both hosted and local providers are expected to return the same `edit_intent` JSON shape, and `mirai` remains responsible for translating that intent into a validated unified diff for internal patch-policy enforcement.
   - Safety note: this endpoint validates draft shape and server-owned patch translation but does not apply/commit changes. Use `trace.audit.patch`, `trace.validation`, and `trace.apply_ready` to inspect the dry run before calling apply or execute.
 
 - `POST /mcp/workflow/apply_patch`
   - Produces and applies a single-file unified diff from the canonical `workflow.draft_patch` action envelope.
-  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
-  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." } }`
+  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... }, "profile": "hosted|local|auto" } }`
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n...", "provider": "openai", "model": "gpt-4.1-mini" } }`
   - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; apply summary fields stay top-level while workflow-owned audit data is nested under `audit`.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
 
 - `POST /mcp/workflow/execute`
   - Canonical end-to-end workflow execution path for supported planner actions.
-  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
-  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." } }`
+  - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... }, "profile": "hosted|local|auto" } }`
+  - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n...", "provider": "openai", "model": "gpt-4.1-mini" } }`
   - Contract note: this endpoint currently supports only the canonical `workflow.draft_patch` planner action and reuses the same apply summary plus workflow audit response contract as `/mcp/workflow/apply_patch`.
   - Usage note: thin clients that want one server-owned execution step should prefer this endpoint; use `/mcp/workflow/draft_patch` for dry-run edit-intent generation and `/mcp/workflow/apply_patch` when calling the lower-level apply seam directly.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.

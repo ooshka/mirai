@@ -31,6 +31,49 @@ RSpec.describe Mcp::WorkflowPlanAction do
     expect(result).to eq({intent: "update note", actions: []})
   end
 
+  it "threads an explicit profile into workflow draft handoff actions" do
+    planner = instance_double(Llm::WorkflowPlanner)
+    context_builder = double("workflow_plan_context_builder")
+
+    action = described_class.new(planner: planner, context_builder: context_builder, profile: "local")
+
+    expect(context_builder).to receive(:build).with(input_context: {}, path_hint: nil).and_return({input: {}})
+    expect(planner).to receive(:plan).and_return(
+      {
+        intent: "update note",
+        actions: [
+          {action: "notes.read", reason: "read", params: {"path" => "notes/today.md"}},
+          {
+            action: "workflow.draft_patch",
+            reason: "draft",
+            params: {
+              "instruction" => "add beta",
+              "path" => "notes/today.md"
+            }
+          }
+        ]
+      }
+    )
+
+    expect(action.call(intent: "update note")).to eq(
+      {
+        intent: "update note",
+        actions: [
+          {action: "notes.read", reason: "read", params: {"path" => "notes/today.md"}},
+          {
+            action: "workflow.draft_patch",
+            reason: "draft",
+            params: {
+              "instruction" => "add beta",
+              "path" => "notes/today.md",
+              "profile" => "local"
+            }
+          }
+        ]
+      }
+    )
+  end
+
   it "rejects non-object context" do
     action = described_class.new(
       planner: instance_double(Llm::WorkflowPlanner),

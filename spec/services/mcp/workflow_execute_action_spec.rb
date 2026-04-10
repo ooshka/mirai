@@ -17,7 +17,11 @@ RSpec.describe Mcp::WorkflowExecuteAction do
         path: "notes/today.md",
         hunk_count: 1,
         net_line_delta: 1,
-        audit: {patch: "--- a/notes/today.md\n+++ b/notes/today.md\n"}
+        audit: {
+          patch: "--- a/notes/today.md\n+++ b/notes/today.md\n",
+          provider: "openai",
+          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+        }
       }
     )
 
@@ -35,7 +39,11 @@ RSpec.describe Mcp::WorkflowExecuteAction do
         path: "notes/today.md",
         hunk_count: 1,
         net_line_delta: 1,
-        audit: {patch: "--- a/notes/today.md\n+++ b/notes/today.md\n"}
+        audit: {
+          patch: "--- a/notes/today.md\n+++ b/notes/today.md\n",
+          provider: "openai",
+          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+        }
       }
     )
   end
