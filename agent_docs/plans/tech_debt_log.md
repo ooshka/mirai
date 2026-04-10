@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-10 (workflow model selection profile planning pass)
+
+### Observed signals
+- Workflow provider selection is still mostly process-wide through `MCP_WORKFLOW_PLANNER_PROVIDER` and `MCP_WORKFLOW_DRAFTER_PROVIDER`, while the roadmap now calls for per-run `local|hosted|auto` operator choice.
+- The dry-run trace already reports provider/model identity, so the next operator loop can consume a server-owned profile contract instead of inventing client-local provider routing.
+- Planner and drafter construction are currently similar but separate route/helper paths; adding profile policy directly in each endpoint would increase duplication.
+
+### Debt posture for next slice
+- Debt paid down next: centralize the first profile normalization/resolution seam so workflow requests can select model providers without changing process-wide environment defaults.
+- Debt potentially added: `auto` will be a deterministic first-step policy rather than true adaptive fallback until local capability evidence and fallback behavior are mature.
+- Refactor signal: if planner and drafter construction keep gaining shared provider/model policy after this slice, extract a workflow runtime factory instead of expanding endpoint-local helper methods.
+
 ## 2026-04-10 (workflow dry-run trace planning pass)
 
 ### Observed signals
