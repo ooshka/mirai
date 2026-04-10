@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Workflow Dry-Run Trace Contract
-- Type: `feature`
-- Value: gives the MVP operator loop an inspectable dry-run result containing selected/read context, provider/model identity, normalized `edit_intent`, generated patch, validation status, and apply readiness before any note mutation.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 
