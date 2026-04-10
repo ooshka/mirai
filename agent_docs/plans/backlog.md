@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Workflow Model Selection Profile Seam
-- Type: `feature`
-- Value: introduces a server-owned provider/model/profile selection boundary for workflow runs so callers or later automatic routing can choose local versus hosted planner/drafter models without process-wide config changes.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 
