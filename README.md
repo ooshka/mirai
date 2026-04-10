@@ -248,9 +248,9 @@ Default container config:
 - `POST /mcp/workflow/draft_patch`
   - Produces a dry-run `edit_intent` draft from an instruction and explicit target path.
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... } } }`
-  - Response: `{ "edit_intent": { "path": "notes/today.md", "operation": "replace_content", "content": "# Today\n..." } }`
+  - Response: `{ "edit_intent": { "path": "notes/today.md", "operation": "replace_content", "content": "# Today\n..." }, "trace": { "provider": "openai", "model": "gpt-4.1-mini", "target": { "path": "notes/today.md", "content_bytes": 12 }, "context": { ... }, "validation": { "status": "valid", "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 3 }, "apply_ready": true, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n..." } } }`
   - Provider note: the drafter path follows `MCP_WORKFLOW_DRAFTER_PROVIDER`. Both hosted and local providers are expected to return the same `edit_intent` JSON shape, and `mirai` remains responsible for translating that intent into a validated unified diff for internal patch-policy enforcement.
-  - Safety note: this endpoint validates draft shape and server-owned patch translation but does not apply/commit changes.
+  - Safety note: this endpoint validates draft shape and server-owned patch translation but does not apply/commit changes. Use `trace.audit.patch`, `trace.validation`, and `trace.apply_ready` to inspect the dry run before calling apply or execute.
 
 - `POST /mcp/workflow/apply_patch`
   - Produces and applies a single-file unified diff from the canonical `workflow.draft_patch` action envelope.

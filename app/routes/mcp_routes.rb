@@ -123,10 +123,7 @@ module Routes
           enforce_mcp_action!(::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH)
           payload = parsed_workflow_draft_patch_payload
 
-          ::Mcp::WorkflowDraftPatchAction.new(
-            notes_root: settings.notes_root,
-            drafter: build_workflow_drafter
-          ).call(
+          build_workflow_draft_patch_action.call(
             instruction: payload["instruction"],
             path: payload["path"],
             context: payload["context"]

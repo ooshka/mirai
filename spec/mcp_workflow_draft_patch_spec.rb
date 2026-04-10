@@ -2,6 +2,7 @@
 
 require "tmpdir"
 require "fileutils"
+require "open3"
 require_relative "../app/services/llm/workflow_patch_client_factory"
 
 RSpec.describe "MCP workflow draft patch endpoint" do
@@ -38,6 +39,42 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       local_base_url: local_base_url
     ).and_return(planner_factory)
     expect(planner_factory).to receive(:build).and_return(planner_client)
+  end
+
+  def expected_dry_run_response(provider:, model:, context:)
+    {
+      "edit_intent" => {
+        "path" => "notes/today.md",
+        "operation" => "replace_content",
+        "content" => "alpha\nbeta\n"
+      },
+      "trace" => {
+        "provider" => provider,
+        "model" => model,
+        "target" => {
+          "path" => "notes/today.md",
+          "content_bytes" => 6
+        },
+        "context" => context,
+        "validation" => {
+          "status" => "valid",
+          "path" => "notes/today.md",
+          "hunk_count" => 1,
+          "net_line_delta" => 1
+        },
+        "apply_ready" => true,
+        "audit" => {
+          "patch" => <<~PATCH
+            --- a/notes/today.md
+            +++ b/notes/today.md
+            @@ -1,1 +1,2 @@
+            -alpha
+            +alpha
+            +beta
+          PATCH
+        }
+      }
+    }
   end
 
   around do |example|
@@ -82,6 +119,10 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     FileUtils.mkdir_p(File.join(App.settings.notes_root, "notes"))
     file_path = File.join(App.settings.notes_root, "notes/today.md")
     File.write(file_path, "alpha\n")
+    init_git_repo(App.settings.notes_root)
+    git!(App.settings.notes_root, "add", "notes/today.md")
+    git!(App.settings.notes_root, "commit", "-m", "Seed note")
+    initial_head = git!(App.settings.notes_root, "rev-parse", "HEAD")
 
     openai_client = instance_double("Llm::OpenAiWorkflowPatchClient")
     stub_draft_factory(
@@ -110,15 +151,14 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
-      {
-        "edit_intent" => {
-          "path" => "notes/today.md",
-          "operation" => "replace_content",
-          "content" => "alpha\nbeta\n"
-        }
-      }
+      expected_dry_run_response(
+        provider: "openai",
+        model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+        context: {"source" => "test"}
+      )
     )
     expect(File.read(file_path)).to eq("alpha\n")
+    expect(git!(App.settings.notes_root, "rev-parse", "HEAD")).to eq(initial_head)
   end
 
   it "accepts a workflow.draft_patch action payload directly from planner output" do
@@ -159,13 +199,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
-      {
-        "edit_intent" => {
-          "path" => "notes/today.md",
-          "operation" => "replace_content",
-          "content" => "alpha\nbeta\n"
-        }
-      }
+      expected_dry_run_response(
+        provider: "openai",
+        model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+        context: {"source" => "planner"}
+      )
     )
   end
 
@@ -257,13 +295,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
-      {
-        "edit_intent" => {
-          "path" => "notes/today.md",
-          "operation" => "replace_content",
-          "content" => "alpha\nbeta\n"
-        }
-      }
+      expected_dry_run_response(
+        provider: "local",
+        model: "qwen2.5:7b-instruct",
+        context: {"source" => "planner"}
+      )
     )
     expect(File.read(file_path)).to eq("alpha\n")
   end
@@ -308,13 +344,11 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
-      {
-        "edit_intent" => {
-          "path" => "notes/today.md",
-          "operation" => "replace_content",
-          "content" => "alpha\nbeta\n"
-        }
-      }
+      expected_dry_run_response(
+        provider: "local",
+        model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+        context: {}
+      )
     )
     expect(File.read(file_path)).to eq("alpha\n")
   end
@@ -635,5 +669,18 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         }
       }
     )
+  end
+
+  def init_git_repo(notes_root)
+    git!(notes_root, "init")
+    git!(notes_root, "config", "user.email", "agent@example.com")
+    git!(notes_root, "config", "user.name", "Agent")
+  end
+
+  def git!(notes_root, *args)
+    stdout, stderr, status = Open3.capture3("git", *args, chdir: notes_root)
+    raise "git command failed: git #{args.join(" ")}\n#{stderr}" unless status.success?
+
+    stdout
   end
 end

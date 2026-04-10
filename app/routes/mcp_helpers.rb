@@ -55,12 +55,24 @@ module Routes
       ).build_drafter(enabled: settings.mcp_workflow_planner_enabled)
     end
 
+    def workflow_draft_trace_metadata
+      {
+        provider: settings.mcp_workflow_drafter_provider,
+        model: settings.mcp_openai_workflow_model
+      }
+    end
+
+    def build_workflow_draft_patch_action
+      ::Mcp::WorkflowDraftPatchAction.new(
+        notes_root: settings.notes_root,
+        drafter: build_workflow_drafter,
+        trace_metadata: workflow_draft_trace_metadata
+      )
+    end
+
     def build_workflow_draft_apply_action
       ::Mcp::WorkflowDraftApplyAction.new(
-        workflow_draft_patch_action: ::Mcp::WorkflowDraftPatchAction.new(
-          notes_root: settings.notes_root,
-          drafter: build_workflow_drafter
-        ),
+        workflow_draft_patch_action: build_workflow_draft_patch_action,
         patch_apply_action: ::Mcp::PatchApplyAction.new(
           notes_root: settings.notes_root,
           semantic_ingestion_service: settings.semantic_ingestion_service

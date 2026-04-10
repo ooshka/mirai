@@ -10,15 +10,16 @@ module Mcp
   class WorkflowDraftPatchAction
     class InvalidDraftRequestError < StandardError; end
 
-    def initialize(notes_root:, drafter:)
+    def initialize(notes_root:, drafter:, trace_metadata: {})
       @drafter = drafter
+      @trace_metadata = trace_metadata
       @reader = NotesReader.new(notes_root: notes_root)
       @patch_propose_action = PatchProposeAction.new(notes_root: notes_root)
       @patch_builder = WorkflowEditIntentPatchBuilder.new
     end
 
     def call(instruction:, path:, context: nil)
-      draft_result(instruction:, path:, context:).slice(:edit_intent)
+      draft_result(instruction:, path:, context:).slice(:edit_intent, :trace)
     end
 
     def call_with_patch(instruction:, path:, context: nil)
@@ -50,10 +51,39 @@ module Mcp
 
       {
         edit_intent: Llm::WorkflowEditIntent.as_json(edit_intent).fetch(:edit_intent),
-        patch: patch
+        patch: patch,
+        trace: build_trace(
+          path: normalized_path,
+          content: content,
+          context: normalized_context,
+          proposal: proposal,
+          patch: patch
+        )
       }
     rescue WorkflowEditIntentPatchBuilder::InvalidEditIntentError => e
       raise InvalidDraftRequestError, e.message
+    end
+
+    def build_trace(path:, content:, context:, proposal:, patch:)
+      {
+        provider: @trace_metadata.fetch(:provider, nil),
+        model: @trace_metadata.fetch(:model, nil),
+        target: {
+          path: path,
+          content_bytes: content.bytesize
+        },
+        context: context,
+        validation: {
+          status: "valid",
+          path: proposal.fetch(:path),
+          hunk_count: proposal.fetch(:hunk_count),
+          net_line_delta: proposal.fetch(:net_line_delta)
+        },
+        apply_ready: true,
+        audit: {
+          patch: patch
+        }
+      }
     end
 
     def validate_instruction(instruction)
