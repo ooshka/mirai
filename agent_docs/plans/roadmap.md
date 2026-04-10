@@ -48,6 +48,8 @@ Early-stage contract policy:
 
 ## Near-Term Follow-ons
 
+Near-term direction: prioritize a minimal real-notes MVP over additional internal contract polish once the edit-intent execution bridge is in place. The MVP should let an operator run a scoped note-update workflow against a real notes mount, inspect the dry-run trace, choose a local/hosted/auto model profile, and explicitly apply approved changes through the existing patch/commit/index safety path.
+
 7. Canonical workflow execution path
 - Reduce client-side orchestration across `/mcp/workflow/plan`, `/mcp/workflow/draft_patch`, and `/mcp/workflow/apply_patch` by converging toward one clearer server-owned workflow run/apply flow.
 - Use the current low-consumer phase to rework endpoint boundaries if that produces a simpler operator path with better audit semantics.
@@ -63,21 +65,26 @@ Early-stage contract policy:
 - Gate broader workflow actions by named capabilities rather than raw provider or model size, so smaller local models can use the safe subset while stronger hosted models can orchestrate larger multi-step runs.
 - Preserve the invariant that model selection changes planning/drafting capability only; mutation safety, patch policy, commits, audit, and approval behavior remain common.
 
-10. Retrieval query response quality enhancements
+10. MVP operator dry-run/apply loop
+- Add an inspectable workflow dry-run trace that shows selected/read context, provider/model identity, normalized `edit_intent`, generated patch, validation status, and apply readiness before any note mutation.
+- Add a minimal CLI operator loop before a web frontend so real-note testing can start quickly without committing to UI shape.
+- Cover at least one local-model path and one hosted/hosted-profile path in a small real-notes smoke scenario pack.
+
+11. Retrieval query response quality enhancements
 - Add bounded match-explanation metadata to query results for better operator trust and downstream UX
 - Preserve the bounded explainability contract while deferring any richer provider-specific rationale until retrieval policy ownership is clearer
 
-11. Planning artifact hygiene
+12. Planning artifact hygiene
 - Reconcile superseded/open planning case artifacts to keep execution context unambiguous
 - Preserve lightweight backlog cadence without expanding implementation scope
 
 ## Later (After Contracts Stabilize)
 
-12. Retrieval quality and policy extensions
+13. Retrieval quality and policy extensions
 - Add richer ranking/selection controls only after fallback policy ownership is explicit
 - Preserve deterministic request contracts while evolving retrieval internals
 
-13. Hosted web frontend for operator workflows
+14. Hosted web frontend for operator workflows
 - Build a web UI to direct retrieval, note updates, and management actions through MCP-backed services
 - Include flows for dictated knowledge capture, knowledge Q&A, repository statistics/metadata inspection, and explicit edit application
 - Roll out after model-provider abstractions and backend contracts are stable enough to avoid frontend churn
