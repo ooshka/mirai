@@ -45,9 +45,27 @@ module Routes
       parsed_json_payload(error_code: "invalid_workflow_execute", error_message: "action and params are required")
     end
 
-    def build_workflow_drafter
+    def workflow_model_profile(profile, error_code:, error_message:)
+      Llm::WorkflowModelProfile.resolve!(
+        profile: profile,
+        default_planner_provider: settings.mcp_workflow_planner_provider,
+        default_drafter_provider: settings.mcp_workflow_drafter_provider
+      )
+    rescue Llm::WorkflowModelProfile::InvalidProfileError => e
+      render_error(400, error_code, e.message || error_message)
+    end
+
+    def workflow_draft_profile(profile, error_code: "invalid_workflow_draft")
+      workflow_model_profile(
+        profile,
+        error_code: error_code,
+        error_message: "workflow model profile must be hosted, local, or auto"
+      )
+    end
+
+    def build_workflow_drafter(resolved_profile:)
       Llm::WorkflowPatchClientFactory.new(
-        provider: settings.mcp_workflow_drafter_provider,
+        provider: resolved_profile.drafter_provider,
         openai_api_key: ENV["OPENAI_API_KEY"],
         workflow_model: settings.mcp_openai_workflow_model,
         openai_base_url: ENV.fetch("MCP_OPENAI_BASE_URL", Llm::OpenAiWorkflowPatchClient::DEFAULT_BASE_URL),
@@ -55,24 +73,25 @@ module Routes
       ).build_drafter(enabled: settings.mcp_workflow_planner_enabled)
     end
 
-    def workflow_draft_trace_metadata
+    def workflow_draft_trace_metadata(resolved_profile:)
       {
-        provider: settings.mcp_workflow_drafter_provider,
+        provider: resolved_profile.drafter_provider,
         model: settings.mcp_openai_workflow_model
       }
     end
 
-    def build_workflow_draft_patch_action
+    def build_workflow_draft_patch_action(profile: nil, error_code: "invalid_workflow_draft")
+      resolved_profile = workflow_draft_profile(profile, error_code: error_code)
       ::Mcp::WorkflowDraftPatchAction.new(
         notes_root: settings.notes_root,
-        drafter: build_workflow_drafter,
-        trace_metadata: workflow_draft_trace_metadata
+        drafter: build_workflow_drafter(resolved_profile: resolved_profile),
+        trace_metadata: workflow_draft_trace_metadata(resolved_profile: resolved_profile)
       )
     end
 
-    def build_workflow_draft_apply_action
+    def build_workflow_draft_apply_action(profile: nil, error_code: "invalid_workflow_draft")
       ::Mcp::WorkflowDraftApplyAction.new(
-        workflow_draft_patch_action: build_workflow_draft_patch_action,
+        workflow_draft_patch_action: build_workflow_draft_patch_action(profile: profile, error_code: error_code),
         patch_apply_action: ::Mcp::PatchApplyAction.new(
           notes_root: settings.notes_root,
           semantic_ingestion_service: settings.semantic_ingestion_service

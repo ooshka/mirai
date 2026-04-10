@@ -100,7 +100,7 @@ RSpec.describe "MCP workflow apply patch endpoint" do
         "hunk_count" => 1,
         "net_line_delta" => 1,
         "audit" => {
-          "patch" => <<~PATCH
+          "patch" => <<~PATCH,
             --- a/notes/today.md
             +++ b/notes/today.md
             @@ -1,1 +1,2 @@
@@ -108,6 +108,8 @@ RSpec.describe "MCP workflow apply patch endpoint" do
             +alpha
             +beta
           PATCH
+          "provider" => "openai",
+          "model" => Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
         }
       }
     )
@@ -169,6 +171,45 @@ RSpec.describe "MCP workflow apply patch endpoint" do
     body = JSON.parse(last_response.body)
     expect(body).not_to have_key("patch")
     expect(body.fetch("audit")).to include("patch")
+    expect(File.read(file_path)).to eq("alpha\nbeta\n")
+  end
+
+  it "uses an explicit local workflow profile for apply selection" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    local_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_client)
+    )
+    expect(local_client).to receive(:draft_patch).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
+
+    post "/mcp/workflow/apply_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          profile: "local"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    body = JSON.parse(last_response.body)
+    expect(body.fetch("audit").fetch("provider")).to eq("local")
+    expect(body.fetch("audit").fetch("model")).to eq(Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL)
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
   end
 

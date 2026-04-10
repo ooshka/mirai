@@ -236,7 +236,14 @@ RSpec.describe "MCP workflow plan endpoint" do
       {
         "rationale" => "use local planner",
         "actions" => [
-          {"action" => "notes.read", "reason" => "inspect note", "params" => {"path" => "notes/today.md"}}
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta",
+              "path" => "notes/today.md"
+            }
+          }
         ]
       }
     )
@@ -257,8 +264,80 @@ RSpec.describe "MCP workflow plan endpoint" do
         "provider" => "local",
         "rationale" => "use local planner",
         "actions" => [
-          {"action" => "notes.read", "reason" => "inspect note", "params" => {"path" => "notes/today.md"}}
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta",
+              "path" => "notes/today.md"
+            }
+          }
         ]
+      }
+    )
+  end
+
+  it "uses an explicit local workflow profile for planner selection" do
+    local_client = instance_double("Llm::LocalWorkflowPlannerClient")
+    expect(local_client).to receive(:plan).with(
+      intent: "plan local workflow",
+      context: hash_including(input: {}, retrieval_status: hash_including(retrieval_mode: Mcp::RetrievalMode::MODE_LEXICAL))
+    ).and_return(
+      {
+        "rationale" => "use local planner",
+        "actions" => [
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta",
+              "path" => "notes/today.md"
+            }
+          }
+        ]
+      }
+    )
+    expect(Llm::WorkflowPlannerClientFactory).to receive(:new).with(
+      provider: "local",
+      openai_api_key: nil,
+      workflow_model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+      openai_base_url: Llm::OpenAiWorkflowPlannerClient::DEFAULT_BASE_URL,
+      local_base_url: nil
+    ).and_return(instance_double("Llm::WorkflowPlannerClientFactory", build: local_client))
+
+    post "/mcp/workflow/plan", JSON.generate({intent: "plan local workflow", profile: "local"})
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "intent" => "plan local workflow",
+        "provider" => "local",
+        "rationale" => "use local planner",
+        "actions" => [
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta",
+              "path" => "notes/today.md",
+              "profile" => "local"
+            }
+          }
+        ]
+      }
+    )
+  end
+
+  it "returns invalid_workflow_intent for invalid workflow profiles" do
+    post "/mcp/workflow/plan", JSON.generate({intent: "plan workflow", profile: "dense"})
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_intent",
+          "message" => "workflow model profile must be hosted, local, or auto"
+        }
       }
     )
   end

@@ -18,8 +18,15 @@ module Mcp
       )
       patch = draft_result.fetch(:patch)
       apply_result = @patch_apply_action.call(patch: patch)
+      trace = draft_result.fetch(:trace, {})
 
-      apply_result.merge(audit: {patch: patch})
+      apply_result.merge(
+        audit: {
+          patch: patch,
+          provider: trace[:provider],
+          model: trace[:model]
+        }
+      )
     end
   end
 end

@@ -12,9 +12,10 @@ module Mcp
 
     class InvalidIntentError < StandardError; end
 
-    def initialize(planner:, context_builder:)
+    def initialize(planner:, context_builder:, profile: nil)
       @planner = planner
       @context_builder = context_builder
+      @profile = profile
     end
 
     def call(intent:, context: nil)
@@ -22,10 +23,19 @@ module Mcp
       normalized_context = validate_context(context)
       path_hint = validate_path_hint(normalized_context)
       enriched_context = @context_builder.build(input_context: normalized_context, path_hint: path_hint)
-      @planner.plan(intent: normalized_intent, context: enriched_context)
+      plan = @planner.plan(intent: normalized_intent, context: enriched_context)
+      return plan if @profile.nil?
+
+      plan.merge(actions: plan.fetch(:actions).map { |action| action_with_profile(action) })
     end
 
     private
+
+    def action_with_profile(action)
+      return action unless action.fetch(:action) == Llm::WorkflowPlanner::DRAFT_PATCH_ACTION
+
+      action.merge(params: action.fetch(:params).merge("profile" => @profile))
+    end
 
     def validate_intent(intent)
       normalized = intent.to_s.strip
