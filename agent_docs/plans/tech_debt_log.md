@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-10 (cli workflow operator loop planning pass)
+
+### Observed signals
+- `mirai` now exposes enough server-owned workflow contract to run a real-note dry-run/apply path, but the only operator surface is still ad hoc HTTP payload assembly.
+- The new workflow profile seam already gives callers deterministic `local|hosted|auto` selection, so the first CLI should pass that profile through rather than invent provider routing or client-side fallback.
+- Workflow draft/apply responses now carry trace and audit data that a thin CLI can render directly; adding another bespoke response interpretation layer would create avoidable client drift.
+
+### Debt posture for next slice
+- Debt paid down next: remove repeated manual curl glue by adding one small operator command that exercises the canonical workflow contract end to end.
+- Debt potentially added: a first CLI script may keep transport and formatting logic together until there is evidence that multiple operator commands need shared helpers.
+- Refactor signal: if more workflow operator commands appear, extract a small CLI support module for payload posting and trace rendering instead of letting each script format API responses independently.
+
 ## 2026-04-10 (workflow model selection profile planning pass)
 
 ### Observed signals
