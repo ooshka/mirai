@@ -253,4 +253,35 @@ RSpec.describe "workflow operator CLI" do
   ensure
     stop_server(server, thread) if server
   end
+
+  it "surfaces unexpected dry-run response shapes and exits non-zero" do
+    server, thread = start_server do |_req|
+      [
+        200,
+        JSON.generate(
+          {
+            "edit_intent" => {
+              "path" => "today.md",
+              "operation" => "replace_content",
+              "content" => "updated"
+            }
+          }
+        )
+      ]
+    end
+
+    base_url = "http://127.0.0.1:#{server.addr[1]}"
+    stdout, stderr, status = run_cli(
+      "--instruction", "add beta",
+      "--path", "today.md",
+      "--profile", "local",
+      "--base-url", base_url
+    )
+
+    expect(status.success?).to eq(false)
+    expect(stdout).to eq("")
+    expect(stderr).to include('dry-run response missing "trace"; got keys: edit_intent')
+  ensure
+    stop_server(server, thread) if server
+  end
 end

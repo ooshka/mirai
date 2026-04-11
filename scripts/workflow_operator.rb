@@ -132,33 +132,48 @@ rescue SocketError, SystemCallError, IOError => e
   raise CliError, "#{path} request failed: #{e.message}"
 end
 
+def response_keys(response)
+  return "(non-object response)" unless response.is_a?(Hash)
+
+  keys = response.keys.sort
+  return "(no keys)" if keys.empty?
+
+  keys.join(", ")
+end
+
+def fetch_required(hash, key, context:)
+  return hash.fetch(key) if hash.is_a?(Hash) && hash.key?(key)
+
+  raise CliError, "#{context} missing #{key.inspect}; got keys: #{response_keys(hash)}"
+end
+
 def print_dry_run(response:, profile:)
-  trace = response.fetch("trace")
-  validation = trace.fetch("validation")
-  target = trace.fetch("target")
-  audit = trace.fetch("audit")
+  trace = fetch_required(response, "trace", context: "dry-run response")
+  validation = fetch_required(trace, "validation", context: "dry-run trace")
+  target = fetch_required(trace, "target", context: "dry-run trace")
+  audit = fetch_required(trace, "audit", context: "dry-run trace")
 
   puts "Dry run"
   puts "Requested profile: #{profile || "default"}"
-  puts "Resolved provider: #{trace.fetch("provider")}"
-  puts "Model: #{trace.fetch("model")}"
-  puts "Target path: #{target.fetch("path")}"
-  puts "Validation: #{validation.fetch("status")} (hunks=#{validation.fetch("hunk_count")}, net_line_delta=#{validation.fetch("net_line_delta")})"
-  puts "Apply ready: #{trace.fetch("apply_ready")}"
+  puts "Resolved provider: #{fetch_required(trace, "provider", context: "dry-run trace")}"
+  puts "Model: #{fetch_required(trace, "model", context: "dry-run trace")}"
+  puts "Target path: #{fetch_required(target, "path", context: "dry-run target")}"
+  puts "Validation: #{fetch_required(validation, "status", context: "dry-run validation")} (hunks=#{fetch_required(validation, "hunk_count", context: "dry-run validation")}, net_line_delta=#{fetch_required(validation, "net_line_delta", context: "dry-run validation")})"
+  puts "Apply ready: #{fetch_required(trace, "apply_ready", context: "dry-run trace")}"
   puts "Patch:"
-  puts audit.fetch("patch")
+  puts fetch_required(audit, "patch", context: "dry-run audit")
 end
 
 def print_apply(response:)
-  audit = response.fetch("audit")
+  audit = fetch_required(response, "audit", context: "apply response")
 
   puts
   puts "Apply result"
-  puts "Path: #{response.fetch("path")}"
-  puts "Hunks: #{response.fetch("hunk_count")}"
-  puts "Net line delta: #{response.fetch("net_line_delta")}"
-  puts "Provider: #{audit.fetch("provider")}"
-  puts "Model: #{audit.fetch("model")}"
+  puts "Path: #{fetch_required(response, "path", context: "apply response")}"
+  puts "Hunks: #{fetch_required(response, "hunk_count", context: "apply response")}"
+  puts "Net line delta: #{fetch_required(response, "net_line_delta", context: "apply response")}"
+  puts "Provider: #{fetch_required(audit, "provider", context: "apply audit")}"
+  puts "Model: #{fetch_required(audit, "model", context: "apply audit")}"
 end
 
 def confirm_apply!
