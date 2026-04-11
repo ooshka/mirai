@@ -2,10 +2,7 @@
 
 ## Now
 
-1. CLI Workflow Operator Loop
-- Type: `feature`
-- Value: provides one repo-local command for submitting a workflow edit request, choosing `local|hosted|auto`, inspecting the dry-run trace, and explicitly applying the approved patch against a running `mirai` instance.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 
