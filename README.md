@@ -110,6 +110,30 @@ BASE_URL=http://localhost:4567 bash scripts/smoke_local.sh
 
 The smoke script now validates the local workflow planner-to-drafter handoff before the existing patch apply path. It fails fast when workflow planning is disabled or the planner/drafter providers are not configured for the self-hosted path.
 
+Run the workflow operator CLI dry-run against a running app:
+
+```bash
+ruby scripts/workflow_operator.rb \
+  --instruction "add today's summary" \
+  --path notes/today.md \
+  --profile local
+```
+
+Apply the drafted patch after the dry run:
+
+```bash
+ruby scripts/workflow_operator.rb \
+  --instruction "add today's summary" \
+  --path notes/today.md \
+  --profile hosted \
+  --apply
+```
+
+Useful workflow operator flags:
+- `--base-url http://localhost:4567` to target a non-default app URL
+- `--context '{"source":"cli"}'` to pass optional JSON context through the canonical `workflow.draft_patch` params
+- `--yes` to skip the apply confirmation prompt when `--apply` is already set
+
 Upload notes chunks to an OpenAI vector store (for semantic E2E tests):
 
 ```bash
@@ -258,6 +282,7 @@ Default container config:
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... }, "profile": "hosted|local|auto" } }`
   - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n...", "provider": "openai", "model": "gpt-4.1-mini" } }`
   - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; apply summary fields stay top-level while workflow-owned audit data is nested under `audit`.
+  - Operator note: `ruby scripts/workflow_operator.rb --instruction "..." --path notes/today.md --profile local` runs the dry run first, and adding `--apply` reuses the same canonical payload for the apply call after confirmation.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
 
 - `POST /mcp/workflow/execute`
