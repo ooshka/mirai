@@ -134,6 +134,25 @@ Useful workflow operator flags:
 - `--context '{"source":"cli"}'` to pass optional JSON context through the canonical `workflow.draft_patch` params
 - `--yes` to skip the apply confirmation prompt when `--apply` is already set
 
+Run the real-notes MVP scenario pack for the workflow operator CLI:
+
+```bash
+ruby scripts/workflow_operator_mvp_scenarios.rb \
+  --path notes/today.md \
+  --base-url http://localhost:4567
+```
+
+This scenario pack is profile-based, not model-by-model:
+- it runs one `local` dry run and one `hosted` dry run through the existing CLI
+- it prints the operator checklist for what to inspect in the dry-run trace
+- add `--include-apply --apply-profile local --yes` to run one explicit apply scenario after the dry runs
+
+Prerequisites for the scenario pack:
+- app running and reachable at the selected base URL
+- notes mount contains the target markdown note path
+- both workflow profile paths you plan to exercise are configured for the running app
+- apply remains deliberate; review the dry-run output before using `--include-apply`
+
 Upload notes chunks to an OpenAI vector store (for semantic E2E tests):
 
 ```bash

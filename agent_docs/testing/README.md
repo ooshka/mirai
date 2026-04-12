@@ -215,6 +215,46 @@ What it covers:
 
 If workflow planning is disabled or the local workflow providers are not configured, the smoke script now fails early with a prerequisite error instead of silently skipping the workflow section.
 
+## Workflow Operator MVP Scenario Pack
+
+Use this when you want the operator-facing real-notes MVP path rather than the lower-level local smoke script.
+
+Prerequisites:
+- App running locally and reachable at the selected `--base-url`
+- Notes mount contains the target markdown note path
+- The profile paths you plan to exercise are configured on the running app
+- Review the dry-run output before running any apply scenario
+
+Canonical dry-run pack:
+
+```bash
+ruby scripts/workflow_operator_mvp_scenarios.rb \
+  --path notes/today.md \
+  --base-url http://localhost:4567
+```
+
+Optional explicit apply follow-up:
+
+```bash
+ruby scripts/workflow_operator_mvp_scenarios.rb \
+  --path notes/today.md \
+  --base-url http://localhost:4567 \
+  --include-apply \
+  --apply-profile local \
+  --yes
+```
+
+What to inspect in each scenario:
+- requested profile
+- resolved provider/model
+- target path
+- validation status and apply readiness
+- drafted patch content
+
+Boundary note:
+- This scenario pack is intentionally profile-based (`local` and `hosted`) rather than model-name-based.
+- Model capability evidence remains owned by `local_llm`; this pack verifies the `mirai` operator path.
+
 ## Agent Verification Workflow
 
 1. Identify change type.
