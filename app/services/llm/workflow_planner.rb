@@ -2,6 +2,7 @@
 
 require_relative "local_workflow_planner_client"
 require_relative "openai_workflow_planner_client"
+require_relative "workflow_model_profile"
 
 module Llm
   class WorkflowPlanner
@@ -11,7 +12,6 @@ module Llm
     DRAFT_PATCH_ACTION = "workflow.draft_patch"
     SEMANTIC_DRAFT_ACTION = "draft_note"
     LEGACY_DRAFT_ACTIONS = ["patch.propose"].freeze
-    SUPPORTED_PROFILES = ["hosted", "local", "auto"].freeze
 
     class UnavailableError < StandardError; end
     class InvalidPlanError < StandardError; end
@@ -152,14 +152,15 @@ module Llm
     end
 
     def normalize_profile(profile, error_prefix:)
-      return nil if profile.nil?
-      raise InvalidPlanError, "#{error_prefix} params.profile must be a string" unless profile.is_a?(String)
+      resolved = WorkflowModelProfile.resolve!(
+        profile: profile,
+        default_planner_provider: @provider,
+        default_drafter_provider: WorkflowPatchDrafter::DEFAULT_PROVIDER
+      )
 
-      normalized = profile.strip
-      return nil if normalized.empty?
-      return normalized if SUPPORTED_PROFILES.include?(normalized)
-
-      raise InvalidPlanError, "#{error_prefix} params.profile must be hosted, local, or auto"
+      resolved.profile
+    rescue WorkflowModelProfile::InvalidProfileError => e
+      raise InvalidPlanError, "#{error_prefix} params.profile #{e.message.delete_prefix("workflow model profile ")}"
     end
 
     def self.normalize_optional_string(value)
