@@ -1,18 +1,20 @@
 # Backlog
 
-## Next
+## Now
 
 1. Workflow Apply Response Action Echo
-- Type: `hardening`
-- Value: gives thin workflow clients one explicit action-identity field in apply responses so they can correlate planner output with execution results without inferring it from endpoint choice alone.
+- Type: `feature`
+- Value: gives thin workflow clients one explicit action-identity field in apply responses so they can correlate planner output and execution results without endpoint-specific inference.
 - Size: ~0.5 day.
 
-2. Policy Identity Plumbing Spec Without `any_instance`
+## Next
+
+1. Policy Identity Plumbing Spec Without `any_instance`
 - Type: `hardening`
 - Value: reduces brittle request-spec behavior and keeps policy plumbing tests reliable.
 - Size: ~0.5 day.
 
-3. Workflow Planner-to-Execute Correlation Metadata
+2. Workflow Planner-to-Execute Correlation Metadata
 - Type: `feature`
 - Value: adds one small correlation/audit signal after execute-envelope cleanup so thin clients can pair planner output, dry runs, and apply results without endpoint-specific inference.
 - Size: ~0.5 day.

@@ -5,17 +5,11 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Current Debt
 
-### Workflow Contract Convergence
-- State: workflow planning, draft/apply, and execute now share the same general `workflow.draft_patch` contract direction, but execute still has enough request-shape awkwardness to justify one cleanup pass.
-- Impact: thin clients and future UI work still risk encoding small endpoint-specific translations that should remain server-owned.
-- Trigger to fix: current top-priority workflow contract work.
-- Likely next slice: `Workflow Contract Convergence Execute Envelope Cleanup`.
-
 ### Workflow Response Correlation
-- State: workflow apply/execute responses still make thin clients infer some action identity or correlation from endpoint choice and surrounding context.
+- State: workflow apply/execute responses still make thin clients infer canonical action identity from endpoint choice and surrounding context.
 - Impact: clients have to stitch planner output, dry-run output, and mutation results together with more implicit logic than necessary.
-- Trigger to fix: after execute-envelope convergence is complete.
-- Likely next slice: add one small explicit correlation/action-identity signal in workflow responses.
+- Trigger to fix: current top-priority workflow response work after execute-envelope convergence.
+- Likely next slice: `Workflow Apply Response Action Echo`.
 
 ### Policy Plumbing Test Fragility
 - State: some policy-identity tests still rely on brittle mocking patterns such as `any_instance`.
@@ -49,5 +43,6 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Recently Resolved
 
+- Workflow planning, draft/apply, and execute now share a cleaner canonical `workflow.draft_patch` request contract, including a deduplicated execute profile-resolution path.
 - Planner-side workflow profile validation no longer carries its own source of truth; it now reuses shared workflow profile policy.
 - Planner output can use a smaller internal semantic draft intent while `mirai` still returns the canonical `workflow.draft_patch` action shape to clients.
