@@ -96,6 +96,7 @@ RSpec.describe "MCP workflow apply patch endpoint" do
     expect(last_response.status).to eq(200)
     expect(JSON.parse(last_response.body)).to eq(
       {
+        "action" => "workflow.draft_patch",
         "path" => "notes/today.md",
         "hunk_count" => 1,
         "net_line_delta" => 1,
@@ -208,6 +209,7 @@ RSpec.describe "MCP workflow apply patch endpoint" do
 
     expect(last_response.status).to eq(200)
     body = JSON.parse(last_response.body)
+    expect(body.fetch("action")).to eq("workflow.draft_patch")
     expect(body.fetch("audit").fetch("provider")).to eq("local")
     expect(body.fetch("audit").fetch("model")).to eq(Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL)
     expect(File.read(file_path)).to eq("alpha\nbeta\n")

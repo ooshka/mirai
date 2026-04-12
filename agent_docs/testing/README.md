@@ -48,8 +48,9 @@ Run from repository root.
 Branch CI requirement on feature branches:
 - GitHub Actions runs `bundle exec rspec` and `bundle exec standardrb` on every branch push and via `workflow_dispatch`.
 - Treat CI as the independent hosted verification signal before merge; local Docker Compose commands remain the canonical developer workflow.
-- After local verification passes on a feature branch, push the branch and confirm the latest branch CI run is green.
+- After local verification passes on a feature branch, stage and commit the intended change set first, then push the branch and confirm the latest branch CI run is green for that exact committed `HEAD`.
 - Do not treat a Case as fully verified on a feature branch until both local checks and branch CI have passed, unless network/CI access is unavailable and that limitation is reported explicitly.
+- Do not use branch CI as the normal verification signal for an uncommitted working tree state; the CI run should correspond to the exact commit being handed to review.
 
 Local-vs-CI balance:
 - Prefer targeted local specs that exercise the changed implementation details directly.
@@ -88,6 +89,7 @@ Use this when the branch has not been pushed yet or when you want an explicit pu
 ```
 
 This is the canonical agent flow on feature branches. It pushes `HEAD`, waits for the matching branch CI run to appear, watches it to completion, and exits non-zero unless that exact run succeeds.
+Use it only after the implementation commit exists locally so the watched run matches the exact `HEAD` being reviewed.
 
 ### List recent runs for the current branch
 
