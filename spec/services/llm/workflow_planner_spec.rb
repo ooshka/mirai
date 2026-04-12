@@ -75,6 +75,51 @@ RSpec.describe Llm::WorkflowPlanner do
     )
   end
 
+  it "expands a semantic draft_note action into the canonical workflow.draft_patch action" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
+    allow(openai_client).to receive(:plan).and_return(
+      {
+        "rationale" => "Need to inspect note then draft update",
+        "actions" => [
+          {
+            "action" => "draft_note",
+            "reason" => "draft note update",
+            "params" => {
+              "intent" => "add beta",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"},
+              "profile" => "local"
+            }
+          }
+        ]
+      }
+    )
+
+    planner = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+
+    result = planner.plan(intent: "update today's note", context: {"project" => "mirai"})
+
+    expect(result).to eq(
+      {
+        intent: "update today's note",
+        provider: "openai",
+        rationale: "Need to inspect note then draft update",
+        actions: [
+          {
+            action: "workflow.draft_patch",
+            reason: "draft note update",
+            params: {
+              "instruction" => "add beta",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"},
+              "profile" => "local"
+            }
+          }
+        ]
+      }
+    )
+  end
+
   it "maps malformed workflow.draft_patch params to unavailable" do
     openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
     allow(openai_client).to receive(:plan).and_return(
@@ -82,6 +127,48 @@ RSpec.describe Llm::WorkflowPlanner do
         "rationale" => "Need to draft patch",
         "actions" => [
           {"action" => "workflow.draft_patch", "reason" => "draft note update", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+    planner = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+
+    expect do
+      planner.plan(intent: "update", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow planner is unavailable")
+  end
+
+  it "maps malformed semantic draft_note params to unavailable" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
+    allow(openai_client).to receive(:plan).and_return(
+      {
+        "rationale" => "Need to draft patch",
+        "actions" => [
+          {"action" => "draft_note", "reason" => "draft note update", "params" => {"path" => "notes/today.md"}}
+        ]
+      }
+    )
+    planner = described_class.new(enabled: true, provider: "openai", openai_client: openai_client)
+
+    expect do
+      planner.plan(intent: "update", context: {})
+    end.to raise_error(described_class::UnavailableError, "workflow planner is unavailable")
+  end
+
+  it "maps semantic draft_note actions with invalid profile values to unavailable" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
+    allow(openai_client).to receive(:plan).and_return(
+      {
+        "rationale" => "Need to draft patch",
+        "actions" => [
+          {
+            "action" => "draft_note",
+            "reason" => "draft note update",
+            "params" => {
+              "intent" => "add beta",
+              "path" => "notes/today.md",
+              "profile" => "dense"
+            }
+          }
         ]
       }
     )

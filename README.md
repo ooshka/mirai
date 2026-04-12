@@ -268,6 +268,7 @@ Default container config:
   - Optional `profile` selects the workflow provider profile for this request. `hosted` resolves to the OpenAI workflow provider, `local` resolves to the local OpenAI-compatible workflow provider, and `auto` currently resolves once to the configured environment defaults rather than retrying or falling back adaptively.
   - Canonical draft handoff action: `{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{...optional object...}}}`. When `profile` is supplied on the plan request, the same selector is included in the generated `workflow.draft_patch` params for thin-client handoff.
   - Response: `{ "intent": "...", "provider": "openai|local", "rationale": "...", "actions": [{"action":"notes.read","reason":"...","params":{"path":"notes/today.md"}},{"action":"workflow.draft_patch","reason":"...","params":{"instruction":"...","path":"notes/today.md","context":{"source":"planner"}}}] }`
+  - Planner contract note: planner providers may emit a smaller planner-only draft intent internally, but `mirai` normalizes and returns the canonical `workflow.draft_patch` action shape to callers.
   - Safety note: this endpoint does not execute actions; it returns proposed steps only.
 
 - `POST /mcp/workflow/draft_patch`

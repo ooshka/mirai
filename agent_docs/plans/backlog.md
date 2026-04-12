@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Workflow Planner Intent Contract Simplification
-- Type: `feature`
-- Value: reduces local-model contract pressure further by letting planners emit a smaller semantic intent payload that `mirai` expands into the canonical execution action shape.
-- Size: ~1 day.
+No currently tracked items.
 
 ## Next
 

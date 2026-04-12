@@ -40,7 +40,7 @@ module Llm
           messages: [
             {
               role: "system",
-              content: "Return only JSON with keys: rationale (string), actions (array of {action, reason, params}). For draft generation steps, use action \"workflow.draft_patch\" with params containing instruction (string), path (string), and optional context (object)."
+              content: "Return only JSON with keys: rationale (string), actions (array of {action, reason, params}). For draft generation steps, prefer action \"draft_note\" with params containing intent (string), path (string), and optional context (object). Do not return prose outside the JSON object."
             },
             {
               role: "user",

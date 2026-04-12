@@ -132,6 +132,51 @@ RSpec.describe "MCP workflow plan endpoint" do
     )
   end
 
+  it "returns canonical draft actions when the planner emits a smaller semantic draft intent" do
+    openai_client = instance_double("Llm::OpenAiWorkflowPlannerClient")
+    allow(openai_client).to receive(:plan).and_return(
+      {
+        "rationale" => "draft update",
+        "actions" => [
+          {
+            "action" => "draft_note",
+            "reason" => "draft update",
+            "params" => {
+              "intent" => "add beta to today's note",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"}
+            }
+          }
+        ]
+      }
+    )
+    allow(Llm::WorkflowPlannerClientFactory).to receive(:new).and_return(
+      instance_double("Llm::WorkflowPlannerClientFactory", build: openai_client)
+    )
+
+    post "/mcp/workflow/plan", JSON.generate({intent: "update today's note"})
+
+    expect(last_response.status).to eq(200)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "intent" => "update today's note",
+        "provider" => "openai",
+        "rationale" => "draft update",
+        "actions" => [
+          {
+            "action" => "workflow.draft_patch",
+            "reason" => "draft update",
+            "params" => {
+              "instruction" => "add beta to today's note",
+              "path" => "notes/today.md",
+              "context" => {"source" => "planner"}
+            }
+          }
+        ]
+      }
+    )
+  end
+
   it "returns invalid_workflow_intent when intent is missing" do
     post "/mcp/workflow/plan", JSON.generate({context: {scope: "notes/today.md"}})
 
