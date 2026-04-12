@@ -290,7 +290,7 @@ Default container config:
   - Canonical end-to-end workflow execution path for supported planner actions.
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... }, "profile": "hosted|local|auto" } }`
   - Response: `{ "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n...", "provider": "openai", "model": "gpt-4.1-mini" } }`
-  - Contract note: this endpoint currently supports only the canonical `workflow.draft_patch` planner action and reuses the same apply summary plus workflow audit response contract as `/mcp/workflow/apply_patch`.
+  - Contract note: this endpoint consumes the same canonical `workflow.draft_patch` action envelope returned by planning and accepted by `/mcp/workflow/draft_patch` and `/mcp/workflow/apply_patch`; invalid request fields are validated against the same instruction/path/context/profile rules but reported as `invalid_workflow_execute`.
   - Usage note: thin clients that want one server-owned execution step should prefer this endpoint; use `/mcp/workflow/draft_patch` for dry-run edit-intent generation and `/mcp/workflow/apply_patch` when calling the lower-level apply seam directly.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
 

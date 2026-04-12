@@ -27,7 +27,6 @@ RSpec.describe Mcp::WorkflowExecuteAction do
 
     expect(
       action.call(
-        action: "workflow.draft_patch",
         params: {
           "instruction" => "add beta",
           "path" => "notes/today.md",
@@ -48,22 +47,11 @@ RSpec.describe Mcp::WorkflowExecuteAction do
     )
   end
 
-  it "rejects unsupported workflow actions" do
-    action = described_class.new(workflow_draft_apply_action: workflow_draft_apply_action)
-
-    expect do
-      action.call(action: "notes.read", params: {})
-    end.to raise_error(
-      described_class::InvalidExecuteRequestError,
-      "workflow execute action must be workflow.draft_patch"
-    )
-  end
-
   it "requires params to be an object" do
     action = described_class.new(workflow_draft_apply_action: workflow_draft_apply_action)
 
     expect do
-      action.call(action: "workflow.draft_patch", params: "bad")
+      action.call(params: "bad")
     end.to raise_error(
       described_class::InvalidExecuteRequestError,
       "workflow execute params must be an object"
