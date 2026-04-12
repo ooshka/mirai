@@ -155,6 +155,44 @@ RSpec.describe "MCP workflow execute endpoint" do
     expect(File.read(file_path)).to eq("alpha\nbeta\n")
   end
 
+  it "resolves workflow profile once for execute requests" do
+    FileUtils.mkdir_p(File.join(@notes_root, "notes"))
+    file_path = File.join(@notes_root, "notes/today.md")
+    File.write(file_path, "alpha\n")
+    git!("add", "notes/today.md")
+    git!("commit", "-m", "Seed note")
+
+    local_client = instance_double("Llm::LocalWorkflowPatchClient")
+    stub_draft_factory(
+      provider: "local",
+      local_base_url: nil,
+      drafter: Llm::WorkflowPatchDrafter.new(enabled: true, provider: "local", client: local_client)
+    )
+    expect(local_client).to receive(:draft_patch).and_return(
+      {
+        path: "notes/today.md",
+        operation: "replace_content",
+        content: "alpha\nbeta\n"
+      }
+    )
+
+    expect(Llm::WorkflowModelProfile).to receive(:resolve!).once.and_call_original
+
+    post "/mcp/workflow/execute", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          profile: "local"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(200)
+    expect(File.read(file_path)).to eq("alpha\nbeta\n")
+  end
+
   it "returns invalid_workflow_execute for invalid workflow profiles" do
     post "/mcp/workflow/execute", JSON.generate(
       {

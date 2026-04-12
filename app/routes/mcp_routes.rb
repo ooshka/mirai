@@ -147,7 +147,7 @@ module Routes
 
           ::Mcp::WorkflowExecuteAction.new(
             workflow_draft_apply_action: build_workflow_draft_apply_action(
-              profile: payload["profile"],
+              resolved_profile: payload["resolved_profile"],
               error_code: "invalid_workflow_execute"
             )
           ).call(

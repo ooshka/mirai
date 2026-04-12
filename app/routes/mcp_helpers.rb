@@ -84,8 +84,8 @@ module Routes
       }
     end
 
-    def build_workflow_draft_patch_action(profile: nil, error_code: "invalid_workflow_draft")
-      resolved_profile = workflow_draft_profile(profile, error_code: error_code)
+    def build_workflow_draft_patch_action(profile: nil, resolved_profile: nil, error_code: "invalid_workflow_draft")
+      resolved_profile ||= workflow_draft_profile(profile, error_code: error_code)
       ::Mcp::WorkflowDraftPatchAction.new(
         notes_root: settings.notes_root,
         drafter: build_workflow_drafter(resolved_profile: resolved_profile),
@@ -93,9 +93,13 @@ module Routes
       )
     end
 
-    def build_workflow_draft_apply_action(profile: nil, error_code: "invalid_workflow_draft")
+    def build_workflow_draft_apply_action(profile: nil, resolved_profile: nil, error_code: "invalid_workflow_draft")
       ::Mcp::WorkflowDraftApplyAction.new(
-        workflow_draft_patch_action: build_workflow_draft_patch_action(profile: profile, error_code: error_code),
+        workflow_draft_patch_action: build_workflow_draft_patch_action(
+          profile: profile,
+          resolved_profile: resolved_profile,
+          error_code: error_code
+        ),
         patch_apply_action: ::Mcp::PatchApplyAction.new(
           notes_root: settings.notes_root,
           semantic_ingestion_service: settings.semantic_ingestion_service
@@ -128,11 +132,14 @@ module Routes
     end
 
     def validate_workflow_draft_action_params(params, error_code:)
+      resolved_profile = workflow_draft_profile(params["profile"], error_code: error_code)
+
       {
         "instruction" => ::Mcp::WorkflowDraftRequestValidator.validate_instruction(params["instruction"]),
         "path" => ::Mcp::WorkflowDraftRequestValidator.validate_path(params["path"]),
         "context" => ::Mcp::WorkflowDraftRequestValidator.validate_context(params["context"]),
-        "profile" => workflow_draft_profile(params["profile"], error_code: error_code).profile
+        "profile" => resolved_profile.profile,
+        "resolved_profile" => resolved_profile
       }
     rescue ::Mcp::WorkflowDraftRequestValidator::InvalidRequestError => e
       render_error(400, error_code, e.message)

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "action_policy"
-
 module Mcp
   class WorkflowExecuteAction
     class InvalidExecuteRequestError < StandardError; end
