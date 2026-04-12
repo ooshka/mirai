@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-12 (workflow planner intent contract simplification planning pass)
+
+### Observed signals
+- The earlier planner-to-draft handoff slice intentionally made planner output execution-ready, but later workflow work moved more downstream semantics into `mirai` through `edit_intent`, dry-run trace, execute wiring, and profile routing.
+- The current planner boundary now asks the model to reproduce more of the canonical `workflow.draft_patch` action wrapper than `mirai` actually needs from planner reasoning.
+- Keeping the planner tied to the exact drafter wire shape increases formatting pressure on local models and couples planner semantics to a downstream contract that `mirai` can assemble deterministically.
+
+### Debt posture for next slice
+- Debt paid down next: reduce planner-facing contract overhead by letting `mirai` expand a smaller semantic planner intent into the canonical returned draft action shape.
+- Debt potentially added: this introduces a narrow planner-intent expansion seam that should remain internal and not become a second public workflow contract.
+- Refactor signal: if additional planner actions later need their own semantic-to-canonical expansion, extract a small planner action normalizer/expander rather than growing one-off conversion logic inline.
+
 ## 2026-04-10 (cli workflow operator loop planning pass)
 
 ### Observed signals
