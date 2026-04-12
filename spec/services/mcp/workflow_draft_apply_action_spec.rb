@@ -49,6 +49,7 @@ RSpec.describe Mcp::WorkflowDraftApplyAction do
       )
     ).to eq(
       {
+        action: "workflow.draft_patch",
         path: "notes/today.md",
         hunk_count: 1,
         net_line_delta: 1,
