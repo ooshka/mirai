@@ -9,7 +9,9 @@ module Llm
     LOCAL_PROVIDER = "local"
     SUPPORTED_PROVIDERS = [DEFAULT_PROVIDER, LOCAL_PROVIDER].freeze
     DRAFT_PATCH_ACTION = "workflow.draft_patch"
+    SEMANTIC_DRAFT_ACTION = "draft_note"
     LEGACY_DRAFT_ACTIONS = ["patch.propose"].freeze
+    SUPPORTED_PROFILES = ["hosted", "local", "auto"].freeze
 
     class UnavailableError < StandardError; end
     class InvalidPlanError < StandardError; end
@@ -83,17 +85,28 @@ module Llm
       params = action["params"]
       raise InvalidPlanError, "workflow plan action params must be an object" unless params.nil? || params.is_a?(Hash)
 
-      normalized_params = normalize_action_params(name: name, params: params || {})
+      normalized_name, normalized_params = normalize_action_payload(name: name, params: params || {})
 
       {
-        action: name,
+        action: normalized_name,
         reason: normalize_optional_string(action["reason"]),
         params: normalized_params
       }
     end
 
-    def normalize_action_params(name:, params:)
-      return params unless name == DRAFT_PATCH_ACTION
+    def normalize_action_payload(name:, params:)
+      case name
+      when DRAFT_PATCH_ACTION
+        [DRAFT_PATCH_ACTION, normalize_draft_patch_params(params)]
+      when SEMANTIC_DRAFT_ACTION
+        [DRAFT_PATCH_ACTION, normalize_semantic_draft_params(params)]
+      else
+        [name, params]
+      end
+    end
+
+    def normalize_draft_patch_params(params)
+      raise InvalidPlanError, "workflow.draft_patch params must be an object" unless params.is_a?(Hash)
 
       instruction = normalize_optional_string(params["instruction"])
       raise InvalidPlanError, "workflow.draft_patch params.instruction is required" if instruction.nil?
@@ -104,12 +117,49 @@ module Llm
       context = params.fetch("context", nil)
       raise InvalidPlanError, "workflow.draft_patch params.context must be an object" unless context.nil? || context.is_a?(Hash)
 
+      profile = normalize_profile(params.fetch("profile", nil), error_prefix: "workflow.draft_patch")
+
       normalized = {
         "instruction" => instruction,
         "path" => path
       }
       normalized["context"] = context unless context.nil?
+      normalized["profile"] = profile unless profile.nil?
       normalized
+    end
+
+    def normalize_semantic_draft_params(params)
+      raise InvalidPlanError, "#{SEMANTIC_DRAFT_ACTION} params must be an object" unless params.is_a?(Hash)
+
+      intent = normalize_optional_string(params["intent"])
+      raise InvalidPlanError, "#{SEMANTIC_DRAFT_ACTION} params.intent is required" if intent.nil?
+
+      path = normalize_optional_string(params["path"])
+      raise InvalidPlanError, "#{SEMANTIC_DRAFT_ACTION} params.path is required" if path.nil?
+
+      context = params.fetch("context", nil)
+      raise InvalidPlanError, "#{SEMANTIC_DRAFT_ACTION} params.context must be an object" unless context.nil? || context.is_a?(Hash)
+
+      profile = normalize_profile(params.fetch("profile", nil), error_prefix: SEMANTIC_DRAFT_ACTION)
+
+      normalized = {
+        "instruction" => intent,
+        "path" => path
+      }
+      normalized["context"] = context unless context.nil?
+      normalized["profile"] = profile unless profile.nil?
+      normalized
+    end
+
+    def normalize_profile(profile, error_prefix:)
+      return nil if profile.nil?
+      raise InvalidPlanError, "#{error_prefix} params.profile must be a string" unless profile.is_a?(String)
+
+      normalized = profile.strip
+      return nil if normalized.empty?
+      return normalized if SUPPORTED_PROFILES.include?(normalized)
+
+      raise InvalidPlanError, "#{error_prefix} params.profile must be hosted, local, or auto"
     end
 
     def self.normalize_optional_string(value)
