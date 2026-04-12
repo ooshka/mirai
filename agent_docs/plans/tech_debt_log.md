@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-12 (workflow operator real-notes scenario pack planning pass)
+
+### Observed signals
+- `mirai` now has the workflow operator CLI, dry-run trace contract, and per-run profile seam, but there is still no single canonical real-notes verification path that ties them together for operators or reviewers.
+- The existing `scripts/smoke_local.sh` validates core contract plumbing and one local workflow seam, but it is not the same thing as exercising the operator CLI with explicit `local|hosted|auto` selection against real notes.
+- Pushing model-by-model verification into `mirai` would blur the boundary with `local_llm`, where capability evidence and fixture-driven local-provider behavior should remain owned.
+
+### Debt posture for next slice
+- Debt paid down next: replace ad hoc real-note CLI trial runs with one small, reviewable scenario pack centered on the existing operator contract.
+- Debt potentially added: the first scenario pack may duplicate a small amount of invocation or trace-check glue before there is enough surface area to justify a shared operator-smoke helper.
+- Refactor signal: if operator verification expands beyond one or two scenarios, extract a narrow helper layer for CLI invocation and stable trace assertions rather than growing one-off scripts and docs examples.
+
 ## 2026-04-10 (cli workflow operator loop planning pass)
 
 ### Observed signals
