@@ -2,23 +2,26 @@
 
 ## Now
 
-No currently tracked items.
+1. Workflow Contract Convergence Execute Envelope Cleanup
+- Type: `feature`
+- Value: trims remaining execute-request envelope awkwardness so the planner-returned `workflow.draft_patch` action becomes the single obvious client contract across workflow planning and execution.
+- Size: ~0.5 day.
 
 ## Next
 
-1. Workflow Execute Request Envelope Cleanup
-- Type: `feature`
-- Value: trims any temporary wrapper or validation awkwardness left by the first canonical execute endpoint so planner action payloads stay the single obvious client contract.
-- Size: ~0.5 day.
-
-2. Workflow Apply Response Action Echo
+1. Workflow Apply Response Action Echo
 - Type: `hardening`
 - Value: gives thin workflow clients one explicit action-identity field in apply responses so they can correlate planner output with execution results without inferring it from endpoint choice alone.
 - Size: ~0.5 day.
 
-3. Policy Identity Plumbing Spec Without `any_instance`
+2. Policy Identity Plumbing Spec Without `any_instance`
 - Type: `hardening`
 - Value: reduces brittle request-spec behavior and keeps policy plumbing tests reliable.
+- Size: ~0.5 day.
+
+3. Workflow Planner-to-Execute Correlation Metadata
+- Type: `feature`
+- Value: adds one small correlation/audit signal after execute-envelope cleanup so thin clients can pair planner output, dry runs, and apply results without endpoint-specific inference.
 - Size: ~0.5 day.
 
 ## Later

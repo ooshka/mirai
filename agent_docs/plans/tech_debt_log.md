@@ -1,5 +1,17 @@
 # Tech Debt Log
 
+## 2026-04-12 (workflow contract convergence execute-envelope cleanup planning pass)
+
+### Observed signals
+- `mirai` now owns planner-intent expansion, draft `edit_intent` normalization, execute orchestration, and per-run profile selection, but the execute request boundary still appears slightly more transitional than the planner-returned canonical action shape it is meant to consume.
+- The highest remaining workflow friction is no longer provider capability or CLI ergonomics; it is the cost of carrying near-duplicate contract assumptions across plan, draft/apply, and execute surfaces.
+- Delaying this cleanup would encourage future consumers to encode small execute-specific translations or assumptions that should remain server-owned.
+
+### Debt posture for next slice
+- Debt paid down next: collapse execute-request translation awkwardness so one canonical `workflow.draft_patch` action payload is the obvious client contract across planning and execution.
+- Debt potentially added: the first convergence slice may still leave response-correlation improvements for a follow-on case rather than solving every workflow contract concern at once.
+- Refactor signal: if draft/apply/execute keep sharing more action-parsing behavior after this slice, extract a small workflow action request normalizer instead of continuing with endpoint-local validation branches.
+
 ## 2026-04-12 (workflow planner intent contract simplification planning pass)
 
 ### Observed signals
