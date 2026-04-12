@@ -5,16 +5,10 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Current Debt
 
-### Policy Plumbing Test Fragility
-- State: some policy-identity tests still rely on brittle mocking patterns such as `any_instance`.
-- Impact: test intent is harder to read and future wiring changes are more likely to cause noisy failures.
-- Trigger to fix: current top-priority request-spec hardening work protecting the next workflow feature slices.
-- Likely next slice: `Policy Identity Plumbing Spec Without any_instance`.
-
 ### Workflow Cross-Step Correlation
 - State: workflow apply/execute responses now echo canonical action identity, but thin clients still lack one small signal for correlating planner output, dry runs, and execute/apply results across steps.
 - Impact: clients still need some surrounding context to pair related workflow stages.
-- Trigger to fix: after the current policy test-hardening slice restores a feature-forward cadence.
+- Trigger to fix: current top-priority workflow follow-on work after action echo landed.
 - Likely next slice: `Workflow Planner-to-Execute Correlation Metadata`.
 
 ### Index Lifecycle Spec Namespacing
@@ -43,6 +37,7 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Recently Resolved
 
+- Policy identity plumbing specs already use direct request-level seams instead of brittle `any_instance` stubbing, so the planned cleanup slice was stale and has been removed.
 - Workflow apply and execute responses now echo the canonical `workflow.draft_patch` action at top level, reducing endpoint-specific client inference.
 - Workflow planning, draft/apply, and execute now share a cleaner canonical `workflow.draft_patch` request contract, including a deduplicated execute profile-resolution path.
 - Planner-side workflow profile validation no longer carries its own source of truth; it now reuses shared workflow profile policy.
