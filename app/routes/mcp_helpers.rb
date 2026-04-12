@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../services/mcp/identity_context"
+require_relative "../services/mcp/workflow_draft_request_validator"
 
 module Routes
   module McpHelpers
@@ -31,18 +32,21 @@ module Routes
     end
 
     def parsed_workflow_draft_patch_payload
-      payload = parsed_json_payload(error_code: "invalid_workflow_draft", error_message: "instruction and path are required")
-      normalized_action = payload["action"].to_s.strip
-      render_error(400, "invalid_workflow_draft", "workflow draft action must be workflow.draft_patch") unless normalized_action == ::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH
-
-      params = payload["params"]
-      render_error(400, "invalid_workflow_draft", "workflow draft params must be an object") unless params.is_a?(Hash)
-
-      params
+      parsed_workflow_draft_action_payload(
+        error_code: "invalid_workflow_draft",
+        error_message: "instruction and path are required",
+        action_error_message: "workflow draft action must be workflow.draft_patch",
+        params_error_message: "workflow draft params must be an object"
+      )
     end
 
     def parsed_workflow_execute_payload
-      parsed_json_payload(error_code: "invalid_workflow_execute", error_message: "action and params are required")
+      parsed_workflow_draft_action_payload(
+        error_code: "invalid_workflow_execute",
+        error_message: "action and params are required",
+        action_error_message: "workflow execute action must be workflow.draft_patch",
+        params_error_message: "workflow execute params must be an object"
+      )
     end
 
     def workflow_model_profile(profile, error_code:, error_message:)
@@ -110,6 +114,28 @@ module Routes
 
     def enforce_mcp_action!(action)
       mcp_action_policy.enforce!(action, identity_context: mcp_identity_context)
+    end
+
+    def parsed_workflow_draft_action_payload(error_code:, error_message:, action_error_message:, params_error_message:)
+      payload = parsed_json_payload(error_code: error_code, error_message: error_message)
+      normalized_action = payload["action"].to_s.strip
+      render_error(400, error_code, action_error_message) unless normalized_action == ::Mcp::ActionPolicy::ACTION_WORKFLOW_DRAFT_PATCH
+
+      params = payload["params"]
+      render_error(400, error_code, params_error_message) unless params.is_a?(Hash)
+
+      validate_workflow_draft_action_params(params, error_code: error_code)
+    end
+
+    def validate_workflow_draft_action_params(params, error_code:)
+      {
+        "instruction" => ::Mcp::WorkflowDraftRequestValidator.validate_instruction(params["instruction"]),
+        "path" => ::Mcp::WorkflowDraftRequestValidator.validate_path(params["path"]),
+        "context" => ::Mcp::WorkflowDraftRequestValidator.validate_context(params["context"]),
+        "profile" => workflow_draft_profile(params["profile"], error_code: error_code).profile
+      }
+    rescue ::Mcp::WorkflowDraftRequestValidator::InvalidRequestError => e
+      render_error(400, error_code, e.message)
     end
 
     def mcp_action_policy

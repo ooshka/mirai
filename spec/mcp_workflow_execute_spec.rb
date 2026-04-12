@@ -178,11 +178,70 @@ RSpec.describe "MCP workflow execute endpoint" do
     )
   end
 
+  it "returns invalid_workflow_execute when instruction is missing" do
+    post "/mcp/workflow/execute", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          path: "notes/today.md"
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_execute",
+          "message" => "instruction is required"
+        }
+      }
+    )
+  end
+
   it "returns invalid_workflow_execute for unsupported workflow actions" do
     post "/mcp/workflow/execute", JSON.generate(
       {
         action: "notes.read",
         params: {path: "notes/today.md"}
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_execute",
+          "message" => "workflow execute action must be workflow.draft_patch"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_workflow_execute when action payload params are not an object" do
+    post "/mcp/workflow/execute", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: "bad"
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_execute",
+          "message" => "workflow execute params must be an object"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_workflow_execute when canonical action envelope is missing" do
+    post "/mcp/workflow/execute", JSON.generate(
+      {
+        instruction: "add beta",
+        path: "notes/today.md"
       }
     )
 

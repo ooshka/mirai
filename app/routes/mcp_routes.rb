@@ -147,12 +147,11 @@ module Routes
 
           ::Mcp::WorkflowExecuteAction.new(
             workflow_draft_apply_action: build_workflow_draft_apply_action(
-              profile: payload["params"].is_a?(Hash) ? payload["params"]["profile"] : nil,
+              profile: payload["profile"],
               error_code: "invalid_workflow_execute"
             )
           ).call(
-            action: payload["action"],
-            params: payload["params"]
+            params: payload
           ).to_json
         end
       end

@@ -5,6 +5,7 @@ require_relative "../llm/workflow_edit_intent"
 require_relative "../notes/notes_reader"
 require_relative "patch_propose_action"
 require_relative "workflow_edit_intent_patch_builder"
+require_relative "workflow_draft_request_validator"
 
 module Mcp
   class WorkflowDraftPatchAction
@@ -87,26 +88,21 @@ module Mcp
     end
 
     def validate_instruction(instruction)
-      normalized = instruction.to_s.strip
-      raise InvalidDraftRequestError, "instruction is required" if normalized.empty?
-
-      normalized
+      WorkflowDraftRequestValidator.validate_instruction(instruction)
+    rescue WorkflowDraftRequestValidator::InvalidRequestError => e
+      raise InvalidDraftRequestError, e.message
     end
 
     def validate_path(path)
-      raise InvalidDraftRequestError, "path must be a string" unless path.is_a?(String)
-
-      normalized = path.strip
-      raise InvalidDraftRequestError, "path is required" if normalized.empty?
-
-      normalized
+      WorkflowDraftRequestValidator.validate_path(path)
+    rescue WorkflowDraftRequestValidator::InvalidRequestError => e
+      raise InvalidDraftRequestError, e.message
     end
 
     def validate_context(context)
-      return {} if context.nil?
-      raise InvalidDraftRequestError, "context must be an object" unless context.is_a?(Hash)
-
-      context
+      WorkflowDraftRequestValidator.validate_context(context)
+    rescue WorkflowDraftRequestValidator::InvalidRequestError => e
+      raise InvalidDraftRequestError, e.message
     end
   end
 end
