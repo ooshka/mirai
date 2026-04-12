@@ -1,12 +1,5 @@
 # Backlog
 
-## Now
-
-1. Workflow Contract Convergence Execute Envelope Cleanup
-- Type: `feature`
-- Value: trims remaining execute-request envelope awkwardness so the planner-returned `workflow.draft_patch` action becomes the single obvious client contract across workflow planning and execution.
-- Size: ~0.5 day.
-
 ## Next
 
 1. Workflow Apply Response Action Echo
