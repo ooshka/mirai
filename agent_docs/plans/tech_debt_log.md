@@ -5,17 +5,17 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Current Debt
 
-### Workflow Response Correlation
-- State: workflow apply/execute responses still make thin clients infer canonical action identity from endpoint choice and surrounding context.
-- Impact: clients have to stitch planner output, dry-run output, and mutation results together with more implicit logic than necessary.
-- Trigger to fix: current top-priority workflow response work after execute-envelope convergence.
-- Likely next slice: `Workflow Apply Response Action Echo`.
-
 ### Policy Plumbing Test Fragility
 - State: some policy-identity tests still rely on brittle mocking patterns such as `any_instance`.
 - Impact: test intent is harder to read and future wiring changes are more likely to cause noisy failures.
-- Trigger to fix: when touching policy/request-spec plumbing next.
+- Trigger to fix: current top-priority request-spec hardening work protecting the next workflow feature slices.
 - Likely next slice: `Policy Identity Plumbing Spec Without any_instance`.
+
+### Workflow Cross-Step Correlation
+- State: workflow apply/execute responses now echo canonical action identity, but thin clients still lack one small signal for correlating planner output, dry runs, and execute/apply results across steps.
+- Impact: clients still need some surrounding context to pair related workflow stages.
+- Trigger to fix: after the current policy test-hardening slice restores a feature-forward cadence.
+- Likely next slice: `Workflow Planner-to-Execute Correlation Metadata`.
 
 ### Index Lifecycle Spec Namespacing
 - State: index lifecycle locking specs still carry a global naming/collision risk.
@@ -43,6 +43,7 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Recently Resolved
 
+- Workflow apply and execute responses now echo the canonical `workflow.draft_patch` action at top level, reducing endpoint-specific client inference.
 - Workflow planning, draft/apply, and execute now share a cleaner canonical `workflow.draft_patch` request contract, including a deduplicated execute profile-resolution path.
 - Planner-side workflow profile validation no longer carries its own source of truth; it now reuses shared workflow profile policy.
 - Planner output can use a smaller internal semantic draft intent while `mirai` still returns the canonical `workflow.draft_patch` action shape to clients.
