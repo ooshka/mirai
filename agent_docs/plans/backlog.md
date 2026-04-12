@@ -1,12 +1,5 @@
 # Backlog
 
-## Now
-
-1. Workflow Apply Response Action Echo
-- Type: `feature`
-- Value: gives thin workflow clients one explicit action-identity field in apply responses so they can correlate planner output and execution results without endpoint-specific inference.
-- Size: ~0.5 day.
-
 ## Next
 
 1. Policy Identity Plumbing Spec Without `any_instance`
