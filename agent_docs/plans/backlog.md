@@ -2,10 +2,7 @@
 
 ## Now
 
-1. Workflow Planner-to-Execute Correlation Metadata
-- Type: `feature`
-- Value: adds one small correlation/audit signal after execute-envelope cleanup so thin clients can pair planner output, dry runs, and apply results without endpoint-specific inference.
-- Size: ~0.5 day.
+No currently tracked items.
 
 ## Next
 
