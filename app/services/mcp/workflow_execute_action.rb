@@ -14,7 +14,8 @@ module Mcp
       @workflow_draft_apply_action.call(
         instruction: normalized_params["instruction"],
         path: normalized_params["path"],
-        context: normalized_params["context"]
+        context: normalized_params["context"],
+        workflow_action_id: normalized_params["workflow_action_id"]
       )
     end
 

@@ -41,39 +41,42 @@ RSpec.describe "MCP workflow draft patch endpoint" do
     expect(planner_factory).to receive(:build).and_return(planner_client)
   end
 
-  def expected_dry_run_response(provider:, model:, context:)
+  def expected_dry_run_response(provider:, model:, context:, workflow_action_id: nil)
+    trace = {
+      "provider" => provider,
+      "model" => model,
+      "target" => {
+        "path" => "notes/today.md",
+        "content_bytes" => 6
+      },
+      "context" => context,
+      "validation" => {
+        "status" => "valid",
+        "path" => "notes/today.md",
+        "hunk_count" => 1,
+        "net_line_delta" => 1
+      },
+      "apply_ready" => true,
+      "audit" => {
+        "patch" => <<~PATCH
+          --- a/notes/today.md
+          +++ b/notes/today.md
+          @@ -1,1 +1,2 @@
+          -alpha
+          +alpha
+          +beta
+        PATCH
+      }
+    }
+    trace["workflow_action_id"] = workflow_action_id unless workflow_action_id.nil?
+
     {
       "edit_intent" => {
         "path" => "notes/today.md",
         "operation" => "replace_content",
         "content" => "alpha\nbeta\n"
       },
-      "trace" => {
-        "provider" => provider,
-        "model" => model,
-        "target" => {
-          "path" => "notes/today.md",
-          "content_bytes" => 6
-        },
-        "context" => context,
-        "validation" => {
-          "status" => "valid",
-          "path" => "notes/today.md",
-          "hunk_count" => 1,
-          "net_line_delta" => 1
-        },
-        "apply_ready" => true,
-        "audit" => {
-          "patch" => <<~PATCH
-            --- a/notes/today.md
-            +++ b/notes/today.md
-            @@ -1,1 +1,2 @@
-            -alpha
-            +alpha
-            +beta
-          PATCH
-        }
-      }
+      "trace" => trace
     }
   end
 
@@ -192,7 +195,8 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         params: {
           instruction: "add beta",
           path: "notes/today.md",
-          context: {source: "planner"}
+          context: {source: "planner"},
+          workflow_action_id: "workflow-action-2-abc123def456"
         }
       }
     )
@@ -202,7 +206,8 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       expected_dry_run_response(
         provider: "openai",
         model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
-        context: {"source" => "planner"}
+        context: {"source" => "planner"},
+        workflow_action_id: "workflow-action-2-abc123def456"
       )
     )
   end
@@ -279,6 +284,8 @@ RSpec.describe "MCP workflow draft patch endpoint" do
 
     expect(last_response.status).to eq(200)
     workflow_action = JSON.parse(last_response.body).fetch("actions").find { |action| action.fetch("action") == "workflow.draft_patch" }
+    workflow_action_id = workflow_action.fetch("params").fetch("workflow_action_id")
+    expect(workflow_action_id).to match(/\Aworkflow-action-1-[0-9a-f]{12}\z/)
     expect(workflow_action).to eq(
       {
         "action" => "workflow.draft_patch",
@@ -286,7 +293,8 @@ RSpec.describe "MCP workflow draft patch endpoint" do
         "params" => {
           "instruction" => "add beta",
           "path" => "notes/today.md",
-          "context" => {"source" => "planner"}
+          "context" => {"source" => "planner"},
+          "workflow_action_id" => workflow_action_id
         }
       }
     )
@@ -298,10 +306,34 @@ RSpec.describe "MCP workflow draft patch endpoint" do
       expected_dry_run_response(
         provider: "local",
         model: "qwen2.5:7b-instruct",
-        context: {"source" => "planner"}
+        context: {"source" => "planner"},
+        workflow_action_id: workflow_action_id
       )
     )
     expect(File.read(file_path)).to eq("alpha\n")
+  end
+
+  it "returns invalid_workflow_draft when workflow_action_id is not a string" do
+    post "/mcp/workflow/draft_patch", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          workflow_action_id: 123
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_draft",
+          "message" => "workflow_action_id must be a string"
+        }
+      }
+    )
   end
 
   it "returns a validated dry-run patch for a local provider request" do

@@ -19,17 +19,17 @@ module Mcp
       @patch_builder = WorkflowEditIntentPatchBuilder.new
     end
 
-    def call(instruction:, path:, context: nil)
-      draft_result(instruction:, path:, context:).slice(:edit_intent, :trace)
+    def call(instruction:, path:, context: nil, workflow_action_id: nil)
+      draft_result(instruction:, path:, context:, workflow_action_id:).slice(:edit_intent, :trace)
     end
 
-    def call_with_patch(instruction:, path:, context: nil)
-      draft_result(instruction:, path:, context:)
+    def call_with_patch(instruction:, path:, context: nil, workflow_action_id: nil)
+      draft_result(instruction:, path:, context:, workflow_action_id:)
     end
 
     private
 
-    def draft_result(instruction:, path:, context:)
+    def draft_result(instruction:, path:, context:, workflow_action_id:)
       normalized_instruction = validate_instruction(instruction)
       normalized_path = validate_path(path)
       normalized_context = validate_context(context)
@@ -58,15 +58,16 @@ module Mcp
           content: content,
           context: normalized_context,
           proposal: proposal,
-          patch: patch
+          patch: patch,
+          workflow_action_id: workflow_action_id
         )
       }
     rescue WorkflowEditIntentPatchBuilder::InvalidEditIntentError => e
       raise InvalidDraftRequestError, e.message
     end
 
-    def build_trace(path:, content:, context:, proposal:, patch:)
-      {
+    def build_trace(path:, content:, context:, proposal:, patch:, workflow_action_id:)
+      trace = {
         provider: @trace_metadata.fetch(:provider, nil),
         model: @trace_metadata.fetch(:model, nil),
         target: {
@@ -85,6 +86,8 @@ module Mcp
           patch: patch
         }
       }
+      trace[:workflow_action_id] = workflow_action_id unless workflow_action_id.nil?
+      trace
     end
 
     def validate_instruction(instruction)

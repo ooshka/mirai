@@ -111,7 +111,10 @@ RSpec.describe "MCP workflow plan endpoint" do
     )
 
     expect(last_response.status).to eq(200)
-    expect(JSON.parse(last_response.body)).to eq(
+    body = JSON.parse(last_response.body)
+    workflow_action_id = body.fetch("actions").last.fetch("params").fetch("workflow_action_id")
+    expect(workflow_action_id).to match(/\Aworkflow-action-2-[0-9a-f]{12}\z/)
+    expect(body).to eq(
       {
         "intent" => "update today's note",
         "provider" => "openai",
@@ -124,7 +127,8 @@ RSpec.describe "MCP workflow plan endpoint" do
             "params" => {
               "instruction" => "add beta to today's note",
               "path" => "notes/today.md",
-              "context" => {"source" => "planner"}
+              "context" => {"source" => "planner"},
+              "workflow_action_id" => workflow_action_id
             }
           }
         ]
@@ -157,7 +161,10 @@ RSpec.describe "MCP workflow plan endpoint" do
     post "/mcp/workflow/plan", JSON.generate({intent: "update today's note"})
 
     expect(last_response.status).to eq(200)
-    expect(JSON.parse(last_response.body)).to eq(
+    body = JSON.parse(last_response.body)
+    workflow_action_id = body.fetch("actions").first.fetch("params").fetch("workflow_action_id")
+    expect(workflow_action_id).to match(/\Aworkflow-action-1-[0-9a-f]{12}\z/)
+    expect(body).to eq(
       {
         "intent" => "update today's note",
         "provider" => "openai",
@@ -169,7 +176,8 @@ RSpec.describe "MCP workflow plan endpoint" do
             "params" => {
               "instruction" => "add beta to today's note",
               "path" => "notes/today.md",
-              "context" => {"source" => "planner"}
+              "context" => {"source" => "planner"},
+              "workflow_action_id" => workflow_action_id
             }
           }
         ]
@@ -303,7 +311,10 @@ RSpec.describe "MCP workflow plan endpoint" do
     post "/mcp/workflow/plan", JSON.generate({intent: "plan local workflow"})
 
     expect(last_response.status).to eq(200)
-    expect(JSON.parse(last_response.body)).to eq(
+    body = JSON.parse(last_response.body)
+    workflow_action_id = body.fetch("actions").first.fetch("params").fetch("workflow_action_id")
+    expect(workflow_action_id).to match(/\Aworkflow-action-1-[0-9a-f]{12}\z/)
+    expect(body).to eq(
       {
         "intent" => "plan local workflow",
         "provider" => "local",
@@ -314,7 +325,8 @@ RSpec.describe "MCP workflow plan endpoint" do
             "reason" => "draft update",
             "params" => {
               "instruction" => "add beta",
-              "path" => "notes/today.md"
+              "path" => "notes/today.md",
+              "workflow_action_id" => workflow_action_id
             }
           }
         ]
@@ -353,7 +365,10 @@ RSpec.describe "MCP workflow plan endpoint" do
     post "/mcp/workflow/plan", JSON.generate({intent: "plan local workflow", profile: "local"})
 
     expect(last_response.status).to eq(200)
-    expect(JSON.parse(last_response.body)).to eq(
+    body = JSON.parse(last_response.body)
+    workflow_action_id = body.fetch("actions").first.fetch("params").fetch("workflow_action_id")
+    expect(workflow_action_id).to match(/\Aworkflow-action-1-[0-9a-f]{12}\z/)
+    expect(body).to eq(
       {
         "intent" => "plan local workflow",
         "provider" => "local",
@@ -365,7 +380,8 @@ RSpec.describe "MCP workflow plan endpoint" do
             "params" => {
               "instruction" => "add beta",
               "path" => "notes/today.md",
-              "profile" => "local"
+              "profile" => "local",
+              "workflow_action_id" => workflow_action_id
             }
           }
         ]

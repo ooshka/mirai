@@ -138,11 +138,25 @@ module Routes
         "instruction" => ::Mcp::WorkflowDraftRequestValidator.validate_instruction(params["instruction"]),
         "path" => ::Mcp::WorkflowDraftRequestValidator.validate_path(params["path"]),
         "context" => ::Mcp::WorkflowDraftRequestValidator.validate_context(params["context"]),
+        "workflow_action_id" => validate_workflow_action_id(params["workflow_action_id"], error_code: error_code),
         "profile" => resolved_profile.profile,
         "resolved_profile" => resolved_profile
       }
     rescue ::Mcp::WorkflowDraftRequestValidator::InvalidRequestError => e
       render_error(400, error_code, e.message)
+    end
+
+    def validate_workflow_action_id(value, error_code:)
+      return nil if value.nil?
+
+      unless value.is_a?(String)
+        render_error(400, error_code, "workflow_action_id must be a string")
+      end
+
+      normalized = value.strip
+      return nil if normalized.empty?
+
+      normalized
     end
 
     def mcp_action_policy
