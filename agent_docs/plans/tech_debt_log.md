@@ -6,10 +6,10 @@ It is not intended to be a historical journal of every past planning discussion.
 ## Current Debt
 
 ### Workflow Cross-Step Correlation
-- State: workflow apply/execute responses now echo canonical action identity, but thin clients still lack one small signal for correlating planner output, dry runs, and execute/apply results across steps.
+- State: workflow apply/execute responses now echo canonical action identity, but thin clients still lack one small planner-issued signal for correlating planner output, dry runs, and execute/apply results across steps.
 - Impact: clients still need some surrounding context to pair related workflow stages.
-- Trigger to fix: current top-priority workflow follow-on work after action echo landed.
-- Likely next slice: `Workflow Planner-to-Execute Correlation Metadata`.
+- Trigger to fix: current active workflow follow-on work after action echo landed.
+- Likely next slice: `Workflow Planner Execute Correlation Metadata`.
 
 ### Index Lifecycle Spec Namespacing
 - State: index lifecycle locking specs still carry a global naming/collision risk.
