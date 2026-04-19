@@ -34,7 +34,8 @@ RSpec.describe Mcp::WorkflowDraftPatchAction do
         action.call(
           instruction: "add beta",
           path: "notes/today.md",
-          context: {"source" => "planner"}
+          context: {"source" => "planner"},
+          workflow_action_id: "workflow-action-2-abc123def456"
         )
       ).to eq(
         {
@@ -46,6 +47,7 @@ RSpec.describe Mcp::WorkflowDraftPatchAction do
           trace: {
             provider: "openai",
             model: "gpt-4.1-mini",
+            workflow_action_id: "workflow-action-2-abc123def456",
             target: {
               path: "notes/today.md",
               content_bytes: 6

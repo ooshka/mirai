@@ -88,7 +88,8 @@ RSpec.describe "MCP workflow execute endpoint" do
         params: {
           instruction: "add beta",
           path: "notes/today.md",
-          context: {source: "planner"}
+          context: {source: "planner"},
+          workflow_action_id: "workflow-action-2-abc123def456"
         }
       }
     )
@@ -110,7 +111,8 @@ RSpec.describe "MCP workflow execute endpoint" do
             +beta
           PATCH
           "provider" => "openai",
-          "model" => Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+          "model" => Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+          "workflow_action_id" => "workflow-action-2-abc123def456"
         }
       }
     )
@@ -273,6 +275,29 @@ RSpec.describe "MCP workflow execute endpoint" do
         "error" => {
           "code" => "invalid_workflow_execute",
           "message" => "workflow execute params must be an object"
+        }
+      }
+    )
+  end
+
+  it "returns invalid_workflow_execute when workflow_action_id is not a string" do
+    post "/mcp/workflow/execute", JSON.generate(
+      {
+        action: "workflow.draft_patch",
+        params: {
+          instruction: "add beta",
+          path: "notes/today.md",
+          workflow_action_id: 123
+        }
+      }
+    )
+
+    expect(last_response.status).to eq(400)
+    expect(JSON.parse(last_response.body)).to eq(
+      {
+        "error" => {
+          "code" => "invalid_workflow_execute",
+          "message" => "workflow_action_id must be a string"
         }
       }
     )

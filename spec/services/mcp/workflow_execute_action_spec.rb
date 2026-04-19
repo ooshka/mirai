@@ -11,7 +11,8 @@ RSpec.describe Mcp::WorkflowExecuteAction do
     expect(workflow_draft_apply_action).to receive(:call).with(
       instruction: "add beta",
       path: "notes/today.md",
-      context: {"source" => "planner"}
+      context: {"source" => "planner"},
+      workflow_action_id: "workflow-action-2-abc123def456"
     ).and_return(
       {
         path: "notes/today.md",
@@ -20,7 +21,8 @@ RSpec.describe Mcp::WorkflowExecuteAction do
         audit: {
           patch: "--- a/notes/today.md\n+++ b/notes/today.md\n",
           provider: "openai",
-          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+          workflow_action_id: "workflow-action-2-abc123def456"
         }
       }
     )
@@ -30,7 +32,8 @@ RSpec.describe Mcp::WorkflowExecuteAction do
         params: {
           "instruction" => "add beta",
           "path" => "notes/today.md",
-          "context" => {"source" => "planner"}
+          "context" => {"source" => "planner"},
+          "workflow_action_id" => "workflow-action-2-abc123def456"
         }
       )
     ).to eq(
@@ -41,7 +44,8 @@ RSpec.describe Mcp::WorkflowExecuteAction do
         audit: {
           patch: "--- a/notes/today.md\n+++ b/notes/today.md\n",
           provider: "openai",
-          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL
+          model: Llm::OpenAiWorkflowPlannerClient::DEFAULT_MODEL,
+          workflow_action_id: "workflow-action-2-abc123def456"
         }
       }
     )

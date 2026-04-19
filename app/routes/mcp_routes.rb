@@ -135,7 +135,8 @@ module Routes
           build_workflow_draft_patch_action(profile: payload["profile"]).call(
             instruction: payload["instruction"],
             path: payload["path"],
-            context: payload["context"]
+            context: payload["context"],
+            workflow_action_id: payload["workflow_action_id"]
           ).to_json
         end
       end
@@ -163,7 +164,8 @@ module Routes
           build_workflow_draft_apply_action(profile: payload["profile"]).call(
             instruction: payload["instruction"],
             path: payload["path"],
-            context: payload["context"]
+            context: payload["context"],
+            workflow_action_id: payload["workflow_action_id"]
           ).to_json
         end
       end

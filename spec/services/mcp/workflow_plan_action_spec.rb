@@ -31,7 +31,7 @@ RSpec.describe Mcp::WorkflowPlanAction do
     expect(result).to eq({intent: "update note", actions: []})
   end
 
-  it "threads an explicit profile into workflow draft handoff actions" do
+  it "threads handoff metadata into workflow draft handoff actions" do
     planner = instance_double(Llm::WorkflowPlanner)
     context_builder = double("workflow_plan_context_builder")
 
@@ -55,7 +55,11 @@ RSpec.describe Mcp::WorkflowPlanAction do
       }
     )
 
-    expect(action.call(intent: "update note")).to eq(
+    result = action.call(intent: "update note")
+    workflow_action_id = result.fetch(:actions).last.fetch(:params).fetch("workflow_action_id")
+
+    expect(workflow_action_id).to match(/\Aworkflow-action-2-[0-9a-f]{12}\z/)
+    expect(result).to eq(
       {
         intent: "update note",
         actions: [
@@ -66,7 +70,8 @@ RSpec.describe Mcp::WorkflowPlanAction do
             params: {
               "instruction" => "add beta",
               "path" => "notes/today.md",
-              "profile" => "local"
+              "profile" => "local",
+              "workflow_action_id" => workflow_action_id
             }
           }
         ]

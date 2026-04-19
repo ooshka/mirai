@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "digest"
 require "json"
 require_relative "../llm/workflow_planner"
 
@@ -24,17 +25,38 @@ module Mcp
       path_hint = validate_path_hint(normalized_context)
       enriched_context = @context_builder.build(input_context: normalized_context, path_hint: path_hint)
       plan = @planner.plan(intent: normalized_intent, context: enriched_context)
-      return plan if @profile.nil?
 
-      plan.merge(actions: plan.fetch(:actions).map { |action| action_with_profile(action) })
+      plan.merge(
+        actions: plan.fetch(:actions).each_with_index.map do |action, index|
+          action_with_handoff_metadata(action, index: index)
+        end
+      )
     end
 
     private
 
-    def action_with_profile(action)
+    def action_with_handoff_metadata(action, index:)
       return action unless action.fetch(:action) == Llm::WorkflowPlanner::DRAFT_PATCH_ACTION
 
-      action.merge(params: action.fetch(:params).merge("profile" => @profile))
+      params = action.fetch(:params).dup
+      params["profile"] = @profile unless @profile.nil?
+      params["workflow_action_id"] = workflow_action_id(action: action, params: params, index: index)
+      action.merge(params: params)
+    end
+
+    def workflow_action_id(action:, params:, index:)
+      digest = Digest::SHA256.hexdigest(
+        JSON.generate(
+          {
+            index: index,
+            action: action.fetch(:action),
+            reason: action.fetch(:reason, nil),
+            params: params.except("workflow_action_id")
+          }
+        )
+      )
+
+      "workflow-action-#{index + 1}-#{digest[0, 12]}"
     end
 
     def validate_intent(intent)
