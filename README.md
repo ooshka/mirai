@@ -135,6 +135,14 @@ Useful workflow operator flags:
 - `--workflow-action-id workflow-action-2-...` to carry planner-issued correlation metadata through dry-run/apply output
 - `--yes` to skip the apply confirmation prompt when `--apply` is already set
 
+Run the deterministic real-notes operator smoke scenario:
+
+```bash
+docker compose run --rm dev bundle exec rspec spec/scripts/workflow_operator_smoke_spec.rb
+```
+
+This smoke uses a temporary git-backed notes root and a deterministic in-process workflow drafter. It does not require OpenAI, Ollama, or a developer's real notes.
+
 Upload notes chunks to an OpenAI vector store (for semantic E2E tests):
 
 ```bash
