@@ -2,12 +2,7 @@
 
 ## Now
 
-1. Workflow Operator Correlation Display
-- Type: `feature`
-- Milestone: `Real Notes Operator MVP`
-- Case: `agent_docs/cases/CASE_workflow_operator_correlation_display.md`
-- Value: uses planner-to-execution correlation metadata in CLI/operator output so dry-run/apply flows are easier to inspect against the originating planned action.
-- Size: ~0.5 day.
+No active Case. Use `roadmap.md` Current Milestone exit criteria to select the next Case.
 
 ## Next
 
