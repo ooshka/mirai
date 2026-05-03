@@ -48,22 +48,12 @@ Exit criteria:
 
 ## Next Slices
 
-1. Workflow Operator Correlation Display
-- Repo: `mirai`
-- Advances: Real Notes Operator MVP
-- Why next: the backend now echoes canonical action identity, but the operator output still needs the correlation signal that lets dry-run/apply runs be inspected as one workflow.
-
-2. Real Notes Operator Smoke Scenario
-- Repo: `mirai`
-- Advances: Real Notes Operator MVP
-- Why next: converts the existing CLI and workflow endpoints into a repeatable real-notes proof path instead of relying on isolated endpoint specs.
-
-3. Hosted And Local Profile Smoke Coverage
+1. Hosted And Local Profile Smoke Coverage
 - Repo: `mirai`, backed by `local_llm`
 - Advances: Real Notes Operator MVP and Provider Choice MVP
 - Why next: proves the same bounded workflow can run through both provider families while preserving shared validation and apply semantics.
 
-4. LockSpy Namespacing In Index Lifecycle Locking Spec
+2. LockSpy Namespacing In Index Lifecycle Locking Spec
 - Repo: `mirai`
 - Advances: maintenance guardrail, not the current milestone directly
 - Why next: keep queued as small hardening only when index lifecycle specs are already being touched or suite growth makes the collision risk active.

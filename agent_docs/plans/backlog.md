@@ -2,12 +2,7 @@
 
 ## Now
 
-1. Real Notes Operator Smoke Scenario
-- Type: `feature`
-- Milestone: `Real Notes Operator MVP`
-- Case: `agent_docs/cases/CASE_real_notes_operator_smoke_scenario.md`
-- Value: turns the existing operator CLI and workflow endpoints into one repeatable real-notes dry-run/apply proof path.
-- Size: ~1 day.
+No active Case. Use `roadmap.md` Current Milestone exit criteria to select the next Case.
 
 ## Next
 
