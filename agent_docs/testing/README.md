@@ -217,6 +217,23 @@ What it covers:
 
 If workflow planning is disabled or the local workflow providers are not configured, the smoke script now fails early with a prerequisite error instead of silently skipping the workflow section.
 
+### Deterministic operator smoke spec
+
+Use this when changing the workflow operator loop or real-notes dry-run/apply behavior but live provider coverage is not required:
+
+```bash
+docker compose run --rm dev bundle exec rspec spec/scripts/workflow_operator_smoke_spec.rb
+```
+
+What it covers:
+- Starts the real Rack app behind a local test HTTP server
+- Uses a temporary git-backed notes root
+- Runs `scripts/workflow_operator.rb --apply --yes`
+- Stubs only the workflow drafter boundary
+- Verifies CLI dry-run/apply output, final note content, and the git commit subject
+
+It does not require OpenAI, Ollama, or a developer's real notes.
+
 ## Agent Verification Workflow
 
 1. Identify change type.
