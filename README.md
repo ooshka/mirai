@@ -132,6 +132,7 @@ ruby scripts/workflow_operator.rb \
 Useful workflow operator flags:
 - `--base-url http://localhost:4567` to target a non-default app URL
 - `--context '{"source":"cli"}'` to pass optional JSON context through the canonical `workflow.draft_patch` params
+- `--workflow-action-id workflow-action-2-...` to carry planner-issued correlation metadata through dry-run/apply output
 - `--yes` to skip the apply confirmation prompt when `--apply` is already set
 
 Upload notes chunks to an OpenAI vector store (for semantic E2E tests):
@@ -284,7 +285,7 @@ Default container config:
   - Request: `{ "action": "workflow.draft_patch", "params": { "instruction": "add today's summary", "path": "notes/today.md", "context": { ...optional object... }, "profile": "hosted|local|auto", "workflow_action_id": "workflow-action-2-..." } }`
   - Response: `{ "action": "workflow.draft_patch", "path": "notes/today.md", "hunk_count": 1, "net_line_delta": 1, "audit": { "patch": "--- a/notes/today.md\n+++ b/notes/today.md\n...", "provider": "openai", "model": "gpt-4.1-mini", "workflow_action_id": "workflow-action-2-..." } }`
   - Contract note: this endpoint reuses the draft-request contract from `/mcp/workflow/draft_patch` and the mutation safety boundary from `/mcp/patch/apply`; the top-level `action` field echoes the executed canonical workflow action while workflow-owned audit data, including optional planner correlation metadata, stays nested under `audit`.
-  - Operator note: `ruby scripts/workflow_operator.rb --instruction "..." --path notes/today.md --profile local` runs the dry run first, and adding `--apply` reuses the same canonical payload for the apply call after confirmation.
+  - Operator note: `ruby scripts/workflow_operator.rb --instruction "..." --path notes/today.md --profile local` runs the dry run first, and adding `--apply` reuses the same canonical payload for the apply call after confirmation. Use `--workflow-action-id` when running from a planner-issued action so dry-run/apply output includes the same correlation id.
   - Policy note: this path is treated as a mutation and is denied in `read_only` mode.
 
 - `POST /mcp/workflow/execute`

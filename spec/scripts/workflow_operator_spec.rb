@@ -87,6 +87,7 @@ RSpec.describe "workflow operator CLI" do
                 "hunk_count" => 1,
                 "net_line_delta" => 1
               },
+              "workflow_action_id" => "workflow-action-2-abc123def456",
               "apply_ready" => true,
               "audit" => {
                 "patch" => "--- a/notes/today.md\n+++ b/notes/today.md\n@@ -1,1 +1,2 @@\n-alpha\n+alpha\n+beta\n"
@@ -102,6 +103,7 @@ RSpec.describe "workflow operator CLI" do
       "--instruction", "add beta",
       "--path", "notes/today.md",
       "--profile", "local",
+      "--workflow-action-id", "workflow-action-2-abc123def456",
       "--context", '{"source":"cli"}',
       "--base-url", base_url
     )
@@ -118,6 +120,7 @@ RSpec.describe "workflow operator CLI" do
               "instruction" => "add beta",
               "path" => "notes/today.md",
               "profile" => "local",
+              "workflow_action_id" => "workflow-action-2-abc123def456",
               "context" => {"source" => "cli"}
             }
           }
@@ -125,6 +128,8 @@ RSpec.describe "workflow operator CLI" do
       ]
     )
     expect(stdout).to include("Dry run")
+    expect(stdout).to include("Workflow action: workflow.draft_patch")
+    expect(stdout).to include("Workflow action id: workflow-action-2-abc123def456")
     expect(stdout).to include("Requested profile: local")
     expect(stdout).to include("Resolved provider: local")
     expect(stdout).to include("Model: qwen3:8b")
@@ -165,6 +170,7 @@ RSpec.describe "workflow operator CLI" do
                   "hunk_count" => 1,
                   "net_line_delta" => 1
                 },
+                "workflow_action_id" => "workflow-action-2-abc123def456",
                 "apply_ready" => true,
                 "audit" => {"patch" => "--- a/notes/today.md\n+++ b/notes/today.md\n"}
               }
@@ -179,10 +185,12 @@ RSpec.describe "workflow operator CLI" do
               "path" => "notes/today.md",
               "hunk_count" => 1,
               "net_line_delta" => 1,
+              "action" => "workflow.draft_patch",
               "audit" => {
                 "patch" => "--- a/notes/today.md\n+++ b/notes/today.md\n",
                 "provider" => "openai",
-                "model" => "gpt-4.1-mini"
+                "model" => "gpt-4.1-mini",
+                "workflow_action_id" => "workflow-action-2-abc123def456"
               }
             }
           )
@@ -196,6 +204,7 @@ RSpec.describe "workflow operator CLI" do
     stdout, stderr, status = run_cli(
       "--instruction", "add beta",
       "--path", "notes/today.md",
+      "--workflow-action-id", "workflow-action-2-abc123def456",
       "--apply",
       "--yes",
       "--base-url", base_url
@@ -212,12 +221,15 @@ RSpec.describe "workflow operator CLI" do
           "action" => "workflow.draft_patch",
           "params" => {
             "instruction" => "add beta",
-            "path" => "notes/today.md"
+            "path" => "notes/today.md",
+            "workflow_action_id" => "workflow-action-2-abc123def456"
           }
         }
       ]
     )
     expect(stdout).to include("Apply result")
+    expect(stdout).to include("Workflow action: workflow.draft_patch")
+    expect(stdout).to include("Workflow action id: workflow-action-2-abc123def456")
     expect(stdout).to include("Provider: openai")
     expect(stdout).to include("Model: gpt-4.1-mini")
   ensure

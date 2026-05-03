@@ -8,6 +8,7 @@ require "uri"
 
 DEFAULT_BASE_URL = ENV.fetch("BASE_URL", "http://localhost:4567")
 SUPPORTED_PROFILES = %w[local hosted auto].freeze
+WORKFLOW_ACTION = "workflow.draft_patch"
 
 class CliError < StandardError; end
 
@@ -45,6 +46,10 @@ def parse_options(argv)
 
     opts.on("--profile PROFILE", SUPPORTED_PROFILES, "Workflow profile (#{SUPPORTED_PROFILES.join(", ")})") do |value|
       options[:profile] = value
+    end
+
+    opts.on("--workflow-action-id ID", "Optional planner-issued workflow action correlation id") do |value|
+      options[:workflow_action_id] = value
     end
 
     opts.on("--context JSON", "Optional JSON object passed to params.context") do |value|
@@ -86,6 +91,7 @@ def validate_options!(options, parser)
     path: path,
     base_url: normalize_string(options[:base_url]) || DEFAULT_BASE_URL,
     profile: options[:profile],
+    workflow_action_id: normalize_string(options[:workflow_action_id]),
     context: context,
     apply: options[:apply],
     confirm_apply: options[:confirm_apply]
@@ -101,9 +107,10 @@ def request_payload(options)
   }
   params[:context] = options[:context] unless options[:context].nil?
   params[:profile] = options[:profile] unless options[:profile].nil?
+  params[:workflow_action_id] = options[:workflow_action_id] unless options[:workflow_action_id].nil?
 
   {
-    action: "workflow.draft_patch",
+    action: WORKFLOW_ACTION,
     params: params
   }
 end
@@ -147,6 +154,17 @@ def fetch_required(hash, key, context:)
   raise CliError, "#{context} missing #{key.inspect}; got keys: #{response_keys(hash)}"
 end
 
+def optional_string(hash, key)
+  return nil unless hash.is_a?(Hash)
+
+  normalize_string(hash[key])
+end
+
+def print_workflow_identity(action:, workflow_action_id:)
+  puts "Workflow action: #{action || WORKFLOW_ACTION}"
+  puts "Workflow action id: #{workflow_action_id}" unless workflow_action_id.nil?
+end
+
 def print_dry_run(response:, profile:)
   trace = fetch_required(response, "trace", context: "dry-run response")
   validation = fetch_required(trace, "validation", context: "dry-run trace")
@@ -154,6 +172,7 @@ def print_dry_run(response:, profile:)
   audit = fetch_required(trace, "audit", context: "dry-run trace")
 
   puts "Dry run"
+  print_workflow_identity(action: optional_string(response, "action") || WORKFLOW_ACTION, workflow_action_id: optional_string(trace, "workflow_action_id"))
   puts "Requested profile: #{profile || "default"}"
   puts "Resolved provider: #{fetch_required(trace, "provider", context: "dry-run trace")}"
   puts "Model: #{fetch_required(trace, "model", context: "dry-run trace")}"
@@ -169,6 +188,7 @@ def print_apply(response:)
 
   puts
   puts "Apply result"
+  print_workflow_identity(action: optional_string(response, "action") || WORKFLOW_ACTION, workflow_action_id: optional_string(audit, "workflow_action_id"))
   puts "Path: #{fetch_required(response, "path", context: "apply response")}"
   puts "Hunks: #{fetch_required(response, "hunk_count", context: "apply response")}"
   puts "Net line delta: #{fetch_required(response, "net_line_delta", context: "apply response")}"

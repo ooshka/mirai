@@ -5,12 +5,6 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Current Debt
 
-### Workflow Cross-Step Correlation
-- State: workflow apply/execute responses now echo canonical action identity and planner-execute correlation metadata, but the operator CLI does not yet display that signal clearly across dry-run/apply output.
-- Impact: real-notes operator runs remain harder to audit as one workflow, even though the backend now provides the needed metadata.
-- Trigger to fix: current `Real Notes Operator MVP` CLI follow-on work.
-- Likely next slice: `Workflow Operator Correlation Display`.
-
 ### Index Lifecycle Spec Namespacing
 - State: index lifecycle locking specs still carry a global naming/collision risk.
 - Impact: suite growth can make these tests harder to maintain or reason about.
@@ -37,8 +31,8 @@ It is not intended to be a historical journal of every past planning discussion.
 
 ## Recently Resolved
 
+- Workflow operator output now displays canonical workflow action identity and optional `workflow_action_id` metadata across dry-run/apply output, so real-notes runs can be correlated more directly.
 - Policy identity plumbing specs already use direct request-level seams instead of brittle `any_instance` stubbing, so the planned cleanup slice was stale and has been removed.
 - Workflow apply and execute responses now echo the canonical `workflow.draft_patch` action at top level, reducing endpoint-specific client inference.
 - Workflow planning, draft/apply, and execute now share a cleaner canonical `workflow.draft_patch` request contract, including a deduplicated execute profile-resolution path.
 - Planner-side workflow profile validation no longer carries its own source of truth; it now reuses shared workflow profile policy.
-- Planner output can use a smaller internal semantic draft intent while `mirai` still returns the canonical `workflow.draft_patch` action shape to clients.
