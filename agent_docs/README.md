@@ -9,7 +9,7 @@ Planning posture for this repo:
 
 ## Structure
 - `cases/`: executable case files
-- `plans/backlog.md`: prioritized candidate slices
-- `plans/roadmap.md`: short directional roadmap
+- `plans/roadmap.md`: north star, current milestone, exit criteria, milestone ladder, and strategic next slices
+- `plans/backlog.md`: short tactical queue aligned to the current roadmap milestone
 - `plans/tech_debt_log.md`: structural debt and refactor signals
 - `testing/README.md`: testing infrastructure and verification commands for agents

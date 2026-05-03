@@ -6,10 +6,10 @@ It is not intended to be a historical journal of every past planning discussion.
 ## Current Debt
 
 ### Workflow Cross-Step Correlation
-- State: workflow apply/execute responses now echo canonical action identity, but thin clients still lack one small planner-issued signal for correlating planner output, dry runs, and execute/apply results across steps.
-- Impact: clients still need some surrounding context to pair related workflow stages.
-- Trigger to fix: current active workflow follow-on work after action echo landed.
-- Likely next slice: `Workflow Planner Execute Correlation Metadata`.
+- State: workflow apply/execute responses now echo canonical action identity and planner-execute correlation metadata, but the operator CLI does not yet display that signal clearly across dry-run/apply output.
+- Impact: real-notes operator runs remain harder to audit as one workflow, even though the backend now provides the needed metadata.
+- Trigger to fix: current `Real Notes Operator MVP` CLI follow-on work.
+- Likely next slice: `Workflow Operator Correlation Display`.
 
 ### Index Lifecycle Spec Namespacing
 - State: index lifecycle locking specs still carry a global naming/collision risk.
